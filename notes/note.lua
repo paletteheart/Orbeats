@@ -9,6 +9,7 @@ class('Note').extends(Object)
 function Note:init(spawnBeat, hitBeat, spd, width, pos, spin)
     self.spawnBeat = spawnBeat -- the beat when the note is spawned
     self.hitBeat = hitBeat -- the beat when the note is supposed to be hit
+    self.lifeLength = hitBeat-spawnBeat
     self.spd = spd -- how quickly the note approaches the 
     self.width = width
     self.hitPos = pos -- the position where the note will be hit
@@ -19,11 +20,13 @@ end
 
 function Note:update(currentBeat, orbitRadius)
     local oldRadius = self.radius
+    local beatsSinceSpawn = currentBeat-self.spawnBeat
 
     -- this formula creates an exponential graph connecting two points (spawnBeat,initialRadius and hitBeat,orbitRadius) in the vector space of beats and radii,
     -- with how quickly the graph increases in radius determined by self.spd
-    self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.hitBeat)-math.exp(self.spd*self.spawnBeat)))*(math.exp(self.spd*currentBeat)-math.exp(self.spd*self.spawnBeat))+initialRadius
-    print(self.radius)
+    -- self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.hitBeat)-math.exp(self.spd*self.spawnBeat)))*(math.exp(self.spd*currentBeat)-math.exp(self.spd*self.spawnBeat))+initialRadius
+    self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*beatsSinceSpawn)-1)+initialRadius
+
     -- this formula creates a linear graph that passes through a point determined by the hitBeat and hitPos in the vector space of beats and positions,
     -- with the slope determined by self.spin
     self.currentPos = self.spin*(currentBeat-self.hitBeat)+self.hitPos

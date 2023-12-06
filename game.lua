@@ -241,7 +241,6 @@ function updateSong()
     musicTime = music:getOffset()
     -- update the current beat
     currentBeat = (musicTime / (60/songBpm))-beatOffset
-    print(currentBeat)
 
     -- Update the pulse if it's on a beat
     -- If it's before the music is playing, fake the pulses
@@ -280,7 +279,7 @@ function updateSong()
         flipTrail = orbitRadius*2
         flipPos = playerPos
     else
-        flipTrail = math.floor(flipTrail/2)
+        flipTrail = math.floor(flipTrail/1.4)
     end
 
     -- update hit forgiveness
