@@ -511,15 +511,6 @@
             "position":315,
             "spin":0
         },
-        {
-            "type":"note",
-            "spawnBeat":66,
-            "hitBeat":71,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
 
         {
             "type":"note",
@@ -842,6 +833,98 @@
             "width":30,
             "position":315,
             "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":91,
+            "hitBeat":96,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":91.5,
+            "hitBeat":96.5,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":92,
+            "hitBeat":97,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":92.5,
+            "hitBeat":97.5,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":94,
+            "hitBeat":99,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":95,
+            "hitBeat":100,
+            "speed":1,
+            "width":45,
+            "position":315,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":96,
+            "hitBeat":101,
+            "speed":1,
+            "width":45,
+            "position":0,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":97,
+            "hitBeat":102,
+            "speed":1,
+            "width":45,
+            "position":45,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":98.5,
+            "hitBeat":103.5,
+            "speed":1,
+            "width":45,
+            "position":0,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":98.5,
+            "hitBeat":103.5,
+            "speed":1,
+            "width":45,
+            "position":0,
+            "spin":0
         }
     ],
     "effects":{
@@ -850,5 +933,5 @@
             24
         ]
     },
-    "songend":100
+    "songend":10
 }

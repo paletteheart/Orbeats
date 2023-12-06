@@ -46,10 +46,18 @@ bPressed = pd.buttonJustPressed(pd.kButtonB)
 -- Song variables
 local songTable = json.decodeFile(pd.file.open("songs/Orubooru/Easy.json"))
 local songBpm = 130
-score = 0
 hitNotes = 0
 missedNotes = 0
 local delta = -(tickSpeed*3)
+
+-- Score display variables
+score = 0
+local hitTextTimer = 0
+local hitTextTime = 15
+local hitTextDisplay = ""
+local hitText = {}
+hitText.perfect = "Perfect!"
+hitText.miss = "Miss!"
 
 -- Music variables
 music = pd.sound.fileplayer.new()
@@ -59,15 +67,25 @@ local fakeCurrentBeat = 0
 local lastBeat = 0 -- is only used for the pulses right now
 local beatOffset = 0 -- a value to slightly offset the beat until it looks like it's perfectly on beat
 
--- Note variables
+-- Note variables   
 noteInstances = {}
 local missedNoteRadius = 300 -- the radius where notes get deleted
 local hitForgiveness = 25 -- the distance from the orbit radius from which you can still hit notes
 local maxNoteScore = 100 --the max score you can get from a note
 local perfectDistance = 4 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
 
---Misc variables
+-- Font variables
+fonts = {}
+fonts.orbeatsSans = gfx.font.newFamily({
+    [playdate.graphics.font.kVariantNormal] = "fonts/Orbeats Sans"
+   })
+fonts.odinRounded = gfx.font.newFamily({
+    [playdate.graphics.font.kVariantNormal] = "fonts/Odin Rounded PD"
+   })
+
+-- Misc variables
 local invertedScreen = false
+
 
 
 -- local functions
@@ -107,9 +125,13 @@ local function updateNotes()
                     -- if you hit it perfectly in the center, score the max points. Otherwise, you score less and less, down to the edges which score half max points.
                     if fromNoteCenter <= perfectDistance then
                         score += maxNoteScore
-                    else 
-                        score += math.floor(maxNoteScore/(1+(fromNoteCenter/noteHalfWidth)))
+                        hitTextDisplay = hitText.perfect
+                    else
+                        local hitScore = math.floor(maxNoteScore/(1+(fromNoteCenter/noteHalfWidth)))
+                        score += hitScore
+                        hitTextDisplay = tostring(hitScore)
                     end
+                    hitTextTimer = hitTextTime
                     --remove note
                     table.remove(noteInstances, i)
                     -- up the hit note score
@@ -130,9 +152,13 @@ local function updateNotes()
                         -- you can be, which scores half max points.
                         if noteDistance <= perfectDistance then
                             score += maxNoteScore
+                            hitTextDisplay = hitText.perfect
                         else 
-                            score += math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
+                            local hitScore = math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
+                            score += hitScore
+                            hitTextDisplay = tostring(hitScore)
                         end
+                        hitTextTimer = hitTextTime
                         --remove note
                         table.remove(noteInstances, i)
                         -- up the hit note score
@@ -146,6 +172,8 @@ local function updateNotes()
             table.remove(noteInstances, i)
             -- up the missed note score
             missedNotes += 1
+            hitTextDisplay = hitText.miss
+            hitTextTimer = hitTextTime
         end
 	end
 end
@@ -309,6 +337,20 @@ end
 
 
 function drawSong()
+    --draw the point total
+    gfx.setColor(gfx.kColorBlack)
+    gfx.drawText(score, 2, 2, fonts.orbeatsSans)
+
+    --draw the hit text
+    if hitTextTimer > 0 then
+        if hitTextTimer == hitTextTime then
+            gfx.drawText(hitTextDisplay, 2, 18, fonts.orbeatsSans)
+        else
+            gfx.drawText(hitTextDisplay, 2, 20, fonts.orbeatsSans)
+        end
+    end
+    hitTextTimer -= 1
+
     --draw the orbit
 	gfx.setDitherPattern(0.75)
 	gfx.setLineWidth(5)
@@ -346,10 +388,6 @@ function drawSong()
 	gfx.setColor(gfx.kColorBlack)
 	gfx.setLineWidth(2)
 	gfx.drawCircleAtPoint(playerX, playerY, playerRadius)
-
-    --draw the point total
-    gfx.setColor(gfx.kColorBlack)
-    gfx.drawText(score, 2, 2)
 
     --invert the screen if necessary
     if invertedScreen then

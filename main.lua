@@ -1,6 +1,7 @@
 import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/ui"
+import "CoreLibs/sprites"
 
 import "songs"
 import "game"
@@ -21,6 +22,8 @@ local songSelectMenuItem = addSongSelectMenuItem()
 
 local gameState
 gameState = "songSelect"
+
+gfx.sprite.setAlwaysRedraw(true)
 
 local function draw()
 	gfx.clear()
@@ -61,6 +64,8 @@ function pd.update()
 	else
 
 	end
+
+	gfx.sprite.update()
 
 	draw()
 
