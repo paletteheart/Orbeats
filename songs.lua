@@ -5,27 +5,101 @@ import "game"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
-local songList = json.decodeFile(pd.file.open("songlist.json"))
+local screenWidth <const> = 400
+local screenHeight <const> = 240
+local screenCenterX <const> = screenWidth / 2
+local screenCenterY <const> = screenHeight / 2
+
+local songList <const> = json.decodeFile(pd.file.open("songlist.json"))
+
+-- Define variables
+scores = json.decodeFile(pd.file.open("scores.json"))
+resetHiScores = false
+
+currentSong = songList[1]
+currentDifficulty = currentSong.difficulties[1]
+songTable = {}
+
 
 function drawSongSelect()
-    gfx.setColor(gfx.kColorBlack)
-    gfx.drawTextAligned("Press up to start test song: "..songList[1].name, 200, 2, kTextAlignment.center)
+    -- check if we're on the reset high scores menu
+    if not resetHiScores then
+        gfx.setColor(gfx.kColorBlack)
+    gfx.drawText("Press up to start test song: "..currentSong.name..", "..currentDifficulty, 2, 2, fonts.orbeatsSans)
+
+    -- Get the current selection's high score
+    local currentHiScore
+    local currentBestRank
+    if scores[currentSong.name] ~= nil then
+        if scores[currentSong.name][currentDifficulty] ~= nil then
+            currentHiScore = scores[currentSong.name][currentDifficulty].score
+            currentBestRank = scores[currentSong.name][currentDifficulty].rating
+        else
+            currentHiScore = 0
+            currentBestRank = "-"
+        end
+    else
+        currentHiScore = 0
+        currentBestRank = "-"
+    end
+    gfx.drawText("Best Score: "..currentHiScore.." Best Rating: "..currentBestRank, 2, 22, fonts.orbeatsSans)
+    else
+        -- draw the reset high scores menu
+        -- draw background
+        gfx.setDitherPattern(0.5)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+
+        -- draw bubble
+        gfx.setColor(gfx.kColorWhite)
+        local resetBubbleWidth = 200
+        local resetBubbleHeight = 120
+        local resetBubbleX = screenCenterX-(resetBubbleWidth/2)
+        local resetBubbleY = screenCenterY-(resetBubbleHeight/2)
+        gfx.fillRoundRect(resetBubbleX, resetBubbleY, resetBubbleWidth, resetBubbleHeight, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(1)
+        gfx.drawRoundRect(resetBubbleX, resetBubbleY, resetBubbleWidth, resetBubbleHeight, 3)
+
+        -- draw text
+        local warningWidth = gfx.getTextSize("WARNING!", fonts.odinRounded)
+        gfx.drawText("WARNING!", screenCenterX-(warningWidth/2), 5, fonts.odinRounded)
+        local textX = screenCenterX-(gfx.getTextSize("THIS WILL RESET ALL\nYOUR SCORES!", fonts.orbeatsSans)/2)
+        gfx.drawText("THIS WILL RESET ALL\nYOUR SCORES!", textX, resetBubbleY+11, fonts.orbeatsSans)
+        gfx.drawText("Press "..char.up.." and "..char.A.." to\nconfirm.", textX, resetBubbleY+51, fonts.orbeatsSans)
+        gfx.drawText("Press "..char.down.."/"..char.B.." to cancel.", textX, resetBubbleY+91, fonts.orbeatsSans)
+
+    end
 end
+
 
 function updateSongSelect()
     -- update inputs
     crankPos = pd.getCrankPosition()
 
-    if upPressed then
+    -- check if we're in the reset high scores menu
+    if not resetHiScores then
+        if upPressed then
 
-        -- test code to automatically start the first song
-        local bpm = songList[1].bpm
-        local musicFile = "songs/"..songList[1].name.."/"..songList[1].name
-        local songTable = json.decodeFile(pd.file.open("songs/"..songList[1].name.."/"..songList[1].difficulties[1]..".json"))
-        local beatOffset = songList[1].beatOffset
-        setUpSong(bpm, beatOffset, musicFile, songTable)
-        return "song"
+            -- test code to automatically start the first song
+            local bpm = currentSong.bpm
+            local musicFile = "songs/"..currentSong.name.."/"..currentSong.name
+            songTable = json.decodeFile(pd.file.open("songs/"..currentSong.name.."/"..currentDifficulty..".json"))
+            local beatOffset = currentSong.beatOffset
+            setUpSong(bpm, beatOffset, musicFile, songTable)
+            return "song"
+        end
+    
+        
+    else
+        if upHeld and aHeld then
+            pd.datastore.write({}, "scores")
+            scores = json.decodeFile(pd.file.open("scores.json"))
+            resetHiScores = false
+        elseif downPressed or bPressed then
+            resetHiScores = false
+        end
     end
+    
 
     return "songSelect"
 end

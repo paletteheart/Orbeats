@@ -1,7 +1,6 @@
 import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/ui"
-import "CoreLibs/sprites"
 
 import "songs"
 import "game"
@@ -13,23 +12,33 @@ local gfx <const> = pd.graphics
 local menu <const> = pd.getSystemMenu()
 
 -- Define variables
+-- Menu Item Variables
 local function addSongSelectMenuItem()
 	return menu:addMenuItem("To Menu", function()
 		toMenu = true
 	end)
 end
+local function addResetHiScoresMenuItem()
+	return menu:addMenuItem("Reset HiScore", function()
+		resetHiScores = true
+	end)
+end
+
 local songSelectMenuItem = addSongSelectMenuItem()
+local resetHiScoresMenuItem = addResetHiScoresMenuItem()
 
 local gameState
 gameState = "songSelect"
-
-gfx.sprite.setAlwaysRedraw(true)
 
 local function draw()
 	gfx.clear()
 
 	if gameState == "song" then
 		drawSong()
+		--alert the user to use crank if docked
+		if pd.isCrankDocked() then
+			pd.ui.crankIndicator:draw()
+		end
 	elseif gameState == "songEndScreen" then
 		drawEndScreen()
 	elseif gameState == "songSelect" then
@@ -38,10 +47,6 @@ local function draw()
 
 	end
 
-	--alert the user to use crank if docked
-	if pd.isCrankDocked() then
-		pd.ui.crankIndicator:draw()
-	end
 end
 
 
@@ -61,11 +66,10 @@ function pd.update()
 		songSelectMenuItem = addSongSelectMenuItem()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
+		resetHiScoresMenuItem = addResetHiScoresMenuItem()
 	else
 
 	end
-
-	gfx.sprite.update()
 
 	draw()
 

@@ -12,6 +12,17 @@ local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
+char = {}
+char.A = "Ⓐ"
+char.B = "Ⓑ"
+char.left = "←"
+char.up = "↑"
+char.right = "→"
+char.down = "↓"
+char.menu = "⊙"
+char.cw = "↻"
+char.ccw = "↺"
+
 -- Define variables
 -- System variables
 toMenu = false
@@ -43,9 +54,15 @@ rightPressed = pd.buttonJustPressed(pd.kButtonRight)
 aPressed = pd.buttonJustPressed(pd.kButtonA)
 bPressed = pd.buttonJustPressed(pd.kButtonB)
 
+upHeld = pd.buttonIsPressed(pd.kButtonUp)
+leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
+rightHeld = pd.buttonIsPressed(pd.kButtonRight)
+aHeld = pd.buttonIsPressed(pd.kButtonA)
+
 -- Song variables
 local songTable = json.decodeFile(pd.file.open("songs/Orubooru/Easy.json"))
 local songBpm = 130
+perfectHits = 0
 hitNotes = 0
 missedNotes = 0
 local delta = -(tickSpeed*3)
@@ -126,6 +143,7 @@ local function updateNotes()
                     if fromNoteCenter <= perfectDistance then
                         score += maxNoteScore
                         hitTextDisplay = hitText.perfect
+                        perfectHits += 1
                     else
                         local hitScore = math.floor(maxNoteScore/(1+(fromNoteCenter/noteHalfWidth)))
                         score += hitScore
@@ -153,6 +171,7 @@ local function updateNotes()
                         if noteDistance <= perfectDistance then
                             score += maxNoteScore
                             hitTextDisplay = hitText.perfect
+                            perfectHits += 1
                         else 
                             local hitScore = math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
                             score += hitScore
@@ -177,7 +196,6 @@ local function updateNotes()
         end
 	end
 end
-
 
 
 local function createNotes()
@@ -252,7 +270,7 @@ local function updateEffects()
     end
 end
 
-
+-- global functions
 
 function updateSong()
     -- Update the delta
@@ -397,7 +415,6 @@ function drawSong()
 end
 
 
-
 function setUpSong(bpm, beatOffset, musicFilePath, table)
     -- reset vars
     -- Note variables
@@ -425,7 +442,6 @@ function setUpSong(bpm, beatOffset, musicFilePath, table)
 end
 
 
-
 function updateInputs() -- used to check if buttons were pressed during a dead frame and update crank position
     -- update crank position
     crankPos = pd.getCrankPosition()
@@ -436,6 +452,11 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     rightPressed = pd.buttonJustPressed(pd.kButtonRight)
     aPressed = pd.buttonJustPressed(pd.kButtonA)
     bPressed = pd.buttonJustPressed(pd.kButtonB)
+
+    upHeld = pd.buttonIsPressed(pd.kButtonUp)
+    leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
+    rightHeld = pd.buttonIsPressed(pd.kButtonRight)
+    aHeld = pd.buttonIsPressed(pd.kButtonA)
 end
 
 
