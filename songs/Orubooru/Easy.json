@@ -928,10 +928,37 @@
         }
     ],
     "effects":{
-        "toggleinvert":[
+        "toggleInvert":[
             0,
             24
+        ],
+        "moveOrbitX":[
+            {
+                "time":0,
+                "x":200,
+                "animation":"none"
+            },
+            {
+                "time":3,
+                "x":270,
+                "animation":"linear"
+            },
+            {
+                "time":6,
+                "x":200,
+                "animation":"linear"
+            },
+            {
+                "time":9,
+                "x":130,
+                "animation":"linear"
+            },
+            {
+                "time":12,
+                "x":200,
+                "animation":"linear"
+            }
         ]
     },
-    "songend":10
+    "songEnd":105
 }

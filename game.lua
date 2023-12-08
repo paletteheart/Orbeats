@@ -36,6 +36,11 @@ local orbitCenterY = screenCenterY
 local pulse = 0
 local pulseDepth = 3
 
+local oldOrbitCenterX = orbitCenterX -- used for animating orbit movement
+local oldOrbitCenterY = orbitCenterY -- used for animating orbit movement
+local lastMovementBeatX = 0 -- used for animating the orbit movement
+local oldMovementTimeY = 0 -- used for animating the orbit movement
+
 -- Player variables
 local playerX = orbitCenterX + orbitRadius
 local playerY = orbitCenterY
@@ -244,11 +249,11 @@ local function updateEffects()
     local fx = songTable.effects
     if fx ~= nil then
         -- update the screen inversion
-        if fx.toggleinvert ~= nil then
+        if fx.toggleInvert ~= nil then
             -- check if there's any more time the screen needs to be inverted
-            if #fx.toggleinvert ~= 0 then
+            if #fx.toggleInvert ~= 0 then
                 -- get the next screen invert time
-                local nextInversionTime = fx.toggleinvert[1]
+                local nextInversionTime = fx.toggleInvert[1]
 
                 -- check if it's time for that inversion
                 -- check if it's before the music
@@ -257,17 +262,71 @@ local function updateEffects()
                         -- toggle the screen inversion
                         invertedScreen = not invertedScreen
                         -- remove this inversion from the list
-                        table.remove(fx.toggleinvert, 1)
+                        table.remove(fx.toggleInvert, 1)
                     end
                 else
                     if nextInversionTime <= currentBeat then
                         -- toggle the screen inversion
                         invertedScreen = not invertedScreen
                         -- remove this inversion from the list
-                        table.remove(fx.toggleinvert, 1)
+                        table.remove(fx.toggleInvert, 1)
                     end
                 end
             end
+        end
+
+        -- update the orbit position
+        if fx.moveOrbitX ~= nil then
+            -- check if there's any more updates to the orbit's position
+            if #fx.moveOrbitX ~= 0 then
+                -- get the next movement time
+                local nextMovementBeat = fx.moveOrbitX[1].time
+                -- get the next movement location
+                local nextOrbitCenterX = fx.moveOrbitX[1].x
+
+                -- calculate the current orbit x based on the animation style
+                if fx.moveOrbitX[1].animation == "none" or fx.moveOrbitX[1].animation == nil then
+                    -- if there's no animation, check if it's time to teleport into place
+                    if currentBeat >= nextMovementBeat then
+                        orbitCenterX = nextOrbitCenterX
+                        oldOrbitCenterX = orbitCenterX
+                        lastMovementBeatX = nextMovementBeat
+                        table.remove(fx.moveOrbitX, 1)
+                    end
+                else
+                    -- if there is animation, get our current time in the animation
+                    local t = (currentBeat - lastMovementBeatX) / (nextMovementBeat - lastMovementBeatX)
+                    t = math.max(0, math.min(1, t))
+
+                    local changeSign = 0
+                    if nextOrbitCenterX-oldOrbitCenterX < 0 then
+                        changeSign = -1
+                    elseif nextOrbitCenterX-oldOrbitCenterX > 0 then
+                        changeSign = 1
+                    end
+                    local thirdChange = (nextMovementBeat - lastMovementBeatX)*(1/3)
+
+                    if fx.moveOrbitX[1].animation == "linear" then
+                        orbitCenterX = cubicBezier(t, oldOrbitCenterX, oldOrbitCenterX+thirdChange, nextOrbitCenterX-thirdChange, nextOrbitCenterX)
+                    elseif fx.moveOrbitX[1].animation == "ease-in" then
+                        orbitCenterX = cubicBezier(t, oldOrbitCenterX, oldOrbitCenterX, nextOrbitCenterX, nextOrbitCenterX)
+                    elseif fx.moveOrbitX[1].animation == "ease-out" then
+                        orbitCenterX = cubicBezier(t, oldOrbitCenterX, oldOrbitCenterX, nextOrbitCenterX, nextOrbitCenterX)
+                    elseif fx.moveOrbitX[1].animation == "ease-in-out" then
+
+                    else
+
+                    end
+                    -- set the old orbit x to the current one if we've reached the destination
+                    if currentBeat >= nextMovementBeat then
+                        oldOrbitCenterX = orbitCenterX
+                        lastMovementBeatX = nextMovementBeat
+                        table.remove(fx.moveOrbitX, 1)
+                    end
+                end
+            end
+        else
+            orbitCenterX = screenCenterX
         end
 
     end
@@ -319,6 +378,9 @@ function updateSong()
     else
         playerPos = crankPos
     end
+    
+    -- update effects
+    updateEffects()
 
     -- update player x and y based on player position
     playerX = orbitCenterX + orbitRadius * math.cos(math.rad(playerPos-90))
@@ -341,8 +403,6 @@ function updateSong()
 	updateNotes()
     -- create new notes
     createNotes()
-    -- update effects
-    updateEffects()
 
 
     -- check if they are going back to the song select menu
@@ -356,7 +416,7 @@ function updateSong()
         end
     end
     -- check if the song is over and are going to the song end screen
-    if songTable.songend <= currentBeat then
+    if songTable.songEnd <= currentBeat then
         if fadeOutBlack > 0 then
             fadeOutBlack -= 0.1
         else
@@ -466,6 +526,8 @@ function setUpSong(bpm, beatOffset, musicFilePath, table)
     -- Misc variables
     invertedScreen = false
     playerFlipped = false
+    orbitCenterX = screenCenterX
+    orbitCenterY = screenCenterY
 
     -- set song data vars
     songTable = table
@@ -495,4 +557,7 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
 end
 
 
-
+function cubicBezier(t, p0, p1, p2, p3)
+    local mt = 1 - t
+    return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3
+end
