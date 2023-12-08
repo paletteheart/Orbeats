@@ -66,6 +66,9 @@ perfectHits = 0
 hitNotes = 0
 missedNotes = 0
 local delta = -(tickSpeed*3)
+local fadeOutBlack = 1
+local fadeOutWhite = 1
+local fadeIn = 0
 
 -- Score display variables
 score = 0
@@ -288,6 +291,9 @@ function updateSong()
     -- update the current beat
     currentBeat = (musicTime / (60/songBpm))-beatOffset
 
+    -- update fade in
+    if fadeIn < 1 then fadeIn += 0.1 end
+
     -- Update the pulse if it's on a beat
     -- If it's before the music is playing, fake the pulses
     if delta < 0 then
@@ -319,7 +325,7 @@ function updateSong()
     playerY = orbitCenterY + orbitRadius * math.sin(math.rad(playerPos-90))
 
     --flip player if up is hit
-    if upPressed then
+    if upPressed or aPressed then
         playerFlipped = not playerFlipped
         -- set the trail behind the cursor when you flip
         flipTrail = orbitRadius*2
@@ -341,14 +347,22 @@ function updateSong()
 
     -- check if they are going back to the song select menu
     if toMenu then
-        music:stop()
-        toMenu = false
-        return "songSelect"
+        if fadeOutWhite > 0 then
+            fadeOutWhite -= 0.1
+        else
+            music:stop()
+            toMenu = false
+            return "songSelect"
+        end
     end
     -- check if the song is over and are going to the song end screen
     if songTable.songend <= currentBeat then
-        music:stop()
-        return "songEndScreen"
+        if fadeOutBlack > 0 then
+            fadeOutBlack -= 0.1
+        else
+            music:stop()
+            return "songEndScreen"
+        end
     end
     return "song"
 end
@@ -370,6 +384,7 @@ function drawSong()
     hitTextTimer -= 1
 
     --draw the orbit
+    gfx.setColor(gfx.kColorBlack)
 	gfx.setDitherPattern(0.75)
 	gfx.setLineWidth(5)
 	gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulse)
@@ -410,7 +425,24 @@ function drawSong()
     --invert the screen if necessary
     if invertedScreen then
         gfx.setColor(gfx.kColorXOR)
-        gfx.fillRect(0, 0, 400, 240)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
+
+    -- draw the fade out or in if fading out or in
+    if fadeOutBlack ~= 1 then
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setDitherPattern(fadeOutBlack)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
+    if fadeOutWhite ~= 1 then
+        gfx.setColor(gfx.kColorWhite)
+        gfx.setDitherPattern(fadeOutWhite)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
+    if fadeIn ~= 1 then
+        gfx.setColor(gfx.kColorWhite)
+        gfx.setDitherPattern(fadeIn)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
 end
 
@@ -425,6 +457,9 @@ function setUpSong(bpm, beatOffset, musicFilePath, table)
     hitNotes = 0
     missedNotes = 0
     delta = -(tickSpeed*3)
+    fadeOutBlack = 1
+    fadeOutWhite = 1
+    fadeIn = 0
     -- Music Variables
     isPlaying = false
     lastBeat = 0

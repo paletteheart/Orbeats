@@ -14,17 +14,20 @@ local songList <const> = json.decodeFile(pd.file.open("songlist.json"))
 
 -- Define variables
 scores = json.decodeFile(pd.file.open("scores.json"))
-resetHiScores = false
 
+-- Song variables
 currentSong = songList[1]
 currentDifficulty = currentSong.difficulties[1]
 songTable = {}
 
+-- reset high scores variables
+resetHiScores = false
+local warningCurrentY = -45
+warningTargetY = 5
+
 
 function drawSongSelect()
-    -- check if we're on the reset high scores menu
-    if not resetHiScores then
-        gfx.setColor(gfx.kColorBlack)
+    gfx.setColor(gfx.kColorBlack)
     gfx.drawText("Press up to start test song: "..currentSong.name..", "..currentDifficulty, 2, 2, fonts.orbeatsSans)
 
     -- Get the current selection's high score
@@ -43,9 +46,12 @@ function drawSongSelect()
         currentBestRank = "-"
     end
     gfx.drawText("Best Score: "..currentHiScore.." Best Rating: "..currentBestRank, 2, 22, fonts.orbeatsSans)
-    else
+
+    -- check if we're on the reset high scores menu
+    if resetHiScores then
         -- draw the reset high scores menu
         -- draw background
+        gfx.setColor(gfx.kColorBlack)
         gfx.setDitherPattern(0.5)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
 
@@ -61,8 +67,11 @@ function drawSongSelect()
         gfx.drawRoundRect(resetBubbleX, resetBubbleY, resetBubbleWidth, resetBubbleHeight, 3)
 
         -- draw text
-        local warningWidth = gfx.getTextSize("WARNING!", fonts.odinRounded)
-        gfx.drawText("WARNING!", screenCenterX-(warningWidth/2), 5, fonts.odinRounded)
+        if warningCurrentY ~= warningTargetY then
+            local change = (warningTargetY - warningCurrentY)*0.3
+            warningCurrentY += math.floor(change)
+        end
+        gfx.drawText("WARNING!", screenCenterX-(gfx.getTextSize("WARNING!", fonts.odinRounded)/2), warningCurrentY, fonts.odinRounded)
         local textX = screenCenterX-(gfx.getTextSize("THIS WILL RESET ALL\nYOUR SCORES!", fonts.orbeatsSans)/2)
         gfx.drawText("THIS WILL RESET ALL\nYOUR SCORES!", textX, resetBubbleY+11, fonts.orbeatsSans)
         gfx.drawText("Press "..char.up.." and "..char.A.." to\nconfirm.", textX, resetBubbleY+51, fonts.orbeatsSans)
@@ -94,12 +103,24 @@ function updateSongSelect()
         if upHeld and aHeld then
             pd.datastore.write({}, "scores")
             scores = json.decodeFile(pd.file.open("scores.json"))
-            resetHiScores = false
+            warningTargetY = -45
         elseif downPressed or bPressed then
+            warningTargetY = -45
+        end
+        if warningTargetY == -45 and warningCurrentY == -45 then
             resetHiScores = false
         end
     end
     
 
     return "songSelect"
+end
+
+function closeDistance(currentVal, targetVal, speed)
+    local newVal = currentVal
+    if currentVal ~= targetVal then
+        local change = (targetVal - currentVal)*speed
+        newVal = currentVal+change
+    end
+    return newVal
 end

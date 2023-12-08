@@ -13,6 +13,7 @@ local screenCenterY <const> = screenHeight / 2
 
 -- Define Variables
 songRating = ""
+local songHiScore = 0
 local initialized = false
 
 -- Rating variables
@@ -26,8 +27,20 @@ ratingImage.C = gfx.image.new("sprites/ratingC.png")
 ratingImage.D = gfx.image.new("sprites/ratingD.png")
 ratingImage.F = gfx.image.new("sprites/ratingF.png")
 local ratingImageWidth, ratingImageHeight = ratingImage.SS:getSize()
-local ratingX = screenWidth-ratingImageWidth-5
 local ratingY = (screenHeight-ratingImageHeight)/2
+
+-- Animation variables
+local completedCurrentY = -45
+local completedTargetY = 5
+local statsCurrentX = -165
+local statsTargetX = statsCurrentX
+local ratingCurrentX = screenWidth
+local ratingTargetX = ratingCurrentX
+local continueCurrentY = screenHeight
+local continueTargetY = continueCurrentY
+local sheenDuration = 600
+local fadeOut = 1
+local delta = 0
 
 local function initEndScreen()
     local pointPercentage = score/((hitNotes+missedNotes)*100)
@@ -52,7 +65,7 @@ local function initEndScreen()
     end
 
     -- if they got a high score, save it
-    local songHiScore = 0
+    songHiScore = 0
     if scores[currentSong.name] ~= nil then
         if scores[currentSong.name][currentDifficulty] ~= nil then
             songHiScore = scores[currentSong.name][currentDifficulty].score
@@ -70,58 +83,141 @@ local function initEndScreen()
     end
 end
 
+local function resetAnimationValues()
+    completedCurrentY = -45
+    completedTargetY = 5
+    statsCurrentX = -165
+    statsTargetX = statsCurrentX
+    ratingCurrentX = screenWidth+ratingImage.SS:getSize()
+    ratingTargetX = ratingCurrentX
+    continueCurrentY = screenHeight+25
+    continueTargetY = continueCurrentY
+    fadeOut = 1
+    delta = 0
+end
+
 function updateEndScreen()
+    -- update the delta
+    delta += 1
+    -- if delta >= sheenDuration+(sheenDuration-400)+60 then delta = 60 end
+    -- update the animation variables based on the delta
+    if delta > 15 then
+        statsTargetX = 15
+    end
+    if delta > 45 then
+        ratingTargetX = screenWidth-ratingImageWidth-5
+    end
+    if delta > 60 then
+        continueTargetY = 215
+    end
+
+    -- initialize the end screen
     if not initialized then
         initEndScreen()
         initialized = true
     end
 
+    -- check inputs
+    if upPressed or aPressed then
+        if delta < 60 then
+            delta = 60
+        else
+            toMenu = true
+        end
+    end
+    if downPressed or bPressed then
+        if delta < 60 then
+            delta = 60
+        else
+            --restartSong = true
+        end
+    end
+
     --check if they're going back to the song select menu
     if toMenu then
-        toMenu = false
-        return "songSelect"
+        if fadeOut > 0 then
+            fadeOut -= 0.1
+        else
+            toMenu = false
+            initialized = false
+            resetAnimationValues()
+            return "songSelect"
+        end
     end
     return "songEndScreen"
 end
 
 function drawEndScreen()
+    -- draw background
     gfx.setColor(gfx.kColorBlack)
     gfx.fillRect(0, 0, screenWidth, screenHeight)
 
-    gfx.drawText("Song Completed!", 5, 5, fonts.odinRounded)
-
+    -- draw background sheen
+    local sheenX = sheenDuration-(delta%(sheenDuration+(sheenDuration-400)))
     gfx.setColor(gfx.kColorWhite)
-    gfx.fillRoundRect(15, 65, ratingX-20, 130, 3)
+    gfx.setDitherPattern(0.5)
+    gfx.setLineWidth(250)
+    gfx.drawLine(sheenX, screenHeight+50, sheenX+30, -50)
 
+    -- draw completed text
+    completedCurrentY = closeDistance(completedCurrentY, completedTargetY, 0.3)
+    gfx.drawText("Song Completed!", 5, completedCurrentY, fonts.odinRounded)
+
+    -- draw stats bubbles
+    gfx.setColor(gfx.kColorWhite)
+    statsCurrentX = closeDistance(statsCurrentX, statsTargetX, 0.25)
+    gfx.fillRoundRect(statsCurrentX, 65, 165, 130, 3)
+    -- draw stats
     gfx.setColor(gfx.kColorBlack)
-    gfx.drawText("Perfect Hits: "..perfectHits, 20, 75, fonts.orbeatsSans)
-    gfx.drawText("Hits: "..hitNotes, 20, 105, fonts.orbeatsSans)
-    gfx.drawText("Misses: "..missedNotes, 20, 135, fonts.orbeatsSans)
-    gfx.drawText("Score: "..score, 20, 165, fonts.orbeatsSans)
-
-    if songRating == "P" then
-        ratingImage.P:draw(ratingX, ratingY)
-    elseif songRating == "SS" then
-        ratingImage.SS:draw(ratingX, ratingY)
-    elseif songRating == "S" then
-        ratingImage.S:draw(ratingX, ratingY)
-    elseif songRating == "A" then
-        ratingImage.A:draw(ratingX, ratingY)
-    elseif songRating == "B" then
-        ratingImage.B:draw(ratingX, ratingY)
-    elseif songRating == "C" then
-        ratingImage.C:draw(ratingX, ratingY)
-    elseif songRating == "D" then
-        ratingImage.D:draw(ratingX, ratingY)
+    gfx.drawText("Perfect Hits: "..perfectHits, statsCurrentX+5, 70, fonts.orbeatsSans)
+    gfx.drawText("Hits: "..hitNotes, statsCurrentX+5, 95, fonts.orbeatsSans)
+    gfx.drawText("Misses: "..missedNotes, statsCurrentX+5, 120, fonts.orbeatsSans)
+    gfx.drawText("Score: "..score, statsCurrentX+5, 145, fonts.orbeatsSans)
+    if songHiScore < score then
+        gfx.drawText("New Best Score!", statsCurrentX+5, 170, fonts.orbeatsSans)
     else
-        ratingImage.F:draw(ratingX, ratingY)
+        gfx.drawText("Best Score: "..songHiScore, statsCurrentX+5, 170, fonts.orbeatsSans)
     end
 
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillRect(0, 215, screenWidth, 25)
+    -- draw rating
+    ratingCurrentX = closeDistance(ratingCurrentX, ratingTargetX, 0.25)
+    if songRating == "P" then
+        ratingImage.P:draw(ratingCurrentX, ratingY)
+    elseif songRating == "SS" then
+        ratingImage.SS:draw(ratingCurrentX, ratingY)
+    elseif songRating == "S" then
+        ratingImage.S:draw(ratingCurrentX, ratingY)
+    elseif songRating == "A" then
+        ratingImage.A:draw(ratingCurrentX, ratingY)
+    elseif songRating == "B" then
+        ratingImage.B:draw(ratingCurrentX, ratingY)
+    elseif songRating == "C" then
+        ratingImage.C:draw(ratingCurrentX, ratingY)
+    elseif songRating == "D" then
+        ratingImage.D:draw(ratingCurrentX, ratingY)
+    else
+        ratingImage.F:draw(ratingCurrentX, ratingY)
+    end
 
+    -- draw continue bar
+    continueCurrentY = closeDistance(continueCurrentY, continueTargetY, 0.3)
+    gfx.setColor(gfx.kColorWhite)
+    gfx.fillRect(0, continueCurrentY, screenWidth, 25)
+    -- draw continue text
     local continueText = "Continue:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
     local continueTextWidth = gfx.getTextSize(continueText, fonts.orbeatsSans)
-    gfx.drawText(continueText, 2, 220, fonts.orbeatsSans)
-    gfx.drawText(continueText, 2+continueTextWidth, 220, fonts.orbeatsSans)
+    local continueX1 = (delta % (continueTextWidth*3))-continueTextWidth
+    local continueX2 = ((delta+continueTextWidth) % (continueTextWidth*3))-continueTextWidth
+    local continueX3 = ((delta+(continueTextWidth*2)) % (continueTextWidth*3))-continueTextWidth
+    print(continueX1)
+    gfx.drawText(continueText, continueX1, continueCurrentY+5, fonts.orbeatsSans)
+    gfx.drawText(continueText, continueX2, continueCurrentY+5, fonts.orbeatsSans)
+    gfx.drawText(continueText, continueX3, continueCurrentY+5, fonts.orbeatsSans)
+
+    -- draw fade out if fading out
+    if fadeOut ~= 1 then
+        gfx.setColor(gfx.kColorWhite)
+        gfx.setDitherPattern(fadeOut)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
 end

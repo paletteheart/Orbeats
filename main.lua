@@ -21,6 +21,7 @@ end
 local function addResetHiScoresMenuItem()
 	return menu:addMenuItem("Reset HiScore", function()
 		resetHiScores = true
+		warningTargetY = 5
 	end)
 end
 
