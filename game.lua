@@ -39,7 +39,7 @@ local pulseDepth = 3
 local oldOrbitCenterX = orbitCenterX -- used for animating orbit movement
 local oldOrbitCenterY = orbitCenterY -- used for animating orbit movement
 local lastMovementBeatX = 0 -- used for animating the orbit movement
-local oldMovementTimeY = 0 -- used for animating the orbit movement
+local lastMovementBeatY = 0 -- used for animating the orbit movement
 
 -- Player variables
 local playerX = orbitCenterX + orbitRadius
@@ -276,6 +276,7 @@ local function updateEffects()
         end
 
         -- update the orbit position
+        -- update the orbit x
         if fx.moveOrbitX ~= nil then
             -- check if there's any more updates to the orbit's position
             if #fx.moveOrbitX ~= 0 then
@@ -298,24 +299,12 @@ local function updateEffects()
                     local t = (currentBeat - lastMovementBeatX) / (nextMovementBeat - lastMovementBeatX)
                     t = math.max(0, math.min(1, t))
 
-                    local changeSign = 0
-                    if nextOrbitCenterX-oldOrbitCenterX < 0 then
-                        changeSign = -1
-                    elseif nextOrbitCenterX-oldOrbitCenterX > 0 then
-                        changeSign = 1
-                    end
-                    local thirdChange = (nextMovementBeat - lastMovementBeatX)*(1/3)
-
                     if fx.moveOrbitX[1].animation == "linear" then
-                        orbitCenterX = cubicBezier(t, oldOrbitCenterX, oldOrbitCenterX+thirdChange, nextOrbitCenterX-thirdChange, nextOrbitCenterX)
+                        orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t
                     elseif fx.moveOrbitX[1].animation == "ease-in" then
-                        orbitCenterX = cubicBezier(t, oldOrbitCenterX, oldOrbitCenterX, nextOrbitCenterX, nextOrbitCenterX)
+                        orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t^fx.moveOrbitX[1].power
                     elseif fx.moveOrbitX[1].animation == "ease-out" then
-                        orbitCenterX = cubicBezier(t, oldOrbitCenterX, oldOrbitCenterX, nextOrbitCenterX, nextOrbitCenterX)
-                    elseif fx.moveOrbitX[1].animation == "ease-in-out" then
-
-                    else
-
+                        orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t^(1/fx.moveOrbitX[1].power)
                     end
                     -- set the old orbit x to the current one if we've reached the destination
                     if currentBeat >= nextMovementBeat then
@@ -327,6 +316,47 @@ local function updateEffects()
             end
         else
             orbitCenterX = screenCenterX
+        end
+        -- update the orbit y
+        if fx.moveOrbitY ~= nil then
+            -- check if there's any more updates to the orbit's position
+            if #fx.moveOrbitY ~= 0 then
+                -- get the next movement time
+                local nextMovementBeat = fx.moveOrbitY[1].time
+                -- get the next movement location
+                local nextOrbitCenterY = fx.moveOrbitY[1].y
+
+                -- calculate the current orbit x based on the animation style
+                if fx.moveOrbitY[1].animation == "none" or fx.moveOrbitY[1].animation == nil then
+                    -- if there's no animation, check if it's time to teleport into place
+                    if currentBeat >= nextMovementBeat then
+                        orbitCenterY = nextOrbitCenterY
+                        oldOrbitCenterY = orbitCenterY
+                        lastMovementBeatY = nextMovementBeat
+                        table.remove(fx.moveOrbitY, 1)
+                    end
+                else
+                    -- if there is animation, get our current time in the animation
+                    local t = (currentBeat - lastMovementBeatY) / (nextMovementBeat - lastMovementBeatY)
+                    t = math.max(0, math.min(1, t))
+
+                    if fx.moveOrbitY[1].animation == "linear" then
+                        orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t
+                    elseif fx.moveOrbitY[1].animation == "ease-in" then
+                        orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t^fx.moveOrbitY[1].power
+                    elseif fx.moveOrbitY[1].animation == "ease-out" then
+                        orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t^(1/fx.moveOrbitY[1].power)
+                    end
+                    -- set the old orbit x to the current one if we've reached the destination
+                    if currentBeat >= nextMovementBeat then
+                        oldOrbitCenterY = orbitCenterY
+                        lastMovementBeatY = nextMovementBeat
+                        table.remove(fx.moveOrbitY, 1)
+                    end
+                end
+            end
+        else
+            orbitCenterY = screenCenterY
         end
 
     end
@@ -556,8 +586,3 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     aHeld = pd.buttonIsPressed(pd.kButtonA)
 end
 
-
-function cubicBezier(t, p0, p1, p2, p3)
-    local mt = 1 - t
-    return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3
-end

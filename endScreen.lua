@@ -209,7 +209,6 @@ function drawEndScreen()
     local continueX1 = (delta % (continueTextWidth*3))-continueTextWidth
     local continueX2 = ((delta+continueTextWidth) % (continueTextWidth*3))-continueTextWidth
     local continueX3 = ((delta+(continueTextWidth*2)) % (continueTextWidth*3))-continueTextWidth
-    print(continueX1)
     gfx.drawText(continueText, continueX1, continueCurrentY+5, fonts.orbeatsSans)
     gfx.drawText(continueText, continueX2, continueCurrentY+5, fonts.orbeatsSans)
     gfx.drawText(continueText, continueX3, continueCurrentY+5, fonts.orbeatsSans)
