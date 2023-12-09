@@ -84,7 +84,7 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 		 - **width** - How wide the note is.
 		 - **position** - A number from 0 to 360 determining where the middle of the note will be, in degrees, when it reaches the orbit radius.
 		 - **spin** - How quickly the note will spin around as it approaches the orbit radius. Set it to 0 for no spin.
- - **effects** - An object containing lists of all the visual effects.
+ - **effects*** - An object containing lists of all the visual effects.
 	 - **toggleInvert*** - A list of beats when the screen will invert. **Beats are expected to be ordered from earliest to latest.**
 	 - **moveOrbitX*** - A list of objects defining when, where, and how the orbit will move along the x axis.
 		 - Each x movement object is defined by a set of attributes:
