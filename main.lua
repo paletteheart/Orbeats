@@ -18,6 +18,11 @@ local function addSongSelectMenuItem()
 		toMenu = true
 	end)
 end
+local function addRestartMenuItem()
+	return menu:addMenuItem("Restart", function()
+		restart = true
+	end)
+end
 local function addResetHiScoresMenuItem()
 	return menu:addMenuItem("Reset HiScore", function()
 		resetHiScores = true
@@ -26,6 +31,7 @@ local function addResetHiScoresMenuItem()
 end
 
 local songSelectMenuItem = addSongSelectMenuItem()
+local restartMenuItem = addRestartMenuItem()
 local resetHiScoresMenuItem = addResetHiScoresMenuItem()
 
 local gameState
@@ -62,6 +68,7 @@ function pd.update()
 	if gameState == "song" then
 		gameState = updateSong()
 		songSelectMenuItem = addSongSelectMenuItem()
+		restartMenuItem = addRestartMenuItem()
 	elseif gameState == "songEndScreen" then
 		gameState = updateEndScreen()
 		songSelectMenuItem = addSongSelectMenuItem()

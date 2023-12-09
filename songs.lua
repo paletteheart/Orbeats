@@ -92,9 +92,9 @@ function updateSongSelect()
             -- test code to automatically start the first song
             local bpm = currentSong.bpm
             local musicFile = "songs/"..currentSong.name.."/"..currentSong.name
-            songTable = json.decodeFile(pd.file.open("songs/"..currentSong.name.."/"..currentDifficulty..".json"))
+            local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
             local beatOffset = currentSong.beatOffset
-            setUpSong(bpm, beatOffset, musicFile, songTable)
+            setUpSong(bpm, beatOffset, musicFile, songTablePath)
             return "song"
         end
     

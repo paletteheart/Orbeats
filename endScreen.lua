@@ -129,10 +129,22 @@ function updateEndScreen()
         if delta < 60 then
             delta = 60
         else
-            --restartSong = true
+            restart = true
         end
     end
 
+    -- check if they're restarting the song
+    if restart then
+        if fadeOut > 0 then
+            fadeOut -= 0.1
+        else
+            setUpSong(restartTable.bpm, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
+            restart = false
+            initialized = false
+            resetAnimationValues()
+            return "song"
+        end
+    end
     --check if they're going back to the song select menu
     if toMenu then
         if fadeOut > 0 then

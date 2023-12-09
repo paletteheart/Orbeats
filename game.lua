@@ -26,6 +26,7 @@ char.ccw = "↺"
 -- Define variables
 -- System variables
 toMenu = false
+restart = false
 tickSpeed = 30
 
 -- Orbit variables
@@ -35,11 +36,6 @@ local orbitCenterY = screenCenterY
 
 local pulse = 0
 local pulseDepth = 3
-
-local oldOrbitCenterX = orbitCenterX -- used for animating orbit movement
-local oldOrbitCenterY = orbitCenterY -- used for animating orbit movement
-local lastMovementBeatX = 0 -- used for animating the orbit movement
-local lastMovementBeatY = 0 -- used for animating the orbit movement
 
 -- Player variables
 local playerX = orbitCenterX + orbitRadius
@@ -74,6 +70,12 @@ local delta = -(tickSpeed*3)
 local fadeOutBlack = 1
 local fadeOutWhite = 1
 local fadeIn = 0
+local beatOffset = 0 -- a value to slightly offset the beat until it looks like it's perfectly on beat
+restartTable = {}
+restartTable.tablePath = "songs/Orubooru/Easy.json"
+restartTable.bpm = songBpm
+restartTable.beatOffset = beatOffset
+restartTable.musicFilePath = "songs/Orubooru/Orubooru"
 
 -- Score display variables
 score = 0
@@ -90,7 +92,6 @@ local musicTime = 0
 local currentBeat = 0
 local fakeCurrentBeat = 0
 local lastBeat = 0 -- is only used for the pulses right now
-local beatOffset = 0 -- a value to slightly offset the beat until it looks like it's perfectly on beat
 
 -- Note variables   
 noteInstances = {}
@@ -108,8 +109,13 @@ fonts.odinRounded = gfx.font.newFamily({
     [playdate.graphics.font.kVariantNormal] = "fonts/Odin Rounded PD"
    })
 
--- Misc variables
+-- Effects variables
 local invertedScreen = false
+local textInstances = {}
+local oldOrbitCenterX = orbitCenterX -- used for animating orbit movement
+local oldOrbitCenterY = orbitCenterY -- used for animating orbit movement
+local lastMovementBeatX = 0 -- used for animating the orbit movement
+local lastMovementBeatY = 0 -- used for animating the orbit movement
 
 
 
@@ -211,7 +217,6 @@ local function createNotes()
     if #songTable.notes > 0 then
         -- get next note
         local nextNote = songTable.notes[1]
-        -- figure out how many frames there are until a note is supposed to be hit
         
         -- check if it's time to add that note
         -- check if the note is spawned before the music starts or not
@@ -281,7 +286,7 @@ local function updateEffects()
             -- check if there's any more updates to the orbit's position
             if #fx.moveOrbitX ~= 0 then
                 -- get the next movement time
-                local nextMovementBeat = fx.moveOrbitX[1].time
+                local nextMovementBeat = fx.moveOrbitX[1].beat
                 -- get the next movement location
                 local nextOrbitCenterX = fx.moveOrbitX[1].x
 
@@ -322,7 +327,7 @@ local function updateEffects()
             -- check if there's any more updates to the orbit's position
             if #fx.moveOrbitY ~= 0 then
                 -- get the next movement time
-                local nextMovementBeat = fx.moveOrbitY[1].time
+                local nextMovementBeat = fx.moveOrbitY[1].beat
                 -- get the next movement location
                 local nextOrbitCenterY = fx.moveOrbitY[1].y
 
@@ -357,6 +362,20 @@ local function updateEffects()
             end
         else
             orbitCenterY = screenCenterY
+        end
+
+        -- update the text effects
+        if fx.text ~= nil then
+            if #fx.text ~= 0 then
+                if fx.text[1].startBeat <= currentBeat then
+                    table.insert(textInstances, fx.text[1])
+                end
+            end
+        end
+        for i=#textInstances,1,-1 do
+            if textInstances[i].endBeat <= currentBeat then
+                table.remove(textInstances, i)
+            end
         end
 
     end
@@ -426,15 +445,18 @@ function updateSong()
         flipTrail = math.floor(flipTrail/1.4)
     end
 
-    -- update hit forgiveness
-    hitForgiveness = 25*songSpd
-
 	--update notes
 	updateNotes()
     -- create new notes
     createNotes()
 
 
+    -- check if they're restarting the song
+    if restart then
+        music:stop()
+        setUpSong(restartTable.bpm, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
+        restart = false
+    end
     -- check if they are going back to the song select menu
     if toMenu then
         if fadeOutWhite > 0 then
@@ -512,6 +534,11 @@ function drawSong()
 	gfx.setLineWidth(2)
 	gfx.drawCircleAtPoint(playerX, playerY, playerRadius)
 
+    -- draw text effects
+    for i=#textInstances,1,-1 do
+        gfx.drawText(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts.orbeatsSans)
+    end
+
     --invert the screen if necessary
     if invertedScreen then
         gfx.setColor(gfx.kColorXOR)
@@ -537,12 +564,11 @@ function drawSong()
 end
 
 
-function setUpSong(bpm, beatOffset, musicFilePath, table)
+function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     -- reset vars
     -- Note variables
     noteInstances = {}
     -- Song Variables
-    songSpd = 1.1
     score = 0
     hitNotes = 0
     missedNotes = 0
@@ -560,9 +586,14 @@ function setUpSong(bpm, beatOffset, musicFilePath, table)
     orbitCenterY = screenCenterY
 
     -- set song data vars
-    songTable = table
+    songTable = json.decodeFile(pd.file.open(tablePath))
     songBpm = bpm
     beatOffset = beatOffset
+
+    restartTable.bpm = bpm
+    restartTable.beatOffset = beatOffset
+    restartTable.musicFilePath = musicFilePath
+    restartTable.tablePath = tablePath
 
     -- load the music file
     music:load(musicFilePath)
