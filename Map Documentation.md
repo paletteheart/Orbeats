@@ -85,20 +85,20 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 		 - **position** - A number from 0 to 360 determining where the middle of the note will be, in degrees, when it reaches the orbit radius.
 		 - **spin** - How quickly the note will spin around as it approaches the orbit radius. Set it to 0 for no spin.
  - **effects** - An object containing lists of all the visual effects.
-	 - **toggleInvert** - A list of beats when the screen will invert. **Beats are expected to be ordered from earliest to latest.**
-	 - **moveOrbitX** - A list of objects defining when, where, and how the orbit will move along the x axis.
+	 - **toggleInvert*** - A list of beats when the screen will invert. **Beats are expected to be ordered from earliest to latest.**
+	 - **moveOrbitX*** - A list of objects defining when, where, and how the orbit will move along the x axis.
 		 - Each x movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined x value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
 			 - **x** - The x value the orbit will move to.
 			 - **animation** - The animation the orbit will take to reach the x value. Can be "linear", "ease-in", "ease-out", or "none".
 			 - **power** - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out. Doesn't do anything for any other animation value.
-	 - **moveOrbitY** - A list of objects defining when, where, and how the orbit will move along the y axis.
+	 - **moveOrbitY*** - A list of objects defining when, where, and how the orbit will move along the y axis.
 		 - Each y movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined y value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
 			 - **y** - The y value the orbit will move to.
 			 - **animation** - The animation the orbit will take to reach the y value. Can be "linear", "ease-in", "ease-out", or "none".
 			 - **power** - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out. Doesn't do anything for any other animation value.
-	 - **text** - A list of objects defining when, where, and what text will show on the screen.
+	 - **text*** - A list of objects defining when, where, and what text will show on the screen.
 		 - Each text object is defined by a set of attributes:
 			 - **startBeat** - The beat at which this object's text will be shown.
 			 - **endBeat** - The beat at which this object's text will be removed.
@@ -106,3 +106,5 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 			 - **x** - The x value where the top left of the text will be.
 			 - **y** - The y value where the top left of the text will be.
  - **songEnd** - The beat when the map will end.
+
+\* \- Optional. Can be left out of a map file without causing errors.
