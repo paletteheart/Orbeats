@@ -15,6 +15,8 @@ local songList <const> = json.decodeFile(pd.file.open("songlist.json"))
 -- Define variables
 scores = json.decodeFile(pd.file.open("scores.json"))
 
+local albumArt = gfx.image.new("songs/Orubooru/Orubooru.png")
+
 -- Song variables
 currentSong = songList[1]
 currentDifficulty = currentSong.difficulties[1]
@@ -46,6 +48,8 @@ function drawSongSelect()
         currentBestRank = "-"
     end
     gfx.drawText("Best Score: "..currentHiScore.." Best Rating: "..currentBestRank, 2, 22, fonts.orbeatsSans)
+
+    albumArt:draw(2, 42)
 
     -- check if we're on the reset high scores menu
     if resetHiScores then

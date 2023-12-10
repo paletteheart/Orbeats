@@ -570,6 +570,7 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     noteInstances = {}
     -- Song Variables
     score = 0
+    perfectHits = 0
     hitNotes = 0
     missedNotes = 0
     delta = -(tickSpeed*3)

@@ -123,6 +123,7 @@ function updateEndScreen()
             delta = 60
         else
             toMenu = true
+            restart = false
         end
     end
     if downPressed or bPressed then
@@ -130,6 +131,7 @@ function updateEndScreen()
             delta = 60
         else
             restart = true
+            toMenu = false
         end
     end
 

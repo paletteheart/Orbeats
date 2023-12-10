@@ -16,11 +16,17 @@ local menu <const> = pd.getSystemMenu()
 local function addSongSelectMenuItem()
 	return menu:addMenuItem("To Menu", function()
 		toMenu = true
+		if restart then
+			restart = false
+		end
 	end)
 end
 local function addRestartMenuItem()
 	return menu:addMenuItem("Restart", function()
 		restart = true
+		if toMenu then
+			toMenu = false
+		end
 	end)
 end
 local function addResetHiScoresMenuItem()
