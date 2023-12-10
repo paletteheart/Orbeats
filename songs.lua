@@ -14,6 +14,7 @@ local songList <const> = json.decodeFile(pd.file.open("songlist.json"))
 
 -- Define variables
 scores = json.decodeFile(pd.file.open("scores.json"))
+sortBy = ""
 
 local albumArt = gfx.image.new("songs/Orubooru/Orubooru.png")
 

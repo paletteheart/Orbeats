@@ -11,6 +11,12 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local menu <const> = pd.getSystemMenu()
 
+local sortOptions <const> = {
+	"artist",
+	"name"
+}
+sortBy = sortOptions[1]
+
 -- Define variables
 -- Menu Item Variables
 local function addSongSelectMenuItem()
@@ -35,10 +41,16 @@ local function addResetHiScoresMenuItem()
 		warningTargetY = 5
 	end)
 end
+local function addSortByMenuItem()
+	return menu:addOptionsMenuItem("Sort By", sortOptions, sortBy, function(option)
+		sortBy = option
+	end)
+end
 
 local songSelectMenuItem = addSongSelectMenuItem()
 local restartMenuItem = addRestartMenuItem()
 local resetHiScoresMenuItem = addResetHiScoresMenuItem()
+local sortByMenuItem = addSortByMenuItem()
 
 local gameState
 gameState = "songSelect"
@@ -81,6 +93,7 @@ function pd.update()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
 		resetHiScoresMenuItem = addResetHiScoresMenuItem()
+		sortByMenuItem = addSortByMenuItem()
 	else
 
 	end
