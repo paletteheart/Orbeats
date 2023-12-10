@@ -8,5 +8,25 @@
         ],
         "bpm":130,
         "beatOffset":0
+    },
+    {
+        "name":"Test1",
+        "artist":"Test",
+        "difficulties":[
+            "Easy",
+            "Hard"
+        ],
+        "bpm":180,
+        "beatOffset":0
+    },
+    {
+        "name":"Test2",
+        "artist":"Test",
+        "difficulties":[
+            "Easy",
+            "Hard"
+        ],
+        "bpm":180,
+        "beatOffset":0
     }
 ]

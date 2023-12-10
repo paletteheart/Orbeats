@@ -23,17 +23,73 @@ currentSong = songList[1]
 currentDifficulty = currentSong.difficulties[1]
 songTable = {}
 
--- reset high scores variables
+-- Reset high scores variables
 resetHiScores = false
 local warningCurrentY = -45
 warningTargetY = 5
 
+-- Animation variables
+local delta = 0
+local sheenDuration = 600
+local songBarCurrentY = 800
+local songBarTargetY = songBarCurrentY
+
 
 function drawSongSelect()
+    -- draw background sheen
+    local sheenX = sheenDuration-(delta%(sheenDuration+(sheenDuration-400)))
+    gfx.setColor(gfx.kColorBlack)
+    gfx.setDitherPattern(0.5)
+    gfx.setLineWidth(250)
+    gfx.drawLine(sheenX, screenHeight+50, sheenX+30, -50)
+
+    -- draw menu controls
+    local menuControlsHeight = 600 -- this is subtracted from the songBarCurrentY
+    -- make the left controls bounce when you press left
+    if leftHeld then
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(0, songBarCurrentY-menuControlsHeight-2, 50, 50, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawRoundRect(0, songBarCurrentY-menuControlsHeight-2, 50, 50, 3)
+        gfx.drawText(char.left.."/"..char.ccw, 4, songBarCurrentY-menuControlsHeight+2, fonts.orbeatsSans)
+    else
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(0, songBarCurrentY-menuControlsHeight-4, 50, 50, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawRoundRect(0, songBarCurrentY-menuControlsHeight-4, 50, 50, 3)
+        gfx.drawText(char.left.."/"..char.ccw, 4, songBarCurrentY-menuControlsHeight, fonts.orbeatsSans)
+    end
+    -- make the right controls bounce when you press right
+    if rightHeld then
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(350, songBarCurrentY-menuControlsHeight-2, 50, 50, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawRoundRect(350, songBarCurrentY-menuControlsHeight-2, 50, 50, 3)
+        gfx.drawText(char.right.."/"..char.cw, 355, songBarCurrentY-menuControlsHeight+2, fonts.orbeatsSans)
+    else
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(350, songBarCurrentY-menuControlsHeight-4, 50, 50, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawRoundRect(350, songBarCurrentY-menuControlsHeight-4, 50, 50, 3)
+        gfx.drawText(char.right.."/"..char.cw, 355, songBarCurrentY-menuControlsHeight, fonts.orbeatsSans)
+    end
+
+    -- draw the song bar
+    gfx.setColor(gfx.kColorWhite)
+    gfx.fillCircleAtPoint(screenCenterX, songBarCurrentY, 600)
+    gfx.setColor(gfx.kColorBlack)
+    gfx.setLineWidth(5)
+    gfx.drawArc(screenCenterX, songBarCurrentY, 600, -20, 20)
+
+
     gfx.setColor(gfx.kColorBlack)
     gfx.drawText("Press up to start test song: "..currentSong.name..", "..currentDifficulty, 2, 2, fonts.orbeatsSans)
 
-    -- Get the current selection's high score
+    -- Get and draw the current selection's high score
     local currentHiScore
     local currentBestRank
     if scores[currentSong.name] ~= nil then
@@ -50,7 +106,11 @@ function drawSongSelect()
     end
     gfx.drawText("Best Score: "..currentHiScore.." Best Rating: "..currentBestRank, 2, 22, fonts.orbeatsSans)
 
-    albumArt:draw(2, 42)
+    -- draw album art
+    gfx.setColor(gfx.kColorBlack)
+    -- gfx.setDitherPattern(0.5)
+    gfx.fillEllipseInRect(screenCenterX-36, songBarCurrentY-584, 72, 16)
+    albumArt:draw(screenCenterX-32, songBarCurrentY-640)
 
     -- check if we're on the reset high scores menu
     if resetHiScores then
@@ -87,6 +147,8 @@ end
 
 
 function updateSongSelect()
+    -- update delta
+    delta += 1
     -- update inputs
     crankPos = pd.getCrankPosition()
 
