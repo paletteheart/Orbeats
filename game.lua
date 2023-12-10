@@ -367,8 +367,11 @@ local function updateEffects()
         -- update the text effects
         if fx.text ~= nil then
             if #fx.text ~= 0 then
-                if fx.text[1].startBeat <= currentBeat then
-                    table.insert(textInstances, fx.text[1])
+                for i=#fx.text,1,-1 do
+                    if fx.text[i].startBeat <= currentBeat then
+                        table.insert(textInstances, fx.text[i])
+                        table.remove(fx.text, i)
+                    end
                 end
             end
         end
