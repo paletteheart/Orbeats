@@ -6,15 +6,15 @@ If all you want to do is add in a song with premade difficulty maps, follow thes
  1. **Add the song's folder to the song folder.** The folder the maps are in should be the name of the song, and the maps should be named after their difficulty level. Inside should be at least one difficulty map, the .wav file of the song, and a 64x64 1-bit png to act as the song's album art.
  2. **Add the song's data to songlist.json.** At the end of the file, you'll want to append a new object that will follow this template:
 	
-	     {
-		     "name":"",
-		     "artist":"",
-		     "difficulties":[
-			   	 ""
-		     ],
-		     "bpm":#,
+	   	{
+		  	"name":"",
+		  	"artist":"",
+		  	"difficulties":[
+			 	""
+		  	],
+		  	"bpm":#,
 		   	 "beatOffset":#
-	     }
+	   	}
 
 	Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
 	
