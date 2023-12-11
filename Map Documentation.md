@@ -1,33 +1,42 @@
 # Orbeats Map Documentation
 [Orbeats](https://github.com/paletteheart/Orbeats) is a simple rhythm game for the PlayDate heavily utilizing the crank with an easily expandable song list. Dedicated players can create and add custom maps to their game. This documents the details of creating a song map and adding it into the game.
-## Adding custom songs/maps
-If all you want to do is add in a song with premade difficulty maps, follow these steps:
+## Adding custom songs/maps to your game
+If you already have a song and it's difficulty maps created and ready to play in game, just follow these steps to add it into your game:
+ 1. Connect your PlayDate to a computer. If you're playing using the SDK's simulator, skip to step 3.
+ 2. Go to your PlayDate's settings. Scroll down to and select "System", and then scroll down and select "Reboot to Data Disk".
+ 3. On your computer, navigate to the PlayDate's (or Simulator's) "Games" folder, then to "User", then to "user._____.com.paletteheart.orbeats.pdx", and then to "songs".
+ 4. Copy the custom song's folder into "songs".
+ 5. Eject your PlayDate.
 
- 1. **Add the song's folder to the song folder.** The folder the maps are in should be the name of the song, and the maps should be named after their difficulty level. Inside should be at least one difficulty map, the .wav file of the song, and a 64x64 1-bit png to act as the song's album art.
- 2. **Add the song's data to songlist.json.** At the end of the file, you'll want to append a new object that will follow this template:
-	
-	   	{
-		  	"name":"",
-		  	"artist":"",
-		  	"difficulties":[
-			 	""
-		  	],
-		  	"bpm":#,
+And the level should then be within your game!
+
+## Creating custom songs and maps
+Create a new song, you'll need to create a folder for it's files (what will be referred to as the song's folder). Inside that, you'll need:
+ 1. **songData.json** - A .json file containing data about the song that is the same between all maps. Info on creating this below.
+ 2. **albumArt.pdi** - A PlayDate image file, generated from a 64x64 .png using only black, white, and fully transparent pixels. Currently the only way to make these is to use the SDK to compile the .png to a .pdi.
+ 3. **[song name].pda** - The PlayDate audio file of the song, generated from a .wav file. You can convert a .wav file to .pda [here](https://ejb.github.io/wav-pda-converter/). It's highly recommended that the audio file be 22k Hz and signed 16 bit PCM to keep the file size low. **The name of the file must match the name of the song as defined in songData.json.**
+ 4. **[difficulty map].json** - One of the maps for the song. A single song can have any amount of difficulty maps, as long as they're all uniquely named. **For a map to be playable, it must have it's name in the list of difficulties within songData.json.** Info on creating these below.
+### Creating the songData.json file
+songData.json files follow this specific format:
+
+	     {
+		     "name":"",
+		     "artist":"",
+		     "difficulties":[
+			   	 ""
+		     ],
+		     "bpm":#,
 		   	 "beatOffset":#
-	   	}
+	     }
 
-	Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
-	
-	 - **name** - The name of the song. **Should be the same as the name of the song's folder and the .wav file in the song's folder.**
-	 - **artist** - The song's artist.
-	 - **difficulties** - A list of the difficulty maps within the song's folder. **Each entry in the list should be the name of one of the difficulty maps within the song's folder without .json at the end.**
-	 - **bpm** - The bpm of the song.
-	 - **beatOffset** - How much to offset beats when playing the song. Used for keeping the beats of the map aligned with the beat of the music.
+Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
 
-	
-That should be all you need to do for the song and it's maps to show up in game.
-
-## Creating custom maps
+ - **name** - The name of the song. **Should be the same as the name of the .pda file in the song's folder.**
+ - **artist** - The song's artist.
+ - **difficulties** - A list of the difficulty maps within the song's folder. **Each entry in the list should be the name of one of the difficulty maps within the song's folder without .json at the end.**
+ - **bpm** - The bpm of the song.
+ - **beatOffset** - How much to offset beats when playing the song, in beats. Used for keeping the beats of the map aligned with the beat of the music. As a use example, if the song is half a beat early from the mappings, you can set this to 0.5 to fix this.
+### Creating a custom difficulty map
 A custom map for a song is stored as a .json file, following this overall structure:
 		
 		{
