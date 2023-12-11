@@ -18,14 +18,14 @@ local initialized = false
 
 -- Rating variables
 local ratingImage = {}
-ratingImage.P = gfx.image.new("sprites/ratingP.png")
-ratingImage.SS = gfx.image.new("sprites/ratingSS.png")
-ratingImage.S = gfx.image.new("sprites/ratingS.png")
-ratingImage.A = gfx.image.new("sprites/ratingA.png")
-ratingImage.B = gfx.image.new("sprites/ratingB.png")
-ratingImage.C = gfx.image.new("sprites/ratingC.png")
-ratingImage.D = gfx.image.new("sprites/ratingD.png")
-ratingImage.F = gfx.image.new("sprites/ratingF.png")
+ratingImage.P = gfx.image.new("sprites/ratingP")
+ratingImage.SS = gfx.image.new("sprites/ratingSS")
+ratingImage.S = gfx.image.new("sprites/ratingS")
+ratingImage.A = gfx.image.new("sprites/ratingA")
+ratingImage.B = gfx.image.new("sprites/ratingB")
+ratingImage.C = gfx.image.new("sprites/ratingC")
+ratingImage.D = gfx.image.new("sprites/ratingD")
+ratingImage.F = gfx.image.new("sprites/ratingF")
 local ratingImageWidth, ratingImageHeight = ratingImage.SS:getSize()
 local ratingY = (screenHeight-ratingImageHeight)/2
 

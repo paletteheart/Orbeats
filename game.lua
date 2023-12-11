@@ -48,6 +48,8 @@ local flipPos = 0
 
 -- input variables
 crankPos = pd.getCrankPosition()
+crankChange = pd.getCrankChange()
+
 upPressed = pd.buttonJustPressed(pd.kButtonUp)
 downPressed = pd.buttonJustPressed(pd.kButtonDown)
 leftPressed = pd.buttonJustPressed(pd.kButtonLeft)
@@ -607,6 +609,7 @@ end
 function updateInputs() -- used to check if buttons were pressed during a dead frame and update crank position
     -- update crank position
     crankPos = pd.getCrankPosition()
+    crankChange = pd.getCrankChange()
     -- update button inputs
     upPressed = pd.buttonJustPressed(pd.kButtonUp)
     downPressed = pd.buttonJustPressed(pd.kButtonDown)

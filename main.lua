@@ -44,6 +44,7 @@ end
 local function addSortByMenuItem()
 	return menu:addOptionsMenuItem("Sort By", sortOptions, sortBy, function(option)
 		sortBy = option
+		sortSongs = true
 	end)
 end
 

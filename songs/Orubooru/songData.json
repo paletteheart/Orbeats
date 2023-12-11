@@ -1,0 +1,10 @@
+{
+    "name":"Orubooru",
+    "artist":"Palette",
+    "difficulties":[
+        "Easy",
+        "Hard"
+    ],
+    "bpm":130,
+    "beatOffset":0
+}
