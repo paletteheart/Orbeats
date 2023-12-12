@@ -23,6 +23,17 @@ char.menu = "⊙"
 char.cw = "↻"
 char.ccw = "↺"
 
+fonts = {}
+fonts.orbeatsSans = gfx.font.newFamily({
+    [gfx.font.kVariantNormal] = "fonts/Orbeats Sans"
+})
+fonts.orbeatsSmall = gfx.font.newFamily({
+    [gfx.font.kVariantNormal] = "fonts/Orbeats Small"
+})
+fonts.odinRounded = gfx.font.newFamily({
+    [gfx.font.kVariantNormal] = "fonts/Odin Rounded PD"
+})
+
 -- Define variables
 -- System variables
 toMenu = false
@@ -101,15 +112,6 @@ local missedNoteRadius = 300 -- the radius where notes get deleted
 local hitForgiveness = 25 -- the distance from the orbit radius from which you can still hit notes
 local maxNoteScore = 100 --the max score you can get from a note
 local perfectDistance = 4 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
-
--- Font variables
-fonts = {}
-fonts.orbeatsSans = gfx.font.newFamily({
-    [playdate.graphics.font.kVariantNormal] = "fonts/Orbeats Sans"
-   })
-fonts.odinRounded = gfx.font.newFamily({
-    [playdate.graphics.font.kVariantNormal] = "fonts/Odin Rounded PD"
-   })
 
 -- Effects variables
 local invertedScreen = false

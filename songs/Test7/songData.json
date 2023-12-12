@@ -1,11 +1,9 @@
 {
-    "name":"Test1",
+    "name":"Test7",
     "artist":"Test",
     "difficulties":[
         "Easy",
-        "Normal",
-        "Hard",
-        "Expert"
+        "Hard"
     ],
     "bpm":180,
     "beatOffset":0

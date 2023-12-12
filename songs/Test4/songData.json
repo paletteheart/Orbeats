@@ -1,0 +1,10 @@
+{
+    "name":"Test4",
+    "artist":"TestB",
+    "difficulties":[
+        "Easy",
+        "Hard"
+    ],
+    "bpm":180,
+    "beatOffset":0
+}
