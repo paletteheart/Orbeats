@@ -350,7 +350,7 @@ function drawSongSelect()
         gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
         gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSans)
 
-        local mapArtFilePath = "songs/"..currentSongList[i].name.."/"..currentDifficulty..".pdi"
+        local mapArtFilePath = "songs/"..currentSong.name.."/"..currentSong.difficulties[i]..".pdi"
         local missingArt = "sprites/missingMap"
 
         if pd.file.exists(mapArtFilePath) then
