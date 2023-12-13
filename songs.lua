@@ -333,6 +333,9 @@ function updateSongSelect()
             local bpm = currentSong.bpm
             local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
             local beatOffset = currentSong.beatOffset
+            if music:isPlaying() then
+                music:stop()
+            end
             setUpSong(bpm, beatOffset, musicFile, songTablePath)
             resetAnimationValues()
             songStarting = false
