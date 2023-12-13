@@ -542,7 +542,11 @@ function drawSong()
 
     -- draw text effects
     for i=#textInstances,1,-1 do
-        gfx.drawText(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts.orbeatsSans)
+        if textInstances.font == nil then
+            gfx.drawText(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts.orbeatsSmall)
+        else
+            gfx.drawText(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts[textInstances.font])
+        end
     end
 
     --invert the screen if necessary
