@@ -79,6 +79,7 @@ A custom map for a song is stored as a .json file, following this overall struct
 						"text":"",
 						"x":#,
 						"y":#
+						"font":""
 					}
 				]
 			},
@@ -115,6 +116,7 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 			 - **text** - A string of text that will be shown.
 			 - **x** - The x value where the top left of the text will be.
 			 - **y** - The y value where the top left of the text will be.
+			 - **font*** - The font that will be used. Can be set to "orbeatsSans", "odinRounded", or "orbeatsSmall". *Defaults to "orbeatsSmall".*
  - **songEnd** - The beat when the map will end.
 
 \* \- Optional. Can be left out of a map file without causing errors.
