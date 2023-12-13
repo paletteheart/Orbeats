@@ -27,7 +27,8 @@ songData.json files follow this specific format:
 			   	 ""
 		     ],
 		     "bpm":#,
-		   	 "beatOffset":#
+		   	 "beatOffset":#,
+		   	 "preview":#
 	     }
 
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
@@ -37,6 +38,7 @@ Any attribute followed by a # takes a number as input, and any attribute followe
  - **difficulties** - A list of the difficulty maps within the song's folder. **Each entry in the list should be the name of one of the difficulty maps within the song's folder without .json at the end. It is highly recommended that you order these from easiest to hardest.**
  - **bpm** - The bpm of the song.
  - **beatOffset** - How much to offset beats when playing the song, in beats. Used for keeping the beats of the map aligned with the beat of the music. As a use example, if the song is half a beat early from the mappings, you can set this to 0.5 to fix this.
+ - **preview** - When in the music file to start the preview when on the song select menu, in seconds. **Must have at least ten seconds of audio after.**
 ### Creating a custom difficulty map
 A custom map for a song is stored as a .json file, following this overall structure:
 		
