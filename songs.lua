@@ -64,14 +64,7 @@ local songListSortedByArtist <const> = sortSongListByArtist()
 -- Define variables
 -- Misc variables
 scores = json.decodeFile(pd.file.open("scores.json"))
-sortBy = ""
-sortSongs = true
-currentSongList = songListSortedByArtist
-local songStarting = false
-local songSelection = 1
-local songSelectionRounded = songSelection
-local mapSelection = -100
-local mapSelectionRounded = mapSelection
+
 local leftHeldFor = 0 -- a measurement in ticks of how long left has been held
 local rightHeldFor = 0 -- a measurement in ticks of how long right has been held
 local ticksSinceInput = 0
@@ -80,10 +73,21 @@ local selecting = "song"
 local pointerSprite = gfx.image.new("sprites/pointer")
 
 -- Song variables
+currentSongList = songListSortedByArtist
 currentSong = currentSongList[1]
 currentDifficulty = currentSong.difficulties[1]
 local mapList = currentSong.difficulties
 songTable = {}
+sortBy = ""
+sortSongs = true
+local songStarting = false
+local songSelection = 1
+local songSelectionRounded = songSelection
+local mapSelection = -100
+local mapSelectionRounded = mapSelection
+local oldSongSelection = songSelection
+local oldSongSelectionTime = 0
+
 
 -- Reset high scores variables
 resetHiScores = false
@@ -289,13 +293,44 @@ function updateSongSelect()
         end
         sortSongs = false
     end
+
+    -- play a preview of the currently selected song
+    local musicFile = "songs/"..currentSong.name.."/"..currentSong.name
+    if songSelectionRounded == oldSongSelection then
+        oldSongSelectionTime += 1
+        if oldSongSelectionTime > 15 then
+            if pd.file.exists(musicFile..".pda") then
+                -- make the song fade in
+                if not music:isPlaying() then
+                    music:load(musicFile)
+                    music:setVolume(0.01)
+                    music:setVolume(1,1,1)
+                    music:play()
+                    music:setOffset(currentSong.preview)
+                end
+                -- make the song fade out
+                if music:getVolume() == 0 then
+                    music:stop()
+                else
+                    if music:getOffset() >= currentSong.preview+9 and music:getVolume() == 1 then
+                        music:setVolume(0,0,1)
+                    end
+                end
+            end
+        end
+    else
+        oldSongSelection = songSelectionRounded
+        oldSongSelectionTime = 0
+        if music:isPlaying() then
+            music:stop()
+        end
+    end
     
     if songStarting then
         if fadeOut > 0 then
             fadeOut -= 0.1
         else
             local bpm = currentSong.bpm
-            local musicFile = "songs/"..currentSong.name.."/"..currentSong.name
             local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
             local beatOffset = currentSong.beatOffset
             setUpSong(bpm, beatOffset, musicFile, songTablePath)

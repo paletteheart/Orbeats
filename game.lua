@@ -399,6 +399,7 @@ function updateSong()
     if delta >= 0 and not music:isPlaying() then
         music:play()
     end
+    print(music:getRate())
 
     -- update the audio timer variable
     musicTime = music:getOffset()
