@@ -3,7 +3,8 @@
     "artist":"Test",
     "difficulties":[
         "Easy",
-        "Hard"
+        "Hard",
+        "Expert"
     ],
     "bpm":180,
     "beatOffset":0

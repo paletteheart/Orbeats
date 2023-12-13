@@ -80,8 +80,7 @@ perfectHits = 0
 hitNotes = 0
 missedNotes = 0
 local delta = -(tickSpeed*3)
-local fadeOutBlack = 1
-local fadeOutWhite = 1
+local fadeOut = 1
 local fadeIn = 0
 local beatOffset = 0 -- a value to slightly offset the beat until it looks like it's perfectly on beat
 restartTable = {}
@@ -466,8 +465,8 @@ function updateSong()
     end
     -- check if they are going back to the song select menu
     if toMenu then
-        if fadeOutWhite > 0 then
-            fadeOutWhite -= 0.1
+        if fadeOut > 0 then
+            fadeOut -= 0.1
         else
             music:stop()
             toMenu = false
@@ -476,8 +475,8 @@ function updateSong()
     end
     -- check if the song is over and are going to the song end screen
     if songTable.songEnd <= currentBeat then
-        if fadeOutBlack > 0 then
-            fadeOutBlack -= 0.1
+        if fadeOut > 0 then
+            fadeOut -= 0.1
         else
             music:stop()
             return "songEndScreen"
@@ -553,14 +552,9 @@ function drawSong()
     end
 
     -- draw the fade out or in if fading out or in
-    if fadeOutBlack ~= 1 then
+    if fadeOut ~= 1 then
         gfx.setColor(gfx.kColorBlack)
-        gfx.setDitherPattern(fadeOutBlack)
-        gfx.fillRect(0, 0, screenWidth, screenHeight)
-    end
-    if fadeOutWhite ~= 1 then
-        gfx.setColor(gfx.kColorWhite)
-        gfx.setDitherPattern(fadeOutWhite)
+        gfx.setDitherPattern(fadeOut)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
     if fadeIn ~= 1 then
@@ -581,8 +575,7 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     hitNotes = 0
     missedNotes = 0
     delta = -(tickSpeed*3)
-    fadeOutBlack = 1
-    fadeOutWhite = 1
+    fadeOut = 1
     fadeIn = 0
     -- Music Variables
     isPlaying = false

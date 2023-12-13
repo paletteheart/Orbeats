@@ -39,7 +39,8 @@ local ratingTargetX = ratingCurrentX
 local continueCurrentY = screenHeight
 local continueTargetY = continueCurrentY
 local sheenDuration = 600
-local fadeOut = 1
+local fadeOutBlack = 1
+local fadeOutWhite = 1
 local delta = 0
 
 local function initEndScreen()
@@ -92,7 +93,8 @@ local function resetAnimationValues()
     ratingTargetX = ratingCurrentX
     continueCurrentY = screenHeight+25
     continueTargetY = continueCurrentY
-    fadeOut = 1
+    fadeOutBlack = 1
+    fadeOutWhite = 1
     delta = 0
 end
 
@@ -137,8 +139,8 @@ function updateEndScreen()
 
     -- check if they're restarting the song
     if restart then
-        if fadeOut > 0 then
-            fadeOut -= 0.1
+        if fadeOutWhite > 0 then
+            fadeOutWhite -= 0.1
         else
             setUpSong(restartTable.bpm, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             restart = false
@@ -149,8 +151,8 @@ function updateEndScreen()
     end
     --check if they're going back to the song select menu
     if toMenu then
-        if fadeOut > 0 then
-            fadeOut -= 0.1
+        if fadeOutBlack > 0 then
+            fadeOutBlack -= 0.1
         else
             toMenu = false
             initialized = false
@@ -228,9 +230,14 @@ function drawEndScreen()
     gfx.drawText(continueText, continueX3, continueCurrentY+5, fonts.orbeatsSans)
 
     -- draw fade out if fading out
-    if fadeOut ~= 1 then
+    if fadeOutWhite ~= 1 then
         gfx.setColor(gfx.kColorWhite)
-        gfx.setDitherPattern(fadeOut)
+        gfx.setDitherPattern(fadeOutWhite)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
+    if fadeOutBlack ~= 1 then
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setDitherPattern(fadeOutBlack)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
 end

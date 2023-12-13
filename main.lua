@@ -73,7 +73,7 @@ local function draw()
 
 	end
 
-	pd.drawFPS(2, 62)
+	-- pd.drawFPS(2, 62)
 
 end
 
