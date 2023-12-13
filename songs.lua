@@ -344,14 +344,24 @@ function drawSongSelect()
         local mapY = songBarCurrentY/(songBarCurrentY/725) + (songBarCurrentRadius+100) * math.sin(math.rad(mapPos-90))
 
         local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSans)
-        local textX = mapX-textWidth/2
-        local textY = mapY-textHeight/2+32*mapScale
-        gfx.setColor(gfx.kColorWhite)
-        gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-        gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSans)
+        if textWidth > 100 then
+            local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSmall)
+            local textX = mapX-textWidth/2
+            local textY = mapY-textHeight/2+32*mapScale
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+            gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSmall)
+        else
+            local textX = mapX-textWidth/2
+            local textY = mapY-textHeight/2+32*mapScale
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+            gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSans)
+        end
+        
 
         local mapArtFilePath = "songs/"..currentSong.name.."/"..currentSong.difficulties[i]..".pdi"
-        local missingArt = "sprites/missingMap"
+        local missingArt = "sprites/missingMap"..(i%5)
 
         if pd.file.exists(mapArtFilePath) then
             getImage(mapArtFilePath):drawScaled(mapX-24*mapScale, mapY-24*mapScale, mapScale)
