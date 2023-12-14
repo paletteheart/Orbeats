@@ -39,6 +39,13 @@ fonts.odinRounded = gfx.font.newFamily({
 toMenu = false
 restart = false
 tickSpeed = 30
+p = ParticleCircle()
+p:setColor(gfx.kColorBlack)
+p:setMode(Particles.modes.DECAY)
+p:setThickness(0, 2)
+p:setDecay(0.25)
+p:setSpeed(1, 4)
+p:setSize(3, 8)
 
 -- Orbit variables
 local orbitRadius = 110
@@ -171,6 +178,9 @@ local function updateNotes()
                     table.remove(noteInstances, i)
                     -- up the hit note score
                     hitNotes += 1
+                    -- create particles
+                    p:moveTo(playerX, playerY)
+                    p:add(10)
                 end
             end
         else
@@ -199,6 +209,9 @@ local function updateNotes()
                         table.remove(noteInstances, i)
                         -- up the hit note score
                         hitNotes += 1
+                        -- create particles
+                        p:moveTo(playerX, playerY)
+                        p:add(10)
                     end
                 end
             end
@@ -399,7 +412,6 @@ function updateSong()
     if delta >= 0 and not music:isPlaying() then
         music:play()
     end
-    print(music:getRate())
 
     -- update the audio timer variable
     musicTime = music:getOffset()
@@ -532,7 +544,11 @@ function drawSong()
         local pointX = trailX - flipTrail * math.cos(math.rad(flipPos+90))
         local pointY = trailY - flipTrail * math.sin(math.rad(flipPos+90))
         gfx.fillTriangle(tangentStartX, tangentStartY, tangentEndX, tangentEndY, pointX, pointY)
-    end
+    end 
+
+    --draw and update the particles
+    gfx.setColor(gfx.kColorBlack) -- set the color to make pdParticles work
+    p:update()
 
 	--draw the player
 	gfx.setColor(gfx.kColorWhite)

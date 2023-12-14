@@ -2,6 +2,8 @@ import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/ui"
 
+import "pdParticles"
+
 import "songs"
 import "game"
 import "endScreen"
@@ -73,7 +75,7 @@ local function draw()
 
 	end
 
-	pd.drawFPS(0, 0)
+	-- pd.drawFPS(0, 0)
 
 end
 
