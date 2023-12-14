@@ -180,6 +180,7 @@ local function updateNotes()
                     hitNotes += 1
                     -- create particles
                     p:moveTo(playerX, playerY)
+                    p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
                     p:add(10)
                 end
             end
@@ -211,6 +212,7 @@ local function updateNotes()
                         hitNotes += 1
                         -- create particles
                         p:moveTo(playerX, playerY)
+                        p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
                         p:add(10)
                     end
                 end
@@ -423,7 +425,7 @@ function updateSong()
 
     -- Update the pulse if it's on a beat
     -- If it's before the music is playing, fake the pulses
-    if delta < 0 then
+    if not music:isPlaying() then
         if delta % math.floor((tickSpeed*60)/songBpm) == 0 then
             pulse = pulseDepth
         else
@@ -519,6 +521,21 @@ function drawSong()
 	gfx.setDitherPattern(0.75)
 	gfx.setLineWidth(5)
 	gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulse)
+
+    --draw the orbit pulse
+    local pulseLength = 17
+    gfx.setColor(gfx.kColorBlack)
+    if music:isPlaying() then
+        gfx.setDitherPattern(0.75+0.25*(currentBeat%1))
+        print(0.75+0.25*(currentBeat%1))
+        gfx.setLineWidth(5*(1-currentBeat%1))
+        gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(currentBeat%1))
+    else
+        gfx.setDitherPattern(0.75+0.25*(fakeCurrentBeat%1))
+        print(0.75+0.25*(fakeCurrentBeat%1))
+        gfx.setLineWidth(5*(1-fakeCurrentBeat%1))
+        gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(fakeCurrentBeat%1))
+    end
 
 	--draw the notes
 	for i = #noteInstances, 1, -1 do
