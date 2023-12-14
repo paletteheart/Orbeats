@@ -2,6 +2,7 @@
 --import note classes
 import "notes/note"
 import "notes/flipnote"
+import "notes/holdnote"
 
 -- Define constants
 local pd <const> = playdate
@@ -76,9 +77,11 @@ aPressed = pd.buttonJustPressed(pd.kButtonA)
 bPressed = pd.buttonJustPressed(pd.kButtonB)
 
 upHeld = pd.buttonIsPressed(pd.kButtonUp)
+downHeld = pd.buttonIsPressed(pd.kButtonDown)
 leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
 rightHeld = pd.buttonIsPressed(pd.kButtonRight)
 aHeld = pd.buttonIsPressed(pd.kButtonA)
+bHeld = pd.buttonIsPressed(pd.kButtonB)
 
 -- Song variables
 local songTable = json.decodeFile(pd.file.open("songs/Orubooru/Easy.json"))
@@ -177,7 +180,29 @@ local function updateNotes()
                     end
                 end
             end
-        else
+        elseif noteData.noteType == "holdnote" then
+            if (noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and noteData.newRadius >= orbitRadius then
+                local noteAngles = note:getNoteAngles()
+                -- check if the player position is within the note
+                if (playerPos > noteAngles.startAngle and playerPos < noteAngles.endAngle) or (playerPos+360 > noteAngles.startAngle and playerPos+360 < noteAngles.endAngle) or (playerPos-360 > noteAngles.startAngle and playerPos-360 < noteAngles.endAngle) then
+                    if downHeld or bHeld or upHeld or aHeld then
+                        --note is hit
+                        score += maxNoteScore
+                        hitTextDisplay = hitText.perfect
+                        perfectHits += 1
+                        hitTextTimer = hitTextTime
+                        --remove note
+                        table.remove(noteInstances, i)
+                        -- up the hit note score
+                        hitNotes += 1
+                        -- create particles
+                        p:moveTo(playerX, playerY)
+                        p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                        p:add(3)
+                    end
+                end
+            end
+        elseif noteData.noteType == "flipnote" then
             -- check if the note is close enough to be hit
             if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
                 local noteAngles = note:getNoteAngles()
@@ -237,6 +262,8 @@ local function createNotes()
                 -- Add note to instances
                 if nextNote.type == "flipnote" then
                     table.insert(noteInstances, FlipNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
+                elseif nextNote.type == "holdnote" then
+                    table.insert(noteInstances, HoldNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
                 else
                     table.insert(noteInstances, Note(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
                 end
@@ -250,6 +277,8 @@ local function createNotes()
             -- Add note to instances
             if nextNote.type == "flipnote" then
                 table.insert(noteInstances, FlipNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
+            elseif nextNote.type == "holdnote" then
+                table.insert(noteInstances, HoldNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
             else
                 table.insert(noteInstances, Note(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
             end
@@ -651,8 +680,10 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     bPressed = pd.buttonJustPressed(pd.kButtonB)
 
     upHeld = pd.buttonIsPressed(pd.kButtonUp)
+    downHeld = pd.buttonIsPressed(pd.kButtonDown)
     leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
     rightHeld = pd.buttonIsPressed(pd.kButtonRight)
     aHeld = pd.buttonIsPressed(pd.kButtonA)
+    bHeld = pd.buttonIsPressed(pd.kButtonB)
 end
 
