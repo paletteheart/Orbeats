@@ -146,42 +146,35 @@ local function updateNotes()
 		
         -- Check if note can be hit
         if noteData.noteType == "note" then
-            if (noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and noteData.newRadius >= orbitRadius then
+            if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
                 local noteAngles = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteAngles.startAngle and playerPos < noteAngles.endAngle) or (playerPos+360 > noteAngles.startAngle and playerPos+360 < noteAngles.endAngle) or (playerPos-360 > noteAngles.startAngle and playerPos-360 < noteAngles.endAngle) then
-                    --note is hit
-                    --figure out how many points you get
-                    local noteHalfWidth = (noteAngles.endAngle - noteAngles.startAngle)/2
-                    local notePos = noteAngles.startAngle + noteHalfWidth
-                    local fromNoteCenter = 0
-                    -- figure out the distance from the center of the note
-                    if playerPos+360 > noteAngles.startAngle and playerPos+360 < noteAngles.endAngle then
-                        fromNoteCenter = math.abs(playerPos+360-notePos)
-                    elseif playerPos-360 > noteAngles.startAngle and playerPos-360 < noteAngles.endAngle then
-                        fromNoteCenter = math.abs(playerPos-360-notePos)
-                    else
-                        fromNoteCenter = math.abs(playerPos-notePos)
+                    if downPressed or bPressed then
+                        --note is hit
+                        --figure out how many points you get
+                        local noteDistance = math.abs(orbitRadius-noteData.newRadius)
+                        -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
+                        -- you can be, which scores half max points.
+                        if noteDistance <= perfectDistance then
+                            score += maxNoteScore
+                            hitTextDisplay = hitText.perfect
+                            perfectHits += 1
+                        else 
+                            local hitScore = math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
+                            score += hitScore
+                            hitTextDisplay = tostring(hitScore)
+                        end
+                        hitTextTimer = hitTextTime
+                        --remove note
+                        table.remove(noteInstances, i)
+                        -- up the hit note score
+                        hitNotes += 1
+                        -- create particles
+                        p:moveTo(playerX, playerY)
+                        p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                        p:add(10)
                     end
-                    -- if you hit it perfectly in the center, score the max points. Otherwise, you score less and less, down to the edges which score half max points.
-                    if fromNoteCenter <= perfectDistance then
-                        score += maxNoteScore
-                        hitTextDisplay = hitText.perfect
-                        perfectHits += 1
-                    else
-                        local hitScore = math.floor(maxNoteScore/(1+(fromNoteCenter/noteHalfWidth)))
-                        score += hitScore
-                        hitTextDisplay = tostring(hitScore)
-                    end
-                    hitTextTimer = hitTextTime
-                    --remove note
-                    table.remove(noteInstances, i)
-                    -- up the hit note score
-                    hitNotes += 1
-                    -- create particles
-                    p:moveTo(playerX, playerY)
-                    p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
-                    p:add(10)
                 end
             end
         else
@@ -190,7 +183,7 @@ local function updateNotes()
                 local noteAngles = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteAngles.startAngle and playerPos < noteAngles.endAngle) or (playerPos+360 > noteAngles.startAngle and playerPos+360 < noteAngles.endAngle) or (playerPos-360 > noteAngles.startAngle and playerPos-360 < noteAngles.endAngle) then
-                    if upPressed then
+                    if upPressed or aPressed then
                         -- note is hit
                         --figure out how many points you get
                         local noteDistance = math.abs(orbitRadius-noteData.newRadius)
@@ -517,6 +510,8 @@ function drawSong()
     hitTextTimer -= 1
 
     --draw the orbit
+    -- gfx.setColor(gfx.kColorWhite)
+	-- gfx.fillCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulse)
     gfx.setColor(gfx.kColorBlack)
 	gfx.setDitherPattern(0.75)
 	gfx.setLineWidth(5)
@@ -568,11 +563,15 @@ function drawSong()
     p:update()
 
 	--draw the player
+    local downBulge = 0
+    if downPressed then
+        downBulge = 2
+    end
 	gfx.setColor(gfx.kColorWhite)
-	gfx.fillCircleAtPoint(playerX, playerY, playerRadius)
+	gfx.fillCircleAtPoint(playerX, playerY, playerRadius+downBulge)
 	gfx.setColor(gfx.kColorBlack)
 	gfx.setLineWidth(2)
-	gfx.drawCircleAtPoint(playerX, playerY, playerRadius)
+	gfx.drawCircleAtPoint(playerX, playerY, playerRadius+downBulge)
 
     -- draw text effects
     for i=#textInstances,1,-1 do
