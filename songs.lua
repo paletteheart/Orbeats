@@ -87,6 +87,7 @@ local mapSelection = -100
 local mapSelectionRounded = mapSelection
 local oldSongSelection = songSelection
 local oldSongSelectionTime = 0
+local playedPreview = false
 
 
 -- Reset high scores variables
@@ -168,6 +169,10 @@ end
 function updateSongSelect()
     -- update delta
     delta += 1
+
+    if delta == 1 then
+        oldSongSelectionTime = 0
+    end
 
     -- update how long left and right has been held
     if leftHeld then
@@ -301,12 +306,13 @@ function updateSongSelect()
         if oldSongSelectionTime > 15 then
             if pd.file.exists(musicFile..".pda") then
                 -- make the song fade in
-                if not music:isPlaying() then
+                if not playedPreview then
                     music:load(musicFile)
                     music:setVolume(0.01)
                     music:setVolume(1,1,1)
                     music:play()
                     music:setOffset(currentSong.preview)
+                    playedPreview = true
                 end
                 -- make the song fade out
                 if music:getVolume() == 0 then
@@ -324,6 +330,7 @@ function updateSongSelect()
         if music:isPlaying() then
             music:stop()
         end
+        playedPreview = false
     end
     
     if songStarting then
