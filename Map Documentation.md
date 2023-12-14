@@ -90,7 +90,7 @@ A custom map for a song is stored as a .json file, following this overall struct
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
  - **notes** - List of note objects.
 	 - Each note is defined by a set of attributes:
-		 - **type** - The type of the note. Can be either "note" or "flipnote"; the former will make it a note you hit by being in the right place when it reaches the orbit radius, and the latter you hit by being in the right place and flipping to the other side when it reaches the orbit radius.
+		 - **type** - The type of the note. Can be either "note", "holdnote", or "flipnote". "note" will make it a normal note, hit by pressing down/B while in the right place. "holdnote" will make it a note that is hit if you're holding up/A/down/B and are in the right place. "flipnote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place.
 		 - **spawnBeat** - The beat of the song when this note will be spawned in. **Notes are expected to be in order by their spawnBeat, earlier notes coming first. Two notes cannot share a spawnBeat.**
 		 - **hitBeat** - The beat of the song when this note will reach the orbit radius and can be hit by the cursor. Notes may share a hitBeat.
 		 - **speed** - How quickly the note approaches the orbit radius.
