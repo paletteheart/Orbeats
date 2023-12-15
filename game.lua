@@ -664,6 +664,7 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
 
     -- load the music file
     music:load(musicFilePath)
+    music:setVolume(1)
 end
 
 
