@@ -1,6 +1,7 @@
 import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/ui"
+import "CoreLibs/animation"
 
 import "pdParticles"
 

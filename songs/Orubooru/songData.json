@@ -3,6 +3,7 @@
     "artist":"Palette",
     "difficulties":[
         "Easy",
+        "Normal",
         "Hard"
     ],
     "bpm":130,

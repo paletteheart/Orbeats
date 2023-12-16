@@ -63,7 +63,7 @@ local songListSortedByArtist <const> = sortSongListByArtist()
 
 -- Define variables
 -- Misc variables
-scores = json.decodeFile(pd.file.open("scores.json"))
+scores = pd.datastore.read("scores")
 
 local leftHeldFor = 0 -- a measurement in ticks of how long left has been held
 local rightHeldFor = 0 -- a measurement in ticks of how long right has been held
@@ -71,6 +71,14 @@ local ticksSinceInput = 0
 local selecting = "song"
 
 local pointerSprite = gfx.image.new("sprites/pointer")
+
+sfx = {}
+sfx.low = pd.sound.sampleplayer.new("sfx/low")
+sfx.mid = pd.sound.sampleplayer.new("sfx/mid")
+sfx.high = pd.sound.sampleplayer.new("sfx/high")
+sfx.play = pd.sound.sampleplayer.new("sfx/play")
+sfx.click = pd.sound.sampleplayer.new("sfx/click")
+sfx.tap = pd.sound.sampleplayer.new("sfx/tap")
 
 -- Song variables
 currentSongList = songListSortedByArtist
@@ -85,7 +93,8 @@ local songSelection = 1
 local songSelectionRounded = songSelection
 local mapSelection = -100
 local mapSelectionRounded = mapSelection
-local oldSongSelection = songSelection
+local oldMapSelection = mapSelectionRounded
+local oldSongSelection = songSelectionRounded
 local oldSongSelectionTime = 0
 local playedPreview = false
 
@@ -209,14 +218,17 @@ function updateSongSelect()
             if math.abs(crankChange) < 0.5 or songSelection > #songList or songSelection < 1 then
                 songSelection = closeDistance(songSelection, math.min(#songList, math.max(1, round(songSelection))), 0.5)
             end
-            -- round the songSelection for things that need the exact songSelection
-            songSelectionRounded = math.min(#songList, math.max(1, round(songSelection)))
+        end
 
-            -- update the current song
-            currentSong = currentSongList[songSelectionRounded]
-            -- get the current list of maps (difficulties)
-            mapList = currentSong.difficulties
-        elseif selecting == "map" then
+        -- round the songSelection for things that need the exact songSelection
+        songSelectionRounded = math.min(#songList, math.max(1, round(songSelection)))
+
+        -- update the current song
+        currentSong = currentSongList[songSelectionRounded]
+        -- get the current list of maps (difficulties)
+        mapList = currentSong.difficulties
+
+        if selecting == "map" then
             -- update the mapSelection based on the cranking and left/right presses
             if leftPressed or leftHeldFor > 15 then
                 mapSelection = round(mapSelection)-0.51
@@ -239,12 +251,15 @@ function updateSongSelect()
         if upPressed or aPressed then
             if selecting == "play" then
                 songStarting = true
+                sfx.play:play()
             elseif selecting == "map" then
                 selectBarCurrentY = -25
                 selecting = "play"
+                sfx.high:play()
             elseif selecting == "song" then
                 selectBarCurrentY = -25
                 selecting = "map"
+                sfx.mid:play()
             end
         end
 
@@ -252,9 +267,11 @@ function updateSongSelect()
             if selecting == "map" then
                 selecting = "song"
                 selectBarCurrentY = -25
+                sfx.low:play()
             elseif selecting == "play" then
                 selecting = "map"
                 selectBarCurrentY = -25
+                sfx.mid:play()
             end
         end
 
@@ -279,7 +296,7 @@ function updateSongSelect()
     else -- if we are in the reset menu
         if upHeld and aHeld then
             pd.datastore.write({}, "scores")
-            scores = json.decodeFile(pd.file.open("scores.json"))
+            scores = pd.datastore.read("scores")
             warningTargetY = -45
         elseif downPressed or bPressed then
             warningTargetY = -45
@@ -331,6 +348,14 @@ function updateSongSelect()
             music:stop()
         end
         playedPreview = false
+        -- plays a click when moving to a new song
+        sfx.click:play()
+    end
+
+    -- play a tap if rolling over maps
+    if oldMapSelection ~= mapSelectionRounded then
+        sfx.tap:play()
+        oldMapSelection = mapSelectionRounded
     end
     
     if songStarting then
@@ -425,10 +450,12 @@ function drawSongSelect()
     gfx.fillRoundRect(songDataCurrentX, dataBubbleY, dataBubbleWidth, dataBubbleHeight, 5)
     local currentHiScore = 0
     local currentBestRank = "-"
-    if scores[currentSong.name] ~= nil then
-        if scores[currentSong.name][currentDifficulty] ~= nil then
-            currentHiScore = scores[currentSong.name][currentDifficulty].score
-            currentBestRank = scores[currentSong.name][currentDifficulty].rating
+    if scores ~= nil then
+        if scores[currentSong.name] ~= nil then
+            if scores[currentSong.name][currentDifficulty] ~= nil then
+                currentHiScore = scores[currentSong.name][currentDifficulty].score
+                currentBestRank = scores[currentSong.name][currentDifficulty].rating
+            end
         end
     end
     gfx.drawText("Best Score:", songDataCurrentX+5, dataBubbleY+5, fonts.orbeatsSmall)

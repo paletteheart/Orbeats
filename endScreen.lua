@@ -67,16 +67,23 @@ local function initEndScreen()
 
     -- if they got a high score, save it
     songHiScore = 0
-    if scores[currentSong.name] ~= nil then
-        if scores[currentSong.name][currentDifficulty] ~= nil then
-            songHiScore = scores[currentSong.name][currentDifficulty].score
+    if scores ~= nil then
+        if scores[currentSong.name] ~= nil then
+            if scores[currentSong.name][currentDifficulty] ~= nil then
+                songHiScore = scores[currentSong.name][currentDifficulty].score
+            else
+                scores[currentSong.name][currentDifficulty] = {}
+            end
         else
+            scores[currentSong.name] = {}
             scores[currentSong.name][currentDifficulty] = {}
         end
     else
+        scores = {}
         scores[currentSong.name] = {}
         scores[currentSong.name][currentDifficulty] = {}
     end
+    
     if songHiScore < score then
         scores[currentSong.name][currentDifficulty].score = score
         scores[currentSong.name][currentDifficulty].rating = songRating
@@ -126,6 +133,7 @@ function updateEndScreen()
         else
             toMenu = true
             restart = false
+            sfx.low:play()
         end
     end
     if downPressed or bPressed then
@@ -134,6 +142,7 @@ function updateEndScreen()
         else
             restart = true
             toMenu = false
+            sfx.low:play()
         end
     end
 

@@ -19,6 +19,6 @@ function HoldNote:draw(x, y, rad)
     --draw note
     gfx.setColor(gfx.kColorBlack)
     gfx.setDitherPattern(0.5)
-	gfx.setLineWidth(3*(self.radius/rad))
+	gfx.setLineWidth(5*(self.radius/rad))
     gfx.drawArc(x, y, self.radius, noteAngles.startAngle, noteAngles.endAngle)
 end

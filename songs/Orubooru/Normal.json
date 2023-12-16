@@ -1195,8 +1195,26 @@
         },
         {
             "type":"note",
+            "spawnBeat":133.5,
+            "hitBeat":138.5,
+            "speed":1,
+            "width":45,
+            "position":135,
+            "spin":0
+        },
+        {
+            "type":"note",
             "spawnBeat":134.5,
             "hitBeat":139.5,
+            "speed":1,
+            "width":45,
+            "position":180,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":135.5,
+            "hitBeat":140.5,
             "speed":1,
             "width":45,
             "position":180,
@@ -1208,18 +1226,164 @@
             "hitBeat":141,
             "speed":1,
             "width":45,
-            "position":135,
+            "position":180,
             "spin":0
         },
         {
             "type":"note",
-            "spawnBeat":137.5,
-            "hitBeat":142.5,
+            "spawnBeat":137,
+            "hitBeat":142,
             "speed":1,
             "width":45,
-            "position":90,
+            "position":225,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":138,
+            "hitBeat":143,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":139,
+            "hitBeat":144,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":139.5,
+            "hitBeat":144.5,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":140,
+            "hitBeat":145,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":140.5,
+            "hitBeat":145.5,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":141,
+            "hitBeat":146,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":141.5,
+            "hitBeat":146.5,
+            "speed":1,
+            "width":30,
+            "position":270,
+            "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":142,
+            "hitBeat":147,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":143,
+            "hitBeat":148,
+            "speed":1,
+            "width":45,
+            "position":315,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":144,
+            "hitBeat":149,
+            "speed":1,
+            "width":45,
+            "position":0,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":145,
+            "hitBeat":150,
+            "speed":1,
+            "width":45,
+            "position":45,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":145.5,
+            "hitBeat":150.5,
+            "speed":1,
+            "width":45,
+            "position":30,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":146,
+            "hitBeat":151,
+            "speed":1,
+            "width":45,
+            "position":15,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":146.5,
+            "hitBeat":151.5,
+            "speed":1,
+            "width":45,
+            "position":0,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":147,
+            "hitBeat":152,
+            "speed":1,
+            "width":30,
+            "position":0,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":147.5,
+            "hitBeat":152.5,
+            "speed":1,
+            "width":30,
+            "position":0,
             "spin":0
         }
     ],
-    "songEnd":200
+    "songEnd":155
 }
