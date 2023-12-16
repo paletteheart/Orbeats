@@ -92,7 +92,7 @@ local songStarting = false
 local songSelection = 1
 local songSelectionRounded = songSelection
 local mapSelection = -100
-local mapSelectionRounded = mapSelection
+local mapSelectionRounded = 1
 local oldMapSelection = mapSelectionRounded
 local oldSongSelection = songSelectionRounded
 local oldSongSelectionTime = 0
@@ -138,6 +138,7 @@ local function resetAnimationValues()
     selectBarTargetY = 0
     selecting = "song"
     mapSelection = -100
+    mapSelectionRounded = 1
     songDataCurrentX = math.min(-gfx.getTextSize(currentSong.name), -100)
     songDataTargetX = 0
     pointerCurrentY = screenHeight
