@@ -5,3 +5,4 @@ bundleID=com.paletteheart.orbeats
 version=0.5
 buildNumber=1
 imagePath=launcher
+launchSoundPath=sfx/play

@@ -8,6 +8,7 @@ import "pdParticles"
 import "songs"
 import "game"
 import "endScreen"
+import "title"
 
 -- Define constants
 local pd <const> = playdate
@@ -56,8 +57,7 @@ local restartMenuItem = addRestartMenuItem()
 local resetHiScoresMenuItem = addResetHiScoresMenuItem()
 local sortByMenuItem = addSortByMenuItem()
 
-local gameState
-gameState = "songSelect"
+local gameState = "title"
 
 local function draw()
 	gfx.clear()
@@ -72,8 +72,10 @@ local function draw()
 		drawEndScreen()
 	elseif gameState == "songSelect" then
 		drawSongSelect()
+	elseif gameState == "credits" then
+		
 	else
-
+		drawTitle()
 	end
 
 	-- pd.drawFPS(0, 0)
@@ -100,8 +102,10 @@ function pd.update()
 		gameState = updateSongSelect()
 		resetHiScoresMenuItem = addResetHiScoresMenuItem()
 		sortByMenuItem = addSortByMenuItem()
-	else
+	elseif gameState == "credits" then
 
+	else
+		gameState = updateTitle()
 	end
 
 	draw()

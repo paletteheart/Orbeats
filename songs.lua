@@ -79,6 +79,7 @@ sfx.high = pd.sound.sampleplayer.new("sfx/high")
 sfx.play = pd.sound.sampleplayer.new("sfx/play")
 sfx.click = pd.sound.sampleplayer.new("sfx/click")
 sfx.tap = pd.sound.sampleplayer.new("sfx/tap")
+sfx.jingle = pd.sound.sampleplayer.new("sfx/jingle")
 
 -- Song variables
 currentSongList = songListSortedByArtist
@@ -126,6 +127,7 @@ local controlsCurrentY = 250
 local controlsTargetY = 200
 local mapCurrentDist = 5
 local mapTargetDist = 5
+local mapSelectionOffset = -100
 
 
 local function resetAnimationValues()
@@ -137,8 +139,7 @@ local function resetAnimationValues()
     selectBarCurrentY = -25
     selectBarTargetY = 0
     selecting = "song"
-    mapSelection = -100
-    mapSelectionRounded = 1
+    mapSelectionOffset = -100
     songDataCurrentX = math.min(-gfx.getTextSize(currentSong.name), -100)
     songDataTargetX = 0
     pointerCurrentY = screenHeight
@@ -408,11 +409,12 @@ function drawSongSelect()
 
     -- draw the difficulty satellites
     mapCurrentDist = closeDistance(mapCurrentDist, mapTargetDist, 0.3)
+    mapSelectionOffset = closeDistance(mapSelectionOffset, 0, 0.3)
     for i=#mapList,1,-1 do
         local mapPos = (i-mapSelection)*mapCurrentDist
         local mapScale = songBarCurrentRadius/500
-        local mapX = screenCenterX + (songBarCurrentRadius+100) * math.cos(math.rad(mapPos-90))
-        local mapY = songBarCurrentY/(songBarCurrentY/725) + (songBarCurrentRadius+100) * math.sin(math.rad(mapPos-90))
+        local mapX = screenCenterX + (songBarCurrentRadius+100) * math.cos(math.rad(mapPos-90+mapSelectionOffset))
+        local mapY = songBarCurrentY/(songBarCurrentY/725) + (songBarCurrentRadius+100) * math.sin(math.rad(mapPos-90+mapSelectionOffset))
 
         local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSans)
         if textWidth > 100 then
@@ -435,9 +437,11 @@ function drawSongSelect()
         local missingArt = "sprites/missingMap"..(i%5)
 
         if pd.file.exists(mapArtFilePath) then
-            getImage(mapArtFilePath):drawScaled(mapX-24*mapScale, mapY-24*mapScale, mapScale)
+            -- getImage(mapArtFilePath):drawScaled(mapX-24*mapScale, mapY-24*mapScale, mapScale)
+            getImage(mapArtFilePath):draw(mapX-24*mapScale, mapY-24*mapScale)
         else
-            getImage(missingArt):drawScaled(mapX-24*mapScale, mapY-24*mapScale, mapScale)
+            -- getImage(missingArt):drawScaled(mapX-24*mapScale, mapY-24*mapScale, mapScale)
+            getImage(missingArt):draw(mapX-24*mapScale, mapY-24*mapScale)
         end
     end
 
@@ -488,9 +492,11 @@ function drawSongSelect()
             local albumY = songBarCurrentY + songBarCurrentRadius * math.sin(math.rad(albumPos-90)) - 32*albumScale
             
             if pd.file.exists(albumArtFilePath) then
-                getImage(albumArtFilePath):drawScaled(albumX, albumY, albumScale)
+                -- getImage(albumArtFilePath):drawScaled(albumX, albumY, albumScale)
+                getImage(albumArtFilePath):draw(albumX, albumY)
             else
-                getImage(missingArt):drawScaled(albumX, albumY, albumScale)
+                -- getImage(missingArt):drawScaled(albumX, albumY, albumScale)
+                getImage(missingArt):draw(albumX, albumY)
             end
         end
     end

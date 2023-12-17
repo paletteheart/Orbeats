@@ -16,6 +16,8 @@ local screenCenterY <const> = screenHeight / 2
 char = {}
 char.A = "Ⓐ"
 char.B = "Ⓑ"
+char.a = "Ⓐ"
+char.b = "Ⓑ"
 char.left = "←"
 char.up = "↑"
 char.right = "→"
@@ -551,12 +553,10 @@ function drawSong()
     gfx.setColor(gfx.kColorBlack)
     if music:isPlaying() then
         gfx.setDitherPattern(0.75+0.25*(currentBeat%1))
-        print(0.75+0.25*(currentBeat%1))
         gfx.setLineWidth(5*(1-currentBeat%1))
         gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(currentBeat%1))
     else
         gfx.setDitherPattern(0.75+0.25*(fakeCurrentBeat%1))
-        print(0.75+0.25*(fakeCurrentBeat%1))
         gfx.setLineWidth(5*(1-fakeCurrentBeat%1))
         gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(fakeCurrentBeat%1))
     end
@@ -593,7 +593,7 @@ function drawSong()
 
 	--draw the player
     local downBulge = 0
-    if downPressed then
+    if downPressed or bPressed then
         downBulge = 2
     end
 	gfx.setColor(gfx.kColorWhite)
