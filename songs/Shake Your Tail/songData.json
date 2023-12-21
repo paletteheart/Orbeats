@@ -1,0 +1,12 @@
+{
+    "name":"Shake Your Tail",
+    "artist":"Uhrwerk Klockwerx (Ft. Lolwe & Majeed)",
+    "difficulties":[
+        "Easy",
+        "Normal",
+        "Hard"
+    ],
+    "bpm":120,
+    "beatOffset":0,
+    "preview":128
+}

@@ -353,6 +353,12 @@ end
 function ParticlePoly:update()
     local w = playdate.graphics.getLineWidth()
     local c = playdate.graphics.getColor()
+    -- if self.colour == playdate.graphics.kColorBlack or self.colour == playdate.graphics.kColorWhite or self.colour == playdate.graphics.kColorXOR or self.colour == playdate.graphics.kColorClear then
+    --     playdate.graphics.setColor(self.colour)
+    -- else
+    --     playdate.graphics.setColor(playdate.graphics.kColorBlack)
+    --     playdate.graphics.setDitherPattern(self.colour)
+    -- end
     playdate.graphics.setColor(self.colour)
     for part = 1, #self.particles, 1 do
         local poly = self.particles[part]

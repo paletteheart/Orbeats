@@ -55,11 +55,10 @@ function updateTitle()
     end
 
     -- check if any button has been pressed
-    if delta > 135 then
-        if upPressed or downPressed or leftPressed or rightPressed or aPressed or bPressed then
-            sfx.low:play()
-            start = true
-        end
+    if (upPressed or downPressed or leftPressed or rightPressed or aPressed or bPressed) and not start then
+        sfx.low:play()
+        sfx.jingle:stop()
+        start = true
     end
 
     -- check if we're starting the game

@@ -50,6 +50,18 @@ p:setDecay(0.25)
 p:setSpeed(1, 4)
 p:setSize(3, 8)
 
+-- s = ParticlePoly()
+-- s:setColor(gfx.kColorBlack)
+-- s:setMode(Particles.modes.DISAPPEAR)
+-- s:setPoints(2)
+-- s:setSize(10, 15)
+-- s:setThickness(1, 4)
+-- s:setLifespan(5)
+-- s:setSpeed(15)
+
+bgImageTable = gfx.imagetable.new("sprites/bg")
+bgAnim = gfx.animation.loop.new(10, bgImageTable)
+
 -- Orbit variables
 local orbitRadius = 110
 local orbitCenterX = screenCenterX
@@ -540,9 +552,23 @@ function drawSong()
     end
     hitTextTimer -= 1
 
+    -- --draw movement particles
+    -- s:moveTo(orbitCenterX, orbitCenterY)
+    -- local sDir = math.floor(math.random()*360)
+    -- s:setSpread(sDir)
+    -- s:setRotation(sDir)
+    -- s:add(1)
+    -- s:update()
+
+    --draw background
+    local bgW, bgH = bgAnim:image():getSize()
+    local bgX = orbitCenterX-(bgW/2)
+    local bgY = orbitCenterY-(bgH/2)
+    bgAnim:draw(bgX, bgY)
+
     --draw the orbit
-    -- gfx.setColor(gfx.kColorWhite)
-	-- gfx.fillCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulse)
+    gfx.setColor(gfx.kColorWhite)
+	gfx.fillCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulse)
     gfx.setColor(gfx.kColorBlack)
 	gfx.setDitherPattern(0.75)
 	gfx.setLineWidth(5)
