@@ -319,13 +319,14 @@ function updateSongSelect()
     end
 
     -- play a preview of the currently selected song
-    local musicFile = "songs/"..currentSong.name.."/"..currentSong.name
+    local musicFile = ("songs/"..currentSong.name.."/"..currentSong.name)
     if songSelectionRounded == oldSongSelection then
         oldSongSelectionTime += 1
         if oldSongSelectionTime > 15 then
             if pd.file.exists(musicFile..".pda") then
                 -- make the song fade in
                 if not playedPreview then
+                    music = pd.sound.fileplayer.new()
                     music:load(musicFile)
                     music:setVolume(0.01)
                     music:setVolume(1,1,1)
