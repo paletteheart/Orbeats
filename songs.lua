@@ -449,25 +449,37 @@ function drawSongSelect()
     -- draw the song data
     songDataCurrentX = closeDistance(songDataCurrentX, songDataTargetX, 0.3)
     local dataBubbleWidth = 100
-    local dataBubbleHeight = 60
+    local dataBubbleHeight = 85
     local dataBubbleY = 85
     -- draw main data bubble
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRoundRect(songDataCurrentX, dataBubbleY, dataBubbleWidth, dataBubbleHeight, 5)
     local currentHiScore = 0
+    local currentHiCombo = 0
     local currentBestRank = "-"
     if scores ~= nil then
         if scores[currentSong.name] ~= nil then
             if scores[currentSong.name][currentDifficulty] ~= nil then
                 currentHiScore = scores[currentSong.name][currentDifficulty].score
                 currentBestRank = scores[currentSong.name][currentDifficulty].rating
+                if scores[currentSong.name][currentDifficulty].fc then
+                    currentHiCombo = -1
+                else
+                    currentHiCombo = scores[currentSong.name][currentDifficulty].combo
+                end
             end
         end
     end
     gfx.drawText("Best Score:", songDataCurrentX+5, dataBubbleY+5, fonts.orbeatsSmall)
     gfx.drawText(currentHiScore, songDataCurrentX+5, dataBubbleY+15, fonts.orbeatsSans)
-    gfx.drawText("Best Rank:", songDataCurrentX+5, dataBubbleY+30, fonts.orbeatsSmall)
-    gfx.drawText(currentBestRank, songDataCurrentX+5, dataBubbleY+40, fonts.orbeatsSans)
+    gfx.drawText("Best Combo:", songDataCurrentX+5, dataBubbleY+30, fonts.orbeatsSmall)
+    if currentHiCombo < 0 then
+        gfx.drawText("Full Combo", songDataCurrentX+5, dataBubbleY+40, fonts.orbeatsSans)
+    else
+        gfx.drawText(currentHiCombo, songDataCurrentX+5, dataBubbleY+40, fonts.orbeatsSans)
+    end
+    gfx.drawText("Best Rank:", songDataCurrentX+5, dataBubbleY+55, fonts.orbeatsSmall)
+    gfx.drawText(currentBestRank, songDataCurrentX+5, dataBubbleY+65, fonts.orbeatsSans)
     -- draw the name/artist/bpm bubble
     local bpmText = currentSong.bpm.."BPM"
     local nameBubbleWidth = math.max(gfx.getTextSize(currentSong.name, fonts.orbeatsSans)+10, gfx.getTextSize(currentSong.artist, fonts.orbeatsSmall)+gfx.getTextSize(bpmText, fonts. orbeatsSmall)+20)

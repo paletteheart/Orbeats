@@ -50,15 +50,6 @@ p:setDecay(0.25)
 p:setSpeed(1, 4)
 p:setSize(3, 8)
 
--- s = ParticlePoly()
--- s:setColor(gfx.kColorBlack)
--- s:setMode(Particles.modes.DISAPPEAR)
--- s:setPoints(2)
--- s:setSize(10, 15)
--- s:setThickness(1, 4)
--- s:setLifespan(5)
--- s:setSpeed(15)
-
 bgImageTable = gfx.imagetable.new("sprites/bg")
 bgAnim = gfx.animation.loop.new(10, bgImageTable)
 
@@ -103,6 +94,8 @@ local songBpm = 130
 perfectHits = 0
 hitNotes = 0
 missedNotes = 0
+local combo = 0
+largestCombo = 0
 local delta = -(tickSpeed*3)
 local fadeOut = 1
 local fadeIn = 0
@@ -148,6 +141,11 @@ local lastMovementBeatY = 0 -- used for animating the orbit movement
 
 -- local functions
 
+local function incrementCombo()
+    combo += 1
+    if combo > largestCombo then largestCombo = combo end
+end
+
 local function updateNotes()
     for i = #noteInstances, 1, -1 do
 		-- get the current note
@@ -185,8 +183,9 @@ local function updateNotes()
                         hitTextTimer = hitTextTime
                         --remove note
                         table.remove(noteInstances, i)
-                        -- up the hit note score
+                        -- up the hit note score and combo counter
                         hitNotes += 1
+                        incrementCombo()
                         -- create particles
                         p:moveTo(playerX, playerY)
                         p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
@@ -209,6 +208,7 @@ local function updateNotes()
                         table.remove(noteInstances, i)
                         -- up the hit note score
                         hitNotes += 1
+                        incrementCombo()
                         -- create particles
                         p:moveTo(playerX, playerY)
                         p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
@@ -242,6 +242,7 @@ local function updateNotes()
                         table.remove(noteInstances, i)
                         -- up the hit note score
                         hitNotes += 1
+                        incrementCombo()
                         -- create particles
                         p:moveTo(playerX, playerY)
                         p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
@@ -255,6 +256,7 @@ local function updateNotes()
             table.remove(noteInstances, i)
             -- up the missed note score
             missedNotes += 1
+            combo = 0
             hitTextDisplay = hitText.miss
             hitTextTimer = hitTextTime
         end
@@ -542,6 +544,12 @@ function drawSong()
     gfx.setColor(gfx.kColorBlack)
     gfx.drawText(score, 2, 2, fonts.orbeatsSans)
 
+    --draw the combo counter
+    if combo > 4 then
+        gfx.setColor(gfx.kColorBlack)
+        gfx.drawText("Combo:"..combo, 2, 220, fonts.orbeatsSans)
+    end
+
     --draw the hit text
     if hitTextTimer > 0 then
         if hitTextTimer == hitTextTime then
@@ -552,19 +560,17 @@ function drawSong()
     end
     hitTextTimer -= 1
 
-    -- --draw movement particles
-    -- s:moveTo(orbitCenterX, orbitCenterY)
-    -- local sDir = math.floor(math.random()*360)
-    -- s:setSpread(sDir)
-    -- s:setRotation(sDir)
-    -- s:add(1)
-    -- s:update()
-
     --draw background
     local bgW, bgH = bgAnim:image():getSize()
     local bgX = orbitCenterX-(bgW/2)
     local bgY = orbitCenterY-(bgH/2)
     bgAnim:draw(bgX, bgY)
+
+    --invert behind the orbit if 50% of the way through with no misses
+    if missedNotes == 0 and combo >= #songTable.notes then
+        gfx.setColor(gfx.kColorXOR)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
 
     --draw the orbit
     gfx.setColor(gfx.kColorWhite)
@@ -615,6 +621,11 @@ function drawSong()
 
     --draw and update the particles
     gfx.setColor(gfx.kColorBlack) -- set the color to make pdParticles work
+    if missedNotes == 0 and combo >= #songTable.notes then
+        p:setColor(gfx.kColorWhite)
+    else
+        p:setColor(gfx.kColorBlack)
+    end
     p:update()
 
 	--draw the player
@@ -666,6 +677,8 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     perfectHits = 0
     hitNotes = 0
     missedNotes = 0
+    combo = 0
+    largestCombo = 0
     delta = -(tickSpeed*3)
     fadeOut = 1
     fadeIn = 0

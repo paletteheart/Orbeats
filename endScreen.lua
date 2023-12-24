@@ -14,6 +14,8 @@ local screenCenterY <const> = screenHeight / 2
 -- Define Variables
 songRating = ""
 local songHiScore = 0
+local songHiCombo = 0
+local fullCombo = false
 local initialized = false
 
 -- Rating variables
@@ -26,6 +28,7 @@ ratingImage.B = gfx.image.new("sprites/ratingB")
 ratingImage.C = gfx.image.new("sprites/ratingC")
 ratingImage.D = gfx.image.new("sprites/ratingD")
 ratingImage.F = gfx.image.new("sprites/ratingF")
+local fullComboImage = gfx.image.new("sprites/fullCombo")
 local ratingImageWidth, ratingImageHeight = ratingImage.SS:getSize()
 local ratingY = (screenHeight-ratingImageHeight)/2
 
@@ -65,12 +68,21 @@ local function initEndScreen()
         songRating = "F"
     end
 
+    -- check if they got a full combo
+    if missedNotes == 0 then
+        fullCombo = true
+    else
+        fullCombo = false
+    end
+
     -- if they got a high score, save it
     songHiScore = 0
+    songHiCombo = 0
     if scores ~= nil then
         if scores[currentSong.name] ~= nil then
             if scores[currentSong.name][currentDifficulty] ~= nil then
                 songHiScore = scores[currentSong.name][currentDifficulty].score
+                songHiCombo = scores[currentSong.name][currentDifficulty].combo
             else
                 scores[currentSong.name][currentDifficulty] = {}
             end
@@ -87,8 +99,13 @@ local function initEndScreen()
     if songHiScore < score then
         scores[currentSong.name][currentDifficulty].score = score
         scores[currentSong.name][currentDifficulty].rating = songRating
-        pd.datastore.write(scores, "scores")
     end
+    if songHiCombo < largestCombo then
+        scores[currentSong.name][currentDifficulty].combo = largestCombo
+        scores[currentSong.name][currentDifficulty].fc = fullCombo
+    end
+    
+    pd.datastore.write(scores, "scores")
 end
 
 local function resetAnimationValues()
@@ -189,19 +206,28 @@ function drawEndScreen()
     gfx.drawText("Song Completed!", 5, completedCurrentY, fonts.odinRounded)
 
     -- draw stats bubbles
+    local statsY = 55
     gfx.setColor(gfx.kColorWhite)
     statsCurrentX = closeDistance(statsCurrentX, statsTargetX, 0.25)
-    gfx.fillRoundRect(statsCurrentX, 65, 165, 130, 3)
+    gfx.fillRoundRect(statsCurrentX, statsY, 165, 155, 3)
     -- draw stats
     gfx.setColor(gfx.kColorBlack)
-    gfx.drawText("Perfect Hits: "..perfectHits, statsCurrentX+5, 70, fonts.orbeatsSans)
-    gfx.drawText("Hits: "..hitNotes, statsCurrentX+5, 95, fonts.orbeatsSans)
-    gfx.drawText("Misses: "..missedNotes, statsCurrentX+5, 120, fonts.orbeatsSans)
-    gfx.drawText("Score: "..score, statsCurrentX+5, 145, fonts.orbeatsSans)
-    if songHiScore < score then
-        gfx.drawText("New Best Score!", statsCurrentX+5, 170, fonts.orbeatsSans)
+    gfx.drawText("Perfect Hits: "..perfectHits, statsCurrentX+5, statsY+5, fonts.orbeatsSans)
+    gfx.drawText("Hits: "..hitNotes, statsCurrentX+5, statsY+30, fonts.orbeatsSans)
+    gfx.drawText("Misses: "..missedNotes, statsCurrentX+5, statsY+55, fonts.orbeatsSans)
+
+    gfx.drawText("Combo: "..largestCombo, statsCurrentX+5, statsY+80, fonts.orbeatsSans)
+    if songHiCombo < largestCombo then
+        gfx.drawText("New Best Combo!", statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
     else
-        gfx.drawText("Best Score: "..songHiScore, statsCurrentX+5, 170, fonts.orbeatsSans)
+        gfx.drawText("Best Combo: "..songHiCombo, statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
+    end
+
+    gfx.drawText("Score: "..score, statsCurrentX+5, statsY+120, fonts.orbeatsSans)
+    if songHiScore < score then
+        gfx.drawText("New Best Score!", statsCurrentX+5, statsY+140, fonts.orbeatsSmall)
+    else
+        gfx.drawText("Best Score: "..songHiScore, statsCurrentX+5, statsY+140, fonts.orbeatsSmall)
     end
 
     -- draw rating
@@ -222,6 +248,11 @@ function drawEndScreen()
         ratingImage.D:draw(ratingCurrentX, ratingY)
     else
         ratingImage.F:draw(ratingCurrentX, ratingY)
+    end
+
+    -- draw full combo sprite if full combo
+    if fullCombo then
+        fullComboImage:draw(ratingCurrentX+33, ratingY+95)
     end
 
     -- draw continue bar
