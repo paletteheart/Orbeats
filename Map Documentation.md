@@ -80,7 +80,7 @@ A custom map for a song is stored as a .json file, following this overall struct
 						"endBeat":#,
 						"text":"",
 						"x":#,
-						"y":#
+						"y":#,
 						"font":""
 					}
 				]
