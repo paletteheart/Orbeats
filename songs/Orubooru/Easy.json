@@ -199,34 +199,6 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":43.5,
-            "hitBeat":48.5,
-            "speed":1,
-            "width":30,
-            "position":0,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":44,
-            "hitBeat":49,
-            "speed":1,
-            "width":30,
-            "position":0,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":44.5,
-            "hitBeat":49.5,
-            "speed":1,
-            "width":30,
-            "position":0,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":46,
             "hitBeat":51,
@@ -235,43 +207,6 @@
             "position":45,
             "spin":0
         },
-        {
-            "type":"holdnote",
-            "spawnBeat":46.5,
-            "hitBeat":51.5,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":47,
-            "hitBeat":52,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":47.5,
-            "hitBeat":52.5,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":48,
-            "hitBeat":53,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-
         {
             "type":"note",
             "spawnBeat":49,
@@ -282,34 +217,6 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":49.5,
-            "hitBeat":54.5,
-            "speed":1,
-            "width":30,
-            "position":180,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":50,
-            "hitBeat":55,
-            "speed":1,
-            "width":30,
-            "position":180,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":50.5,
-            "hitBeat":55.5,
-            "speed":1,
-            "width":30,
-            "position":180,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":52,
             "hitBeat":57,
@@ -318,43 +225,6 @@
             "position":135,
             "spin":0
         },
-        {
-            "type":"holdnote",
-            "spawnBeat":52.5,
-            "hitBeat":57.5,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":53,
-            "hitBeat":58,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":53.5,
-            "hitBeat":58.5,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":54,
-            "hitBeat":59,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-
         {
             "type":"note",
             "spawnBeat":55,
@@ -365,34 +235,6 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":55.5,
-            "hitBeat":60.5,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":56,
-            "hitBeat":61,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":56.5,
-            "hitBeat":61.5,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":58,
             "hitBeat":63,
@@ -401,43 +243,6 @@
             "position":225,
             "spin":0
         },
-        {
-            "type":"holdnote",
-            "spawnBeat":58.5,
-            "hitBeat":63.5,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":59,
-            "hitBeat":64,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":59.5,
-            "hitBeat":64.5,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":60,
-            "hitBeat":65,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-
         {
             "type":"note",
             "spawnBeat":61,
@@ -448,67 +253,12 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":61.5,
-            "hitBeat":66.5,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":62,
-            "hitBeat":67,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":62.5,
-            "hitBeat":67.5,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":64,
             "hitBeat":69,
             "speed":1,
             "width":45,
             "position":135,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":64.5,
-            "hitBeat":69.5,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":65,
-            "hitBeat":70,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":65.5,
-            "hitBeat":70.5,
-            "speed":1,
-            "width":30,
-            "position":315,
             "spin":0
         },
 
@@ -522,34 +272,6 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":67.5,
-            "hitBeat":72.5,
-            "speed":1,
-            "width":30,
-            "position":0,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":68,
-            "hitBeat":73,
-            "speed":1,
-            "width":30,
-            "position":0,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":68.5,
-            "hitBeat":73.5,
-            "speed":1,
-            "width":30,
-            "position":0,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":70,
             "hitBeat":75,
@@ -558,43 +280,6 @@
             "position":45,
             "spin":0
         },
-        {
-            "type":"holdnote",
-            "spawnBeat":70.5,
-            "hitBeat":75.5,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":71,
-            "hitBeat":76,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":71.5,
-            "hitBeat":76.5,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":72,
-            "hitBeat":77,
-            "speed":1,
-            "width":30,
-            "position":225,
-            "spin":0
-        },
-
         {
             "type":"note",
             "spawnBeat":73,
@@ -605,34 +290,6 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":73.5,
-            "hitBeat":78.5,
-            "speed":1,
-            "width":30,
-            "position":180,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":74,
-            "hitBeat":79,
-            "speed":1,
-            "width":30,
-            "position":180,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":74.5,
-            "hitBeat":79.5,
-            "speed":1,
-            "width":30,
-            "position":180,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":76,
             "hitBeat":81,
@@ -641,43 +298,6 @@
             "position":135,
             "spin":0
         },
-        {
-            "type":"holdnote",
-            "spawnBeat":76.5,
-            "hitBeat":81.5,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":77,
-            "hitBeat":82,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":77.5,
-            "hitBeat":82.5,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":78,
-            "hitBeat":83,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-
         {
             "type":"note",
             "spawnBeat":79,
@@ -688,34 +308,6 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":79.5,
-            "hitBeat":84.5,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":80,
-            "hitBeat":85,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":80.5,
-            "hitBeat":85.5,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":82,
             "hitBeat":87,
@@ -724,43 +316,6 @@
             "position":225,
             "spin":0
         },
-        {
-            "type":"holdnote",
-            "spawnBeat":82.5,
-            "hitBeat":87.5,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":83,
-            "hitBeat":88,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":83.5,
-            "hitBeat":88.5,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":84,
-            "hitBeat":89,
-            "speed":1,
-            "width":30,
-            "position":45,
-            "spin":0
-        },
-
         {
             "type":"note",
             "spawnBeat":85,
@@ -771,34 +326,6 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":85.5,
-            "hitBeat":90.5,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":86,
-            "hitBeat":91,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":86.5,
-            "hitBeat":91.5,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-
-        {
             "type":"flipnote",
             "spawnBeat":88,
             "hitBeat":93,
@@ -808,66 +335,11 @@
             "spin":0
         },
         {
-            "type":"holdnote",
-            "spawnBeat":88.5,
-            "hitBeat":93.5,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":89,
-            "hitBeat":94,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":89.5,
-            "hitBeat":94.5,
-            "speed":1,
-            "width":30,
-            "position":315,
-            "spin":0
-        },
-
-        {
             "type":"note",
             "spawnBeat":91,
             "hitBeat":96,
             "speed":1,
             "width":45,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":91.5,
-            "hitBeat":96.5,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":92,
-            "hitBeat":97,
-            "speed":1,
-            "width":30,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":92.5,
-            "hitBeat":97.5,
-            "speed":1,
-            "width":30,
             "position":270,
             "spin":0
         },
@@ -883,38 +355,11 @@
         },
         {
             "type":"note",
-            "spawnBeat":95,
-            "hitBeat":100,
-            "speed":1,
-            "width":45,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":96,
-            "hitBeat":101,
-            "speed":1,
-            "width":45,
-            "position":0,
-            "spin":0
-        },
-        {
-            "type":"note",
             "spawnBeat":97,
             "hitBeat":102,
             "speed":1,
             "width":45,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":98.5,
-            "hitBeat":103.5,
-            "speed":1,
-            "width":45,
-            "position":0,
+            "position":315,
             "spin":0
         },
 
@@ -929,38 +374,11 @@
         },
         {
             "type":"note",
-            "spawnBeat":101,
-            "hitBeat":106,
-            "speed":1,
-            "width":45,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":102,
-            "hitBeat":107,
-            "speed":1,
-            "width":45,
-            "position":90,
-            "spin":0
-        },
-        {
-            "type":"note",
             "spawnBeat":103,
             "hitBeat":108,
             "speed":1,
             "width":45,
-            "position":135,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":104.5,
-            "hitBeat":109.5,
-            "speed":1,
-            "width":45,
-            "position":90,
+            "position":45,
             "spin":0
         },
 
@@ -975,29 +393,11 @@
         },
         {
             "type":"note",
-            "spawnBeat":107,
-            "hitBeat":112,
-            "speed":1,
-            "width":45,
-            "position":135,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":108,
-            "hitBeat":113,
-            "speed":1,
-            "width":45,
-            "position":180,
-            "spin":0
-        },
-        {
-            "type":"note",
             "spawnBeat":109,
             "hitBeat":114,
             "speed":1,
             "width":45,
-            "position":225,
+            "position":135,
             "spin":0
         },
         {
@@ -1037,33 +437,6 @@
             "position":90,
             "spin":0
         },
-        {
-            "type":"holdnote",
-            "spawnBeat":115.5,
-            "hitBeat":120.5,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":116,
-            "hitBeat":121,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
-        {
-            "type":"holdnote",
-            "spawnBeat":116.5,
-            "hitBeat":121.5,
-            "speed":1,
-            "width":30,
-            "position":90,
-            "spin":0
-        },
 
         {
             "type":"note",
@@ -1076,38 +449,11 @@
         },
         {
             "type":"note",
-            "spawnBeat":119,
-            "hitBeat":124,
-            "speed":1,
-            "width":45,
-            "position":45,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":120,
-            "hitBeat":125,
-            "speed":1,
-            "width":45,
-            "position":0,
-            "spin":0
-        },
-        {
-            "type":"note",
             "spawnBeat":121,
             "hitBeat":126,
             "speed":1,
             "width":45,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":122.5,
-            "hitBeat":127.5,
-            "speed":1,
-            "width":45,
-            "position":0,
+            "position":45,
             "spin":0
         },
 
@@ -1122,38 +468,11 @@
         },
         {
             "type":"note",
-            "spawnBeat":125,
-            "hitBeat":130,
-            "speed":1,
-            "width":45,
-            "position":315,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":126,
-            "hitBeat":131,
-            "speed":1,
-            "width":45,
-            "position":270,
-            "spin":0
-        },
-        {
-            "type":"note",
             "spawnBeat":127,
             "hitBeat":132,
             "speed":1,
             "width":45,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":128.5,
-            "hitBeat":133.5,
-            "speed":1,
-            "width":45,
-            "position":270,
+            "position":315,
             "spin":0
         },
 
@@ -1168,29 +487,11 @@
         },
         {
             "type":"note",
-            "spawnBeat":131,
-            "hitBeat":136,
-            "speed":1,
-            "width":45,
-            "position":225,
-            "spin":0
-        },
-        {
-            "type":"note",
-            "spawnBeat":132,
-            "hitBeat":137,
-            "speed":1,
-            "width":45,
-            "position":180,
-            "spin":0
-        },
-        {
-            "type":"note",
             "spawnBeat":133,
             "hitBeat":138,
             "speed":1,
             "width":45,
-            "position":135,
+            "position":225,
             "spin":0
         },
         {
@@ -1221,5 +522,5 @@
             "spin":0
         }
     ],
-    "songEnd":200
+    "songEnd":150
 }

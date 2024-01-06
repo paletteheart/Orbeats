@@ -250,7 +250,7 @@ function updateSongSelect()
         -- update what map (difficulty) is selected
         currentDifficulty = currentSong.difficulties[mapSelectionRounded]
         
-        if upPressed or aPressed then
+        if (upPressed or aPressed) and not songStarting then
             if selecting == "play" then
                 songStarting = true
                 sfx.play:play()
@@ -265,7 +265,7 @@ function updateSongSelect()
             end
         end
 
-        if downPressed or bPressed then
+        if (downPressed or bPressed) and not songStarting then
             if selecting == "map" then
                 selecting = "song"
                 selectBarCurrentY = -25
@@ -362,19 +362,27 @@ function updateSongSelect()
     end
     
     if songStarting then
-        if fadeOut > 0 then
-            fadeOut -= 0.1
-        else
-            local bpm = currentSong.bpm
-            local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
-            local beatOffset = currentSong.beatOffset
-            if music:isPlaying() then
-                music:stop()
-            end
-            setUpSong(bpm, beatOffset, musicFile, songTablePath)
-            resetAnimationValues()
+        -- get the map file path
+        local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
+        -- check if the map exists, do nothing if not
+        if not pd.file.exists(songTablePath) then
             songStarting = false
-            return "song"
+        else
+            -- fade out and then load map
+            if fadeOut > 0 then
+                fadeOut -= 0.1
+            else
+                local bpm = currentSong.bpm
+                
+                local beatOffset = currentSong.beatOffset
+                if music:isPlaying() then
+                    music:stop()
+                end
+                setUpSong(bpm, beatOffset, musicFile, songTablePath)
+                resetAnimationValues()
+                songStarting = false
+                return "song"
+            end
         end
     end
     return "songSelect"

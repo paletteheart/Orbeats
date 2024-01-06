@@ -1,0 +1,14 @@
+{
+    "name":"Test",
+    "artist":"Test",
+    "difficulties":[
+        "Easy",
+        "Normal",
+        "Hard",
+        "Expert",
+        "Stupidly Difficult"
+    ],
+    "bpm":180,
+    "beatOffset":0,
+    "preview":0
+}

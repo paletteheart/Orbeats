@@ -10,12 +10,39 @@
             "spin":0
         },
         {
+            "type":"note",
+            "spawnBeat":-3.5,
+            "hitBeat":1.5,
+            "speed":1,
+            "width":45,
+            "position":0,
+            "spin":0
+        },
+        {
             "type":"flipnote",
             "spawnBeat":-2,
             "hitBeat":3,
             "speed":1,
             "width":45,
             "position":0,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":-1,
+            "hitBeat":4,
+            "speed":1,
+            "width":45,
+            "position":180,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":0,
+            "hitBeat":5,
+            "speed":1,
+            "width":45,
+            "position":180,
             "spin":0
         },
         {
@@ -27,11 +54,38 @@
             "position":180,
             "spin":0
         },
+        {
+            "type":"note",
+            "spawnBeat":2.5,
+            "hitBeat":7.5,
+            "speed":1,
+            "width":45,
+            "position":225,
+            "spin":0
+        },
 
         {
             "type":"note",
             "spawnBeat":4,
             "hitBeat":9,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":5,
+            "hitBeat":10,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":5,
+            "hitBeat":11,
             "speed":1,
             "width":45,
             "position":270,
@@ -48,11 +102,38 @@
         },
         {
             "type":"note",
+            "spawnBeat":8.5,
+            "hitBeat":13.5,
+            "speed":1,
+            "width":45,
+            "position":90,
+            "spin":0
+        },
+        {
+            "type":"note",
             "spawnBeat":10,
             "hitBeat":15,
             "speed":1,
             "width":45,
             "position":90,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":11,
+            "hitBeat":16,
+            "speed":1,
+            "width":45,
+            "position":60,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":12,
+            "hitBeat":17,
+            "speed":1,
+            "width":45,
+            "position":30,
             "spin":0
         },
 
@@ -103,12 +184,39 @@
             "spin":0
         },
         {
+            "type":"note",
+            "spawnBeat":20.5,
+            "hitBeat":25.5,
+            "speed":1,
+            "width":45,
+            "position":180,
+            "spin":0
+        },
+        {
             "type":"flipnote",
             "spawnBeat":22,
             "hitBeat":27,
             "speed":1,
             "width":45,
             "position":180,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":23,
+            "hitBeat":28,
+            "speed":1,
+            "width":45,
+            "position":0,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":24,
+            "hitBeat":29,
+            "speed":1,
+            "width":45,
+            "position":0,
             "spin":0
         },
         {
@@ -120,11 +228,38 @@
             "position":0,
             "spin":0
         },
+        {
+            "type":"note",
+            "spawnBeat":26.5,
+            "hitBeat":31.5,
+            "speed":1,
+            "width":45,
+            "position":45,
+            "spin":0
+        },
         
         {
             "type":"note",
             "spawnBeat":28,
             "hitBeat":33,
+            "speed":1,
+            "width":45,
+            "position":90,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":29,
+            "hitBeat":34,
+            "speed":1,
+            "width":45,
+            "position":90,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":30,
+            "hitBeat":35,
             "speed":1,
             "width":45,
             "position":90,
@@ -141,11 +276,38 @@
         },
         {
             "type":"note",
+            "spawnBeat":32.5,
+            "hitBeat":37.5,
+            "speed":1,
+            "width":45,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
             "spawnBeat":34,
             "hitBeat":39,
             "speed":1,
             "width":45,
             "position":270,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":35,
+            "hitBeat":40,
+            "speed":1,
+            "width":45,
+            "position":240,
+            "spin":0
+        },
+        {
+            "type":"note",
+            "spawnBeat":36,
+            "hitBeat":41,
+            "speed":1,
+            "width":45,
+            "position":210,
             "spin":0
         },
 
