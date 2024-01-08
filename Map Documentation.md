@@ -111,7 +111,7 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 			 - **y** - The y value the orbit will move to.
 			 - **animation** - The animation the orbit will take to reach the y value. Can be "linear", "ease-in", "ease-out", or "none".
 			 - **power** - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out. Doesn't do anything for any other animation value.
-	 - **text*** - A list of objects defining when, where, and what text will show on the screen.
+	 - **text*** - A list of objects defining when, where, and what text will show on the screen. *Text will be drawn centered horizontally and vertically to the given x and y.*
 		 - Each text object is defined by a set of attributes:
 			 - **startBeat** - The beat at which this object's text will be shown.
 			 - **endBeat** - The beat at which this object's text will be removed.
