@@ -105,6 +105,7 @@ restartTable.tablePath = "songs/Orubooru/Easy.json"
 restartTable.bpm = songBpm
 restartTable.beatOffset = beatOffset
 restartTable.musicFilePath = "songs/Orubooru/Orubooru"
+songEnded = false
 
 -- Score display variables
 score = 0
@@ -144,6 +145,17 @@ local lastMovementBeatY = 0 -- used for animating the orbit movement
 local function incrementCombo()
     combo += 1
     if combo > largestCombo then largestCombo = combo end
+end
+
+local function drawTextCentered(text, x, y, font)
+    -- draws text centered both horizontally and vertically to the point given
+    local textWidth, textHeight = gfx.getTextSize(text, font)
+    gfx.setFontFamily(font)
+    gfx.drawTextAligned(text, x, y-textHeight/2, kTextAlignment.center)
+end
+
+local function songOver()
+    
 end
 
 local function updateNotes()
@@ -424,16 +436,29 @@ local function updateEffects()
         if fx.text ~= nil then
             if #fx.text ~= 0 then
                 for i=#fx.text,1,-1 do
-                    if fx.text[i].startBeat <= currentBeat then
-                        table.insert(textInstances, fx.text[i])
-                        table.remove(fx.text, i)
+                    if music:isPlaying() then
+                        if fx.text[i].startBeat <= currentBeat then
+                            table.insert(textInstances, fx.text[i])
+                            table.remove(fx.text, i)
+                        end
+                    else
+                        if fx.text[i].startBeat <= fakeCurrentBeat then
+                            table.insert(textInstances, fx.text[i])
+                            table.remove(fx.text, i)
+                        end
                     end
                 end
             end
         end
         for i=#textInstances,1,-1 do
-            if textInstances[i].endBeat <= currentBeat then
-                table.remove(textInstances, i)
+            if music:isPlaying() then
+                if textInstances[i].endBeat <= currentBeat then
+                    table.remove(textInstances, i)
+                end
+            else
+                if textInstances[i].endBeat <= fakeCurrentBeat then
+                    table.remove(textInstances, i)
+                end
             end
         end
 
@@ -448,15 +473,18 @@ function updateSong()
     -- update the fake beat if the music isn't playing
     fakeCurrentBeat = delta / math.floor((tickSpeed*60)/songBpm)
 
-    -- if delta is 0, begin playing song
-    if delta >= 0 and not music:isPlaying() then
-        music:play()
-    end
-
     -- update the audio timer variable
     musicTime = music:getOffset()
     -- update the current beat
     currentBeat = (musicTime / (60/songBpm))-beatOffset
+
+    -- check if the song is over
+    songEnded = songTable.songEnd <= currentBeat or songEnded
+
+    -- if delta is 0, begin playing song
+    if (delta >= 0 and not music:isPlaying()) or songEnded then
+        music:play()
+    end
 
     -- update fade in
     if fadeIn < 1 then fadeIn += 0.1 end
@@ -527,9 +555,12 @@ function updateSong()
         end
     end
     -- check if the song is over and are going to the song end screen
-    if songTable.songEnd <= currentBeat then
+    if songEnded then
         if fadeOut > 0 then
             fadeOut -= 0.1
+            if music:isPlaying() then
+                music:setVolume(music:getVolume()-0.1)
+            end
         else
             music:stop()
             return "songEndScreen"
@@ -641,10 +672,10 @@ function drawSong()
 
     -- draw text effects
     for i=#textInstances,1,-1 do
-        if textInstances.font == nil then
-            gfx.drawText(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts.orbeatsSmall)
+        if textInstances[i].font == nil then
+            drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts.orbeatsSmall)
         else
-            gfx.drawText(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts[textInstances.font])
+            drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts[textInstances[i].font])
         end
     end
 
@@ -682,6 +713,7 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     delta = -(tickSpeed*3)
     fadeOut = 1
     fadeIn = 0
+    songEnded = false
     -- Music Variables
     isPlaying = false
     lastBeat = 0
@@ -702,8 +734,10 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     restartTable.tablePath = tablePath
 
     -- load the music file
+    music = pd.sound.fileplayer.new()
     music:load(musicFilePath)
     music:setVolume(1)
+    music:setFinishCallback(songOver())
 end
 
 
@@ -726,4 +760,3 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     aHeld = pd.buttonIsPressed(pd.kButtonA)
     bHeld = pd.buttonIsPressed(pd.kButtonB)
 end
-

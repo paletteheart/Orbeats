@@ -54,6 +54,11 @@ function updateTitle()
         end
     end
 
+    -- if jingle finished and we're still on the title, start the menu music
+    if not sfx.jingle:isPlaying() then
+        menuBgm:play(0)
+    end
+
     -- check if any button has been pressed
     if (upPressed or downPressed or leftPressed or rightPressed or aPressed or bPressed) and not start then
         sfx.low:play()

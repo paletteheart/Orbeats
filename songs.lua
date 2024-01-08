@@ -72,6 +72,7 @@ local selecting = "song"
 
 local pointerSprite = gfx.image.new("sprites/pointer")
 
+-- Audio Variables
 sfx = {}
 sfx.low = pd.sound.sampleplayer.new("sfx/low")
 sfx.mid = pd.sound.sampleplayer.new("sfx/mid")
@@ -80,6 +81,8 @@ sfx.play = pd.sound.sampleplayer.new("sfx/play")
 sfx.click = pd.sound.sampleplayer.new("sfx/click")
 sfx.tap = pd.sound.sampleplayer.new("sfx/tap")
 sfx.jingle = pd.sound.sampleplayer.new("sfx/jingle")
+
+menuBgm = pd.sound.fileplayer.new("bgm/Cosmos")
 
 -- Song variables
 currentSongList = songListSortedByArtist
@@ -90,6 +93,7 @@ songTable = {}
 sortBy = ""
 sortSongs = true
 local songStarting = false
+tutorialStarting = false
 local songSelection = 1
 local songSelectionRounded = songSelection
 local mapSelection = -100
@@ -112,7 +116,7 @@ local songBarCurrentY = 1000
 local songBarTargetY = 800
 local songBarCurrentRadius = 600
 local songBarTargetRadius = 600
-local selectBarCurrentY = -25
+local selectBarCurrentY = -52
 local selectBarTargetY = 0
 local songDataCurrentX = math.min(-gfx.getTextSize(currentSong.name), -100)
 local songDataTargetX = 0
@@ -185,6 +189,11 @@ function updateSongSelect()
         oldSongSelectionTime = 0
     end
 
+    if not menuBgm:isPlaying() then
+        menuBgm:play(0)
+        menuBgm:setVolume(1)
+    end
+
     -- update how long left and right has been held
     if leftHeld then
         leftHeldFor += 1
@@ -253,13 +262,12 @@ function updateSongSelect()
         if (upPressed or aPressed) and not songStarting then
             if selecting == "play" then
                 songStarting = true
+                tutorialStarting = false
                 sfx.play:play()
             elseif selecting == "map" then
-                selectBarCurrentY = -25
                 selecting = "play"
                 sfx.high:play()
             elseif selecting == "song" then
-                selectBarCurrentY = -25
                 selecting = "map"
                 sfx.mid:play()
             end
@@ -268,11 +276,11 @@ function updateSongSelect()
         if (downPressed or bPressed) and not songStarting then
             if selecting == "map" then
                 selecting = "song"
-                selectBarCurrentY = -25
+                selectBarCurrentY = -52
                 sfx.low:play()
             elseif selecting == "play" then
                 selecting = "map"
-                selectBarCurrentY = -25
+                selectBarCurrentY = -52
                 sfx.mid:play()
             end
         end
@@ -330,6 +338,7 @@ function updateSongSelect()
                     music:load(musicFile)
                     music:setVolume(0.01)
                     music:setVolume(1,1,1)
+                    menuBgm:setVolume(0,0,1)
                     music:play()
                     music:setOffset(currentSong.preview)
                     playedPreview = true
@@ -340,6 +349,7 @@ function updateSongSelect()
                 else
                     if music:getOffset() >= currentSong.preview+9 and music:getVolume() == 1 then
                         music:setVolume(0,0,1)
+                        menuBgm:setVolume(1,1,1)
                     end
                 end
             end
@@ -350,6 +360,7 @@ function updateSongSelect()
         if music:isPlaying() then
             music:stop()
         end
+        menuBgm:setVolume(1,1,1)
         playedPreview = false
         -- plays a click when moving to a new song
         sfx.click:play()
@@ -373,11 +384,11 @@ function updateSongSelect()
                 fadeOut -= 0.1
             else
                 local bpm = currentSong.bpm
-                
                 local beatOffset = currentSong.beatOffset
                 if music:isPlaying() then
                     music:stop()
                 end
+                menuBgm:stop()
                 setUpSong(bpm, beatOffset, musicFile, songTablePath)
                 resetAnimationValues()
                 songStarting = false
@@ -385,6 +396,34 @@ function updateSongSelect()
             end
         end
     end
+
+    if tutorialStarting then
+        -- get the map file path
+        local songTablePath = "tutorial/Tutorial.json"
+        -- check if the map exists, do nothing if not
+        if not pd.file.exists(songTablePath) then
+            songStarting = false
+        else
+            -- fade out and then load map
+            if fadeOut > 0 then
+                fadeOut -= 0.1
+            else
+                local tutorialData = json.decodeFile(pd.file.open("tutorial/songData.json"))
+                local bpm = tutorialData.bpm
+                local beatOffset = tutorialData.beatOffset
+                if music:isPlaying() then
+                    music:stop()
+                end
+                menuBgm:stop()
+                local tutorialMusicFile = ("tutorial/Tutorial")
+                setUpSong(bpm, beatOffset, tutorialMusicFile, songTablePath)
+                resetAnimationValues()
+                tutorialStarting = false
+                return "song"
+            end
+        end
+    end
+
     return "songSelect"
 end
 
@@ -468,12 +507,18 @@ function drawSongSelect()
     if scores ~= nil then
         if scores[currentSong.name] ~= nil then
             if scores[currentSong.name][currentDifficulty] ~= nil then
-                currentHiScore = scores[currentSong.name][currentDifficulty].score
-                currentBestRank = scores[currentSong.name][currentDifficulty].rating
-                if scores[currentSong.name][currentDifficulty].fc then
-                    currentHiCombo = -1
-                else
-                    currentHiCombo = scores[currentSong.name][currentDifficulty].combo
+                if scores[currentSong.name][currentDifficulty].score ~= nil then
+                    currentHiScore = scores[currentSong.name][currentDifficulty].score
+                end
+                if scores[currentSong.name][currentDifficulty].rating ~= nil then
+                    currentBestRank = scores[currentSong.name][currentDifficulty].rating
+                end
+                if scores[currentSong.name][currentDifficulty].combo ~= nil and scores[currentSong.name][currentDifficulty].fc ~= nil then
+                    if scores[currentSong.name][currentDifficulty].fc then
+                        currentHiCombo = -1
+                    else
+                        currentHiCombo = scores[currentSong.name][currentDifficulty].combo
+                    end
                 end
             end
         end
@@ -553,14 +598,24 @@ function drawSongSelect()
     gfx.setLineWidth(2)
     gfx.drawRoundRect(350, controlsCurrentY, controlsBubbleWidth, 26, 3)
     gfx.drawText(char.right.."/"..char.cw, 355, controlsCurrentY+4, fonts.orbeatsSans)
-
-    -- draw the up/down controls bar
+    
+    -- draw the tutorial bubble
     if ticksSinceInput > 120 then
         selectBarTargetY = 0
     else
-        selectBarTargetY = -25
+        selectBarTargetY = -52
     end
     selectBarCurrentY = closeDistance(selectBarCurrentY, selectBarTargetY, 0.3)
+    local tutorialText = ("Tutorial & Options:"..char.menu)
+    local tutorialTextWidth = gfx.getTextSize(tutorialText, fonts.orbeatsSans)
+    gfx.setColor(gfx.kColorWhite)
+    gfx.fillRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
+    gfx.setColor(gfx.kColorBlack)
+    gfx.setLineWidth(2)
+    gfx.drawRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
+    gfx.drawText(tutorialText, screenWidth-tutorialTextWidth-3, selectBarCurrentY+30, fonts.orbeatsSans)
+
+    -- draw the up/down controls bar
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRect(0, selectBarCurrentY, screenWidth, 25)
     gfx.setColor(gfx.kColorBlack)

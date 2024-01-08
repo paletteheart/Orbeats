@@ -96,11 +96,11 @@ local function initEndScreen()
         scores[currentSong.name][currentDifficulty] = {}
     end
     
-    if songHiScore < score then
+    if songHiScore == nil or songHiScore < score then
         scores[currentSong.name][currentDifficulty].score = score
         scores[currentSong.name][currentDifficulty].rating = songRating
     end
-    if songHiCombo < largestCombo then
+    if songHiCombo == nil or songHiCombo < largestCombo then
         scores[currentSong.name][currentDifficulty].combo = largestCombo
         scores[currentSong.name][currentDifficulty].fc = fullCombo
     end
@@ -135,6 +135,8 @@ function updateEndScreen()
     end
     if delta > 60 then
         continueTargetY = 215
+        menuBgm:play(0)
+        menuBgm:setVolume(1)
     end
 
     -- initialize the end screen
@@ -217,14 +219,14 @@ function drawEndScreen()
     gfx.drawText("Misses: "..missedNotes, statsCurrentX+5, statsY+55, fonts.orbeatsSans)
 
     gfx.drawText("Combo: "..largestCombo, statsCurrentX+5, statsY+80, fonts.orbeatsSans)
-    if songHiCombo < largestCombo then
+    if songHiCombo ~= nil and songHiCombo < largestCombo then
         gfx.drawText("New Best Combo!", statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
     else
         gfx.drawText("Best Combo: "..songHiCombo, statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
     end
 
     gfx.drawText("Score: "..score, statsCurrentX+5, statsY+120, fonts.orbeatsSans)
-    if songHiScore < score then
+    if songHiScore ~= nil and songHiScore < score then
         gfx.drawText("New Best Score!", statsCurrentX+5, statsY+140, fonts.orbeatsSmall)
     else
         gfx.drawText("Best Score: "..songHiScore, statsCurrentX+5, statsY+140, fonts.orbeatsSmall)

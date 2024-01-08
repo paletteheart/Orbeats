@@ -1,0 +1,367 @@
+{
+    "notes":[
+        {
+            "type":"note",
+            "spawnBeat":60,
+            "hitBeat":70,
+            "speed":0.75,
+            "width":60,
+            "position":0,
+            "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":84,
+            "hitBeat":94,
+            "speed":0.75,
+            "width":60,
+            "position":180,
+            "spin":0
+        },
+
+        {
+            "type":"flipnote",
+            "spawnBeat":132,
+            "hitBeat":142,
+            "speed":0.75,
+            "width":60,
+            "position":90,
+            "spin":0
+        },
+
+        {
+            "type":"flipnote",
+            "spawnBeat":168,
+            "hitBeat":178,
+            "speed":0.75,
+            "width":60,
+            "position":90,
+            "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":228,
+            "hitBeat":238,
+            "speed":0.75,
+            "width":60,
+            "position":180,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":229,
+            "hitBeat":239,
+            "speed":0.75,
+            "width":60,
+            "position":180,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":230,
+            "hitBeat":240,
+            "speed":0.75,
+            "width":60,
+            "position":180,
+            "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":252,
+            "hitBeat":262,
+            "speed":0.75,
+            "width":60,
+            "position":225,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":253,
+            "hitBeat":263,
+            "speed":0.75,
+            "width":60,
+            "position":247.5,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":254,
+            "hitBeat":264,
+            "speed":0.75,
+            "width":60,
+            "position":270,
+            "spin":0
+        },
+
+        {
+            "type":"flipnote",
+            "spawnBeat":312,
+            "hitBeat":322,
+            "speed":0.75,
+            "width":60,
+            "position":270,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":313,
+            "hitBeat":323,
+            "speed":0.75,
+            "width":60,
+            "position":90,
+            "spin":0
+        },
+        {
+            "type":"holdnote",
+            "spawnBeat":314,
+            "hitBeat":324,
+            "speed":0.75,
+            "width":60,
+            "position":90,
+            "spin":0
+        },
+
+        {
+            "type":"note",
+            "spawnBeat":372,
+            "hitBeat":382,
+            "speed":0.75,
+            "width":45,
+            "position":0,
+            "spin":-10
+        },
+        {
+            "type":"note",
+            "spawnBeat":374,
+            "hitBeat":384,
+            "speed":1.5,
+            "width":60,
+            "position":0,
+            "spin":0
+        }
+    ],
+    "effects":{
+        "text":[
+            {
+                "startBeat":0,
+                "endBeat":12,
+                "text":"Welcome to Orbeats!",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":12,
+                "endBeat":24,
+                "text":"In this game, you'll\ncontrol your cursor using\nyour crank and buttons.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":24,
+                "endBeat":36,
+                "text":"Notes will move towards\nthe screen, out from the\ncenter of the orbit.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":36,
+                "endBeat":48,
+                "text":"A note is going to\nappear in a moment,\nheaded towards the top\nof the orbit.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":48,
+                "endBeat":60,
+                "text":"Move your cursor using\nthe crank, and when the\nnote reaches it,\npress ↓/Ⓑ.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":72,
+                "endBeat":84,
+                "text":"Did you hit the note?\nHere's another at the\nbottom of the orbit.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":96,
+                "endBeat":108,
+                "text":"The next note is a\nflip note.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":108,
+                "endBeat":120,
+                "text":"Flip notes are hit\nby pressing ↑/Ⓐ, which\nflips your cursor\nacross the orbit.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":120,
+                "endBeat":132,
+                "text":"Move to the round\nside of the note, and\npress ↑/Ⓐ.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":144,
+                "endBeat":156,
+                "text":"Your cursor should\nnow be flipped from\nwhere your crank is\npointed!",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":156,
+                "endBeat":168,
+                "text":"Another flip note is\napproaching where the\nlast was, try to\nhit it.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":180,
+                "endBeat":192,
+                "text":"Your cursor should\nnow be back to where\nyour crank is pointed.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":192,
+                "endBeat":204,
+                "text":"If it's not, you\ncan always press ↑/Ⓐ\nto flip.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":204,
+                "endBeat":216,
+                "text":"Next up is a note\nfollowed by two hold\nnotes.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":216,
+                "endBeat":228,
+                "text":"Hit the note with\n↓/Ⓑ, and hold the\nbutton to hit the lighter\nhold notes.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":240,
+                "endBeat":252,
+                "text":"Did you hit them?\nHere comes another note\nfollowed by hold notes.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":264,
+                "endBeat":276,
+                "text":"For those you\nneeded to move the\ncrank while holding the\nbutton.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":276,
+                "endBeat":288,
+                "text":"Flip notes can\nalso have hold notes\nafter them.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":288,
+                "endBeat":300,
+                "text":"The hold notes\nwill be on the pointed\nend of the flip\nnote.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":300,
+                "endBeat":312,
+                "text":"Hold down ↑/Ⓐ\nafter flipping to\nhit the hold notes.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":324,
+                "endBeat":336,
+                "text":"Some notes will\nspin as they approach\nthe orbit.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":336,
+                "endBeat":348,
+                "text":"Some notes may be\nfaster than others\nas they approach the\norbit.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":348,
+                "endBeat":360,
+                "text":"Some notes may be\nlarger or smaller\nthan others.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":360,
+                "endBeat":372,
+                "text":"Here come examples\nof each.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":384,
+                "endBeat":396,
+                "text":"In a moment, the\ntutorial will end.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":396,
+                "endBeat":408,
+                "text":"The song end screen\nwill show your stats\nand your rating.",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            },
+            {
+                "startBeat":408,
+                "endBeat":420,
+                "text":"Thank you for playing\nOrbeats!",
+                "x":200,
+                "y":120,
+                "font":"orbeatsSans"
+            }
+        ]
+    },
+    "songEnd":420
+}

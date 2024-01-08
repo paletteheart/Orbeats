@@ -51,11 +51,18 @@ local function addSortByMenuItem()
 		sortSongs = true
 	end)
 end
+local function addTutorialMenuItem()
+	return menu:addMenuItem("Tutorial", function()
+		tutorialStarting = true
+		songStarting = false
+	end)
+end
 
 local songSelectMenuItem = addSongSelectMenuItem()
 local restartMenuItem = addRestartMenuItem()
 local resetHiScoresMenuItem = addResetHiScoresMenuItem()
 local sortByMenuItem = addSortByMenuItem()
+local tutorialMenuItem = addTutorialMenuItem()
 
 local gameState = "title"
 
@@ -101,6 +108,7 @@ function pd.update()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
 		resetHiScoresMenuItem = addResetHiScoresMenuItem()
+		tutorialMenuItem = addTutorialMenuItem()
 		sortByMenuItem = addSortByMenuItem()
 	elseif gameState == "credits" then
 
