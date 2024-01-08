@@ -569,7 +569,9 @@ function drawSongSelect()
 
     -- draw the play text
     playCurrentY = closeDistance(playCurrentY, playTargetY, 0.3)
-    gfx.drawText(playText, screenCenterX-playTextWidth/2, playCurrentY, fonts.odinRounded)
+    if playCurrentY > -33 then
+        gfx.drawText(playText, screenCenterX-playTextWidth/2, playCurrentY, fonts.odinRounded)
+    end
 
     -- draw the pointer
     pointerCurrentY = closeDistance(pointerCurrentY, pointerTargetY, 0.3)
@@ -578,64 +580,79 @@ function drawSongSelect()
     -- draw menu controls
     local controlsBubbleWidth = 50
     local controlsBubbleHeight = 26
+    local drawControlsBubble = true
     if ticksSinceInput > 120 and selecting ~= "play" then
         controlsTargetY = 200
+        if controlsTargetY == controlsCurrentY then
+            drawControlsBubble = false
+        end
     else
         controlsTargetY = 250
+        drawControlsBubble = true
     end
     controlsCurrentY = closeDistance(controlsCurrentY, controlsTargetY, 0.3)
-    -- draw the left controls bubble
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillRoundRect(0, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
-    gfx.setColor(gfx.kColorBlack)
-    gfx.setLineWidth(2)
-    gfx.drawRoundRect(0, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
-    gfx.drawText(char.left.."/"..char.ccw, 4, controlsCurrentY+4, fonts.orbeatsSans)
-    -- draw the right controls bubble
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillRoundRect(350, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
-    gfx.setColor(gfx.kColorBlack)
-    gfx.setLineWidth(2)
-    gfx.drawRoundRect(350, controlsCurrentY, controlsBubbleWidth, 26, 3)
-    gfx.drawText(char.right.."/"..char.cw, 355, controlsCurrentY+4, fonts.orbeatsSans)
+    if drawControlsBubble then
+        -- draw the left controls bubble
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(0, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawRoundRect(0, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
+        gfx.drawText(char.left.."/"..char.ccw, 4, controlsCurrentY+4, fonts.orbeatsSans)
+        -- draw the right controls bubble
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(350, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawRoundRect(350, controlsCurrentY, controlsBubbleWidth, 26, 3)
+        gfx.drawText(char.right.."/"..char.cw, 355, controlsCurrentY+4, fonts.orbeatsSans)
+    end
     
     -- draw the tutorial bubble
+    local drawSelectBar = true
     if ticksSinceInput > 120 then
         selectBarTargetY = 0
+        if selectBarCurrentY == selectBarTargetY then
+            drawSelectBar = false
+        end
     else
         selectBarTargetY = -52
+        drawSelectBar = true
     end
     selectBarCurrentY = closeDistance(selectBarCurrentY, selectBarTargetY, 0.3)
+
     local tutorialText = ("Tutorial & Options:"..char.menu)
     local tutorialTextWidth = gfx.getTextSize(tutorialText, fonts.orbeatsSans)
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
-    gfx.setColor(gfx.kColorBlack)
-    gfx.setLineWidth(2)
-    gfx.drawRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
-    gfx.drawText(tutorialText, screenWidth-tutorialTextWidth-3, selectBarCurrentY+30, fonts.orbeatsSans)
-
-    -- draw the up/down controls bar
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillRect(0, selectBarCurrentY, screenWidth, 25)
-    gfx.setColor(gfx.kColorBlack)
-    gfx.setLineWidth(2)
-    gfx.drawLine(0, selectBarCurrentY+25, screenWidth, selectBarCurrentY+25)
-    local selectControlText = ""
-    if selecting == "map" then
-        selectControlText = "Confirm:"..char.up.."/"..char.A.." --- Back:"..char.down.."/"..char.B.." --- "
-    elseif selecting == "play" then
-        selectControlText = "Play:"..char.up.."/"..char.A.." --- Back:"..char.down.."/"..char.B.." --- "
-    else
-        selectControlText = "Confirm:"..char.up.."/"..char.A.." --- Confirm:"..char.up.."/"..char.A.." --- "
+    if drawSelectBar then
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
+        gfx.drawText(tutorialText, screenWidth-tutorialTextWidth-3, selectBarCurrentY+30, fonts.orbeatsSans)
+    
+        -- draw the up/down controls bar
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRect(0, selectBarCurrentY, screenWidth, 25)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(2)
+        gfx.drawLine(0, selectBarCurrentY+25, screenWidth, selectBarCurrentY+25)
+        local selectControlText = ""
+        if selecting == "map" then
+            selectControlText = "Confirm:"..char.up.."/"..char.A.." --- Back:"..char.down.."/"..char.B.." --- "
+        elseif selecting == "play" then
+            selectControlText = "Play:"..char.up.."/"..char.A.." --- Back:"..char.down.."/"..char.B.." --- "
+        else
+            selectControlText = "Confirm:"..char.up.."/"..char.A.." --- Confirm:"..char.up.."/"..char.A.." --- "
+        end
+        local selectTextWidth = gfx.getTextSize(selectControlText, fonts.orbeatsSans)
+        local selectX1 = (delta % (selectTextWidth*3))-selectTextWidth
+        local selectX2 = ((delta+selectTextWidth) % (selectTextWidth*3))-selectTextWidth
+        local selectX3 = ((delta+(selectTextWidth*2)) % (selectTextWidth*3))-selectTextWidth
+        gfx.drawText(selectControlText, selectX1, selectBarCurrentY+4, fonts.orbeatsSans)
+        gfx.drawText(selectControlText, selectX2, selectBarCurrentY+4, fonts.orbeatsSans)
+        gfx.drawText(selectControlText, selectX3, selectBarCurrentY+4, fonts.orbeatsSans)
     end
-    local selectTextWidth = gfx.getTextSize(selectControlText, fonts.orbeatsSans)
-    local selectX1 = (delta % (selectTextWidth*3))-selectTextWidth
-    local selectX2 = ((delta+selectTextWidth) % (selectTextWidth*3))-selectTextWidth
-    local selectX3 = ((delta+(selectTextWidth*2)) % (selectTextWidth*3))-selectTextWidth
-    gfx.drawText(selectControlText, selectX1, selectBarCurrentY+4, fonts.orbeatsSans)
-    gfx.drawText(selectControlText, selectX2, selectBarCurrentY+4, fonts.orbeatsSans)
-    gfx.drawText(selectControlText, selectX3, selectBarCurrentY+4, fonts.orbeatsSans)
 
 
     -- check if we're on the reset high scores menu
