@@ -33,7 +33,7 @@ songData.json files follow this specific format:
 
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
 
- - **name** - The name of the song. **Should be the same as the name of the .pda file in the song's folder.**
+ - **name** - The name of the song. **Should be the same as the name of the song's folder, as well as .pda file in the song's folder.**
  - **artist** - The song's artist.
  - **difficulties** - A list of the difficulty maps within the song's folder. **Each entry in the list should be the name of one of the difficulty maps within the song's folder without .json at the end. It is highly recommended that you order these from easiest to hardest.**
  - **bpm** - The bpm of the song.
