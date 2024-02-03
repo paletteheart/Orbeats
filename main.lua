@@ -15,6 +15,8 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local menu <const> = pd.getSystemMenu()
 
+-- pd.datastore.delete("settings")
+
 local sortOptions <const> = {
 	"artist",
 	"name"
@@ -39,6 +41,13 @@ local function addRestartMenuItem()
 		end
 	end)
 end
+local function addToggleSfxMenuItem()
+	return menu:addCheckmarkMenuItem("Hit SFX", playHitSfx, function(hitSfx)
+		playHitSfx = hitSfx
+		settings.sfx = hitSfx
+		pd.datastore.write(settings, "settings")
+	end)
+end
 local function addResetHiScoresMenuItem()
 	return menu:addMenuItem("Reset HiScore", function()
 		resetHiScores = true
@@ -55,11 +64,15 @@ local function addTutorialMenuItem()
 	return menu:addMenuItem("Tutorial", function()
 		tutorialStarting = true
 		songStarting = false
+		tutorialPlayed = true
+		settings.tutorial = tutorialPlayed
+		pd.datastore.write(settings, "settings")
 	end)
 end
 
 local songSelectMenuItem = addSongSelectMenuItem()
 local restartMenuItem = addRestartMenuItem()
+local toggleSfxMenuItem = addToggleSfxMenuItem()
 local resetHiScoresMenuItem = addResetHiScoresMenuItem()
 local sortByMenuItem = addSortByMenuItem()
 local tutorialMenuItem = addTutorialMenuItem()
@@ -102,6 +115,7 @@ function pd.update()
 		gameState = updateSong()
 		songSelectMenuItem = addSongSelectMenuItem()
 		restartMenuItem = addRestartMenuItem()
+		toggleSfxMenuItem = addToggleSfxMenuItem()
 	elseif gameState == "songEndScreen" then
 		gameState = updateEndScreen()
 		songSelectMenuItem = addSongSelectMenuItem()

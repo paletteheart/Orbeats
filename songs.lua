@@ -65,6 +65,16 @@ local songListSortedByArtist <const> = sortSongListByArtist()
 -- Misc variables
 scores = pd.datastore.read("scores")
 
+settings = pd.datastore.read("settings")
+tutorialPlayed = false
+if settings ~= nil then
+    if settings.tutorial ~= nil then tutorialPlayed = settings.tutorial end
+    if settings.sfx ~= nil then playHitSfx = settings.sfx end
+else
+    settings = {}
+end
+
+
 local leftHeldFor = 0 -- a measurement in ticks of how long left has been held
 local rightHeldFor = 0 -- a measurement in ticks of how long right has been held
 local ticksSinceInput = 0
@@ -73,7 +83,6 @@ local selecting = "song"
 local pointerSprite = gfx.image.new("sprites/pointer")
 
 -- Audio Variables
-sfx = {}
 sfx.low = pd.sound.sampleplayer.new("sfx/low")
 sfx.mid = pd.sound.sampleplayer.new("sfx/mid")
 sfx.high = pd.sound.sampleplayer.new("sfx/high")
@@ -140,7 +149,7 @@ local function resetAnimationValues()
     songBarTargetY = 800
     songBarCurrentRadius = 600
     songBarTargetRadius = 600
-    selectBarCurrentY = -25
+    selectBarCurrentY = -52
     selectBarTargetY = 0
     selecting = "song"
     mapSelectionOffset = -100
@@ -276,11 +285,11 @@ function updateSongSelect()
         if (downPressed or bPressed) and not songStarting then
             if selecting == "map" then
                 selecting = "song"
-                selectBarCurrentY = -52
+                -- selectBarCurrentY = -52
                 sfx.low:play()
             elseif selecting == "play" then
                 selecting = "map"
-                selectBarCurrentY = -52
+                -- selectBarCurrentY = -52
                 sfx.mid:play()
             end
         end
@@ -447,7 +456,7 @@ function drawSongSelect()
     gfx.setColor(gfx.kColorWhite)
     gfx.fillCircleAtPoint(screenCenterX, songBarCurrentY, songBarCurrentRadius)
     gfx.setColor(gfx.kColorBlack)
-    gfx.setDitherPattern(1/3)
+    gfx.setDitherPattern(1/3, gfx.image.kDitherTypeDiagonalLine)
     gfx.fillCircleAtPoint(screenCenterX, songBarCurrentY, songBarCurrentRadius)
     gfx.setColor(gfx.kColorWhite)
     gfx.setLineWidth(5)
@@ -612,12 +621,18 @@ function drawSongSelect()
     local drawSelectBar = true
     if ticksSinceInput > 120 then
         selectBarTargetY = 0
-        if selectBarCurrentY == selectBarTargetY then
-            drawSelectBar = false
-        end
     else
-        selectBarTargetY = -52
-        drawSelectBar = true
+        if tutorialPlayed then
+            selectBarTargetY = -52
+            if selectBarCurrentY == selectBarTargetY then
+                drawSelectBar = false
+            end
+        else
+            selectBarTargetY = -26
+            if delta % 15 <= 3 then
+                drawSelectBar = false
+            end
+        end
     end
     selectBarCurrentY = closeDistance(selectBarCurrentY, selectBarTargetY, 0.3)
 

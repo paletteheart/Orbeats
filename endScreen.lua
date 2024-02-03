@@ -95,12 +95,18 @@ local function initEndScreen()
         scores[currentSong.name] = {}
         scores[currentSong.name][currentDifficulty] = {}
     end
+    if songHiScore == nil then
+        songHiScore = 0
+    end
+    if songHiCombo == nil then
+        songHiCombo = 0
+    end
     
-    if songHiScore == nil or songHiScore < score then
+    if songHiScore < score then
         scores[currentSong.name][currentDifficulty].score = score
         scores[currentSong.name][currentDifficulty].rating = songRating
     end
-    if songHiCombo == nil or songHiCombo < largestCombo then
+    if songHiCombo < largestCombo then
         scores[currentSong.name][currentDifficulty].combo = largestCombo
         scores[currentSong.name][currentDifficulty].fc = fullCombo
     end
@@ -173,6 +179,9 @@ function updateEndScreen()
             setUpSong(restartTable.bpm, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             restart = false
             initialized = false
+            if menuBgm:isPlaying() then
+                menuBgm:stop()
+            end
             resetAnimationValues()
             return "song"
         end
@@ -219,14 +228,14 @@ function drawEndScreen()
     gfx.drawText("Misses: "..missedNotes, statsCurrentX+5, statsY+55, fonts.orbeatsSans)
 
     gfx.drawText("Combo: "..largestCombo, statsCurrentX+5, statsY+80, fonts.orbeatsSans)
-    if songHiCombo ~= nil and songHiCombo < largestCombo then
+    if songHiCombo < largestCombo then
         gfx.drawText("New Best Combo!", statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
     else
         gfx.drawText("Best Combo: "..songHiCombo, statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
     end
 
     gfx.drawText("Score: "..score, statsCurrentX+5, statsY+120, fonts.orbeatsSans)
-    if songHiScore ~= nil and songHiScore < score then
+    if songHiScore < score then
         gfx.drawText("New Best Score!", statsCurrentX+5, statsY+140, fonts.orbeatsSmall)
     else
         gfx.drawText("Best Score: "..songHiScore, statsCurrentX+5, statsY+140, fonts.orbeatsSmall)
@@ -262,7 +271,7 @@ function drawEndScreen()
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRect(0, continueCurrentY, screenWidth, 25)
     -- draw continue text
-    local continueText = "Continue:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
+    local continueText = "To Menu:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
     local continueTextWidth = gfx.getTextSize(continueText, fonts.orbeatsSans)
     local continueX1 = (delta % (continueTextWidth*3))-continueTextWidth
     local continueX2 = ((delta+continueTextWidth) % (continueTextWidth*3))-continueTextWidth

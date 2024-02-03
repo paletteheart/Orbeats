@@ -53,6 +53,10 @@ p:setSize(3, 8)
 bgImageTable = gfx.imagetable.new("sprites/bg")
 bgAnim = gfx.animation.loop.new(10, bgImageTable)
 
+sfx = {}
+sfx.hit = pd.sound.sampleplayer.new("sfx/hit")
+playHitSfx = true
+
 -- Orbit variables
 local orbitRadius = 110
 local orbitCenterX = screenCenterX
@@ -114,6 +118,9 @@ local hitTextTime = 15
 local hitTextDisplay = ""
 local hitText = {}
 hitText.perfect = "Perfect!"
+hitText.great = "Great"
+hitText.good = "Good"
+hitText.ok = "Ok"
 hitText.miss = "Miss!"
 
 -- Music variables
@@ -190,7 +197,13 @@ local function updateNotes()
                         else 
                             local hitScore = math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
                             score += hitScore
-                            hitTextDisplay = tostring(hitScore)
+                            if hitScore < 65 then
+                                hitTextDisplay = hitText.ok.." "..hitScore
+                            elseif hitScore < 75 then
+                                hitTextDisplay = hitText.good.." "..hitScore
+                            else
+                                hitTextDisplay = hitText.great.." "..hitScore
+                            end
                         end
                         hitTextTimer = hitTextTime
                         --remove note
@@ -202,6 +215,10 @@ local function updateNotes()
                         p:moveTo(playerX, playerY)
                         p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
                         p:add(10)
+                        -- play sfx
+                        if playHitSfx then
+                            sfx.hit:play()
+                        end
                     end
                 end
             end
@@ -225,6 +242,10 @@ local function updateNotes()
                         p:moveTo(playerX, playerY)
                         p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
                         p:add(3)
+                        -- play sfx
+                        if playHitSfx then
+                            sfx.hit:play()
+                        end
                     end
                 end
             end
@@ -247,7 +268,13 @@ local function updateNotes()
                         else 
                             local hitScore = math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
                             score += hitScore
-                            hitTextDisplay = tostring(hitScore)
+                            if hitScore < 65 then
+                                hitTextDisplay = hitText.ok.." "..hitScore
+                            elseif hitScore < 75 then
+                                hitTextDisplay = hitText.good.." "..hitScore
+                            else
+                                hitTextDisplay = hitText.great.." "..hitScore
+                            end
                         end
                         hitTextTimer = hitTextTime
                         --remove note
@@ -259,6 +286,10 @@ local function updateNotes()
                         p:moveTo(playerX, playerY)
                         p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
                         p:add(10)
+                        -- play sfx
+                        if playHitSfx then
+                            sfx.hit:play()
+                        end
                     end
                 end
             end
@@ -581,16 +612,6 @@ function drawSong()
         gfx.drawText("Combo:"..combo, 2, 220, fonts.orbeatsSans)
     end
 
-    --draw the hit text
-    if hitTextTimer > 0 then
-        if hitTextTimer == hitTextTime then
-            gfx.drawText(hitTextDisplay, 2, 18, fonts.orbeatsSans)
-        else
-            gfx.drawText(hitTextDisplay, 2, 20, fonts.orbeatsSans)
-        end
-    end
-    hitTextTimer -= 1
-
     --draw background
     local bgW, bgH = bgAnim:image():getSize()
     local bgX = orbitCenterX-(bgW/2)
@@ -670,6 +691,21 @@ function drawSong()
 	gfx.setLineWidth(2)
 	gfx.drawCircleAtPoint(playerX, playerY, playerRadius+downBulge)
 
+    --draw the hit text
+    local hitTextWidth, hitTextHeight = gfx.getTextSize(hitTextDisplay, fonts.orbeatsSmall)
+    if hitTextTimer > 0 then
+        if hitTextTimer == hitTextTime then
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillRoundRect(orbitCenterX-hitTextWidth/2-1, orbitCenterY-hitTextHeight/2-3, hitTextWidth+2, hitTextHeight+2, 2)
+            drawTextCentered(hitTextDisplay, orbitCenterX, orbitCenterY-2, fonts.orbeatsSmall)
+        else
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillRoundRect(orbitCenterX-hitTextWidth/2-1, orbitCenterY-hitTextHeight/2-1, hitTextWidth+2, hitTextHeight+2, 2)
+            drawTextCentered(hitTextDisplay, orbitCenterX, orbitCenterY, fonts.orbeatsSmall)
+        end
+    end
+    hitTextTimer -= 1
+
     -- draw text effects
     for i=#textInstances,1,-1 do
         if textInstances[i].font == nil then
@@ -723,10 +759,15 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     orbitCenterX = screenCenterX
     orbitCenterY = screenCenterY
 
+
+
     -- set song data vars
     songTable = json.decodeFile(pd.file.open(tablePath))
     songBpm = bpm
     beatOffset = beatOffset
+
+    textInstances = {}
+    
 
     restartTable.bpm = bpm
     restartTable.beatOffset = beatOffset

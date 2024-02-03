@@ -300,7 +300,7 @@
             {
                 "startBeat":300,
                 "endBeat":312,
-                "text":"Hold down ↑/Ⓐ\nafter flipping to\nhit the hold notes.",
+                "text":"Continue holding\ndown ↑/Ⓐ after flipping\nto hit the hold\nnotes.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
