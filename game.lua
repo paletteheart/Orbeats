@@ -775,6 +775,7 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     -- Music Variables
     lastBeat = 0
     referenceTime = 0
+    referenceBeat = 0
     -- Misc variables
     invertedScreen = false
     playerFlipped = false
