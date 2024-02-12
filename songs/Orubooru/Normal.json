@@ -2119,13 +2119,5 @@
             "spin":0
         }
     ],
-    "effects":{
-        "bpmChange":[
-            {
-                "beat":50,
-                "bpm":50
-            }
-        ]
-    },
     "songEnd":200
 }
