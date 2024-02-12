@@ -129,8 +129,9 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 			 - **y** - The y value where the top left of the text will be.
 			 - **font*** - The font that will be used. Can be set to "orbeatsSans", "odinRounded", or "orbeatsSmall". *Defaults to "orbeatsSmall".*
 	 - **bpmChange*** - A list of objects defining when to change the bpm of the song, and what to change it to. **Does not change the speed of the audio, just the beats per minute.** *The beat count will not change after a bpm change, just the speed of the beats; i.e. if you change bpm at beat 50, it will remain beat 50, but the subsequent beats will be at a different speed.*
-		 - **beat** - The beat at which the bpm will change.
-		 - **bpm** - The bpm to change to.
+		 - Each bpm change object is defined by a set of attributes:
+			 - **beat** - The beat at which the bpm will change.
+			 - **bpm** - The bpm to change to.
  - **songEnd** - The beat when the map will end.
 
 \* \- Optional. Can be left out of a map file without causing errors.
