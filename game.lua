@@ -129,6 +129,8 @@ local musicTime = 0
 local currentBeat = 0
 local fakeCurrentBeat = 0
 local lastBeat = 0 -- is only used for the pulses right now
+local referenceTime = 0 -- used to calculate the current beat in music with changing bpm
+local referenceBeat = 0 -- used to represent how many beats came before a bpm change
 
 -- Note variables   
 noteInstances = {}
@@ -361,7 +363,7 @@ local function updateEffects()
 
                 -- check if it's time for that inversion
                 -- check if it's before the music
-                if delta < 0 then
+                if music:isPlaying() then
                     if nextInversionTime <= fakeCurrentBeat then
                         -- toggle the screen inversion
                         invertedScreen = not invertedScreen
@@ -465,8 +467,11 @@ local function updateEffects()
 
         -- update the text effects
         if fx.text ~= nil then
+            -- check if there's any more text effects
             if #fx.text ~= 0 then
+                -- add all current text effects to the instance list
                 for i=#fx.text,1,-1 do
+                    -- check if the music is playing yet
                     if music:isPlaying() then
                         if fx.text[i].startBeat <= currentBeat then
                             table.insert(textInstances, fx.text[i])
@@ -481,6 +486,7 @@ local function updateEffects()
                 end
             end
         end
+        -- cull all text instances past their expiration
         for i=#textInstances,1,-1 do
             if music:isPlaying() then
                 if textInstances[i].endBeat <= currentBeat then
@@ -489,6 +495,21 @@ local function updateEffects()
             else
                 if textInstances[i].endBeat <= fakeCurrentBeat then
                     table.remove(textInstances, i)
+                end
+            end
+        end
+
+        -- update the bpm
+        if fx.bpmChange ~= nil then
+            -- check if there's any more bpm changes
+            if #fx.bpmChange ~= 0 then
+                local nextBpmChange = fx.bpmChange[1]
+                -- check if it's time for the next bpm change
+                if nextBpmChange.beat <= currentBeat then
+                    songBpm = nextBpmChange.bpm
+                    table.remove(fx.bpmChange, 1)
+                    referenceTime = musicTime
+                    referenceBeat = currentBeat
                 end
             end
         end
@@ -507,7 +528,8 @@ function updateSong()
     -- update the audio timer variable
     musicTime = music:getOffset()
     -- update the current beat
-    currentBeat = (musicTime / (60/songBpm))-beatOffset
+    currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
+    -- print(currentBeat)
 
     -- check if the song is over
     songEnded = songTable.songEnd <= currentBeat or songEnded
@@ -751,8 +773,8 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     fadeIn = 0
     songEnded = false
     -- Music Variables
-    isPlaying = false
     lastBeat = 0
+    referenceTime = 0
     -- Misc variables
     invertedScreen = false
     playerFlipped = false
