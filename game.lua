@@ -116,6 +116,8 @@ score = 0
 local hitTextTimer = 0
 local hitTextTime = 15
 local hitTextDisplay = ""
+local hitTextX = screenCenterX
+local hitTextY = screenCenterY
 local hitText = {}
 hitText.perfect = "Perfect!"
 hitText.great = "Great"
@@ -208,6 +210,8 @@ local function updateNotes()
                             end
                         end
                         hitTextTimer = hitTextTime
+                        hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
+                        hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
                         --remove note
                         table.remove(noteInstances, i)
                         -- up the hit note score and combo counter
@@ -235,6 +239,8 @@ local function updateNotes()
                         hitTextDisplay = hitText.perfect
                         perfectHits += 1
                         hitTextTimer = hitTextTime
+                        hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
+                        hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
                         --remove note
                         table.remove(noteInstances, i)
                         -- up the hit note score
@@ -279,6 +285,8 @@ local function updateNotes()
                             end
                         end
                         hitTextTimer = hitTextTime
+                        hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position-90))
+                        hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position-90))
                         --remove note
                         table.remove(noteInstances, i)
                         -- up the hit note score
@@ -304,6 +312,8 @@ local function updateNotes()
             combo = 0
             hitTextDisplay = hitText.miss
             hitTextTimer = hitTextTime
+            hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
+            hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
         end
 	end
 end
@@ -363,7 +373,7 @@ local function updateEffects()
 
                 -- check if it's time for that inversion
                 -- check if it's before the music
-                if music:isPlaying() then
+                if not music:isPlaying() then
                     if nextInversionTime <= fakeCurrentBeat then
                         -- toggle the screen inversion
                         invertedScreen = not invertedScreen
@@ -624,6 +634,12 @@ end
 
 
 function drawSong()
+    --draw background
+    local bgW, bgH = bgAnim:image():getSize()
+    local bgX = orbitCenterX-(bgW/2)
+    local bgY = orbitCenterY-(bgH/2)
+    bgAnim:draw(bgX, bgY)
+
     --draw the point total
     gfx.setColor(gfx.kColorBlack)
     gfx.drawText(score, 2, 2, fonts.orbeatsSans)
@@ -633,12 +649,6 @@ function drawSong()
         gfx.setColor(gfx.kColorBlack)
         gfx.drawText("Combo:"..combo, 2, 220, fonts.orbeatsSans)
     end
-
-    --draw background
-    local bgW, bgH = bgAnim:image():getSize()
-    local bgX = orbitCenterX-(bgW/2)
-    local bgY = orbitCenterY-(bgH/2)
-    bgAnim:draw(bgX, bgY)
 
     --invert behind the orbit if 50% of the way through with no misses
     if missedNotes == 0 and combo >= #songTable.notes then
@@ -718,12 +728,12 @@ function drawSong()
     if hitTextTimer > 0 then
         if hitTextTimer == hitTextTime then
             gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(orbitCenterX-hitTextWidth/2-1, orbitCenterY-hitTextHeight/2-3, hitTextWidth+2, hitTextHeight+2, 2)
-            drawTextCentered(hitTextDisplay, orbitCenterX, orbitCenterY-2, fonts.orbeatsSmall)
+            gfx.fillRoundRect(hitTextX-hitTextWidth/2-1, hitTextY-hitTextHeight/2-3, hitTextWidth+2, hitTextHeight+2, 2)
+            drawTextCentered(hitTextDisplay, hitTextX, hitTextY-2, fonts.orbeatsSmall)
         else
             gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(orbitCenterX-hitTextWidth/2-1, orbitCenterY-hitTextHeight/2-1, hitTextWidth+2, hitTextHeight+2, 2)
-            drawTextCentered(hitTextDisplay, orbitCenterX, orbitCenterY, fonts.orbeatsSmall)
+            gfx.fillRoundRect(hitTextX-hitTextWidth/2-1, hitTextY-hitTextHeight/2-1, hitTextWidth+2, hitTextHeight+2, 2)
+            drawTextCentered(hitTextDisplay, hitTextX, hitTextY, fonts.orbeatsSmall)
         end
     end
     hitTextTimer -= 1
