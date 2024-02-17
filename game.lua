@@ -404,15 +404,28 @@ local function updateEffects()
                 -- calculate the current orbit x based on the animation style
                 if fx.moveOrbitX[1].animation == "none" or fx.moveOrbitX[1].animation == nil then
                     -- if there's no animation, check if it's time to teleport into place
-                    if currentBeat >= nextMovementBeat then
-                        orbitCenterX = nextOrbitCenterX
-                        oldOrbitCenterX = orbitCenterX
-                        lastMovementBeatX = nextMovementBeat
-                        table.remove(fx.moveOrbitX, 1)
+                    -- check if the music is playing
+                    if not music:isPlaying() then
+                        if fakeCurrentBeat >= nextMovementBeat then
+                            orbitCenterX = nextOrbitCenterX
+                            oldOrbitCenterX = orbitCenterX
+                            lastMovementBeatX = nextMovementBeat
+                            table.remove(fx.moveOrbitX, 1)
+                        end
+                    else
+                        if currentBeat >= nextMovementBeat then
+                            orbitCenterX = nextOrbitCenterX
+                            oldOrbitCenterX = orbitCenterX
+                            lastMovementBeatX = nextMovementBeat
+                            table.remove(fx.moveOrbitX, 1)
+                        end
                     end
                 else
                     -- if there is animation, get our current time in the animation
                     local t = (currentBeat - lastMovementBeatX) / (nextMovementBeat - lastMovementBeatX)
+                    if not music:isPlaying() then
+                        t = (fakeCurrentBeat - lastMovementBeatX) / (nextMovementBeat - lastMovementBeatX)
+                    end
                     t = math.max(0, math.min(1, t))
 
                     if fx.moveOrbitX[1].animation == "linear" then
@@ -423,10 +436,18 @@ local function updateEffects()
                         orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t^(1/fx.moveOrbitX[1].power)
                     end
                     -- set the old orbit x to the current one if we've reached the destination
-                    if currentBeat >= nextMovementBeat then
-                        oldOrbitCenterX = orbitCenterX
-                        lastMovementBeatX = nextMovementBeat
-                        table.remove(fx.moveOrbitX, 1)
+                    if not music:isPlaying() then
+                        if fakeCurrentBeat >= nextMovementBeat then
+                            oldOrbitCenterX = orbitCenterX
+                            lastMovementBeatX = nextMovementBeat
+                            table.remove(fx.moveOrbitX, 1)
+                        end
+                    else
+                        if currentBeat >= nextMovementBeat then
+                            oldOrbitCenterX = orbitCenterX
+                            lastMovementBeatX = nextMovementBeat
+                            table.remove(fx.moveOrbitX, 1)
+                        end
                     end
                 end
             end
@@ -445,15 +466,27 @@ local function updateEffects()
                 -- calculate the current orbit x based on the animation style
                 if fx.moveOrbitY[1].animation == "none" or fx.moveOrbitY[1].animation == nil then
                     -- if there's no animation, check if it's time to teleport into place
-                    if currentBeat >= nextMovementBeat then
-                        orbitCenterY = nextOrbitCenterY
-                        oldOrbitCenterY = orbitCenterY
-                        lastMovementBeatY = nextMovementBeat
-                        table.remove(fx.moveOrbitY, 1)
+                    if not music:isPlaying() then
+                        if fakeCurrentBeat >= nextMovementBeat then
+                            orbitCenterY = nextOrbitCenterY
+                            oldOrbitCenterY = orbitCenterY
+                            lastMovementBeatY = nextMovementBeat
+                            table.remove(fx.moveOrbitY, 1)
+                        end
+                    else
+                        if currentBeat >= nextMovementBeat then
+                            orbitCenterY = nextOrbitCenterY
+                            oldOrbitCenterY = orbitCenterY
+                            lastMovementBeatY = nextMovementBeat
+                            table.remove(fx.moveOrbitY, 1)
+                        end
                     end
                 else
                     -- if there is animation, get our current time in the animation
                     local t = (currentBeat - lastMovementBeatY) / (nextMovementBeat - lastMovementBeatY)
+                    if not music:isPlaying() then
+                        t = (fakeCurrentBeat - lastMovementBeatY) / (nextMovementBeat - lastMovementBeatY)
+                    end
                     t = math.max(0, math.min(1, t))
 
                     if fx.moveOrbitY[1].animation == "linear" then
@@ -464,10 +497,18 @@ local function updateEffects()
                         orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t^(1/fx.moveOrbitY[1].power)
                     end
                     -- set the old orbit x to the current one if we've reached the destination
-                    if currentBeat >= nextMovementBeat then
-                        oldOrbitCenterY = orbitCenterY
-                        lastMovementBeatY = nextMovementBeat
-                        table.remove(fx.moveOrbitY, 1)
+                    if not music:isPlaying() then
+                        if fakeCurrentBeat >= nextMovementBeat then
+                            oldOrbitCenterY = orbitCenterY
+                            lastMovementBeatY = nextMovementBeat
+                            table.remove(fx.moveOrbitY, 1)
+                        end
+                    else
+                        if currentBeat >= nextMovementBeat then
+                            oldOrbitCenterY = orbitCenterY
+                            lastMovementBeatY = nextMovementBeat
+                            table.remove(fx.moveOrbitY, 1)
+                        end
                     end
                 end
             end
@@ -791,6 +832,8 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     playerFlipped = false
     orbitCenterX = screenCenterX
     orbitCenterY = screenCenterY
+    lastMovementBeatX = delta / math.floor((tickSpeed*60)/songBpm)
+    lastMovementBeatY = lastMovementBeatX
 
 
 
