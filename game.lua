@@ -832,6 +832,8 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     playerFlipped = false
     orbitCenterX = screenCenterX
     orbitCenterY = screenCenterY
+    oldOrbitCenterX = orbitCenterX
+    oldOrbitCenterY = orbitCenterY
     lastMovementBeatX = delta / math.floor((tickSpeed*60)/songBpm)
     lastMovementBeatY = lastMovementBeatX
 
