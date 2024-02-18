@@ -57,9 +57,20 @@ local function sortSongListByArtist()
     end)
     return sortedList
 end
+local function sortSongListByBpm()
+    local sortedList = {}
+    for i, v in ipairs(songList) do
+        sortedList[i] = v  -- Copy original table's content to the new table
+    end
+    table.sort(sortedList, function(a, b)
+        return a.bpm < b.bpm
+    end)
+    return sortedList
+end
 
 local songListSortedByName <const> = sortSongListByName()
 local songListSortedByArtist <const> = sortSongListByArtist()
+local songListSortedByBpm <const> = sortSongListByBpm()
 
 -- Define variables
 -- Misc variables
@@ -329,8 +340,10 @@ function updateSongSelect()
     if sortSongs then
         if sortBy == "artist" then
             currentSongList = songListSortedByArtist
-        else
+        elseif sortBy == "name" then
             currentSongList = songListSortedByName
+        else
+            currentSongList = songListSortedByBpm
         end
         sortSongs = false
     end

@@ -3,6 +3,6 @@ author=PaletteHeart
 description=A space-themed crank-based rhythm game.
 bundleID=com.paletteheart.orbeats
 version=0.6.4
-buildNumber=126
+buildNumber=135
 imagePath=launcher
 launchSoundPath=sfx/play

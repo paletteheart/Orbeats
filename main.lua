@@ -19,7 +19,8 @@ local menu <const> = pd.getSystemMenu()
 
 local sortOptions <const> = {
 	"artist",
-	"name"
+	"name",
+	"bpm"
 }
 sortBy = sortOptions[1]
 
