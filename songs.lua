@@ -285,8 +285,12 @@ function updateSongSelect()
                 tutorialStarting = false
                 sfx.play:play()
             elseif selecting == "map" then
-                selecting = "play"
-                sfx.high:play()
+                local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
+                -- check if the map exists, do nothing if not
+                if pd.file.exists(songTablePath) then
+                    selecting = "play"
+                    sfx.high:play()
+                end
             elseif selecting == "song" then
                 selecting = "map"
                 sfx.mid:play()
@@ -397,25 +401,20 @@ function updateSongSelect()
     if songStarting then
         -- get the map file path
         local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
-        -- check if the map exists, do nothing if not
-        if not pd.file.exists(songTablePath) then
-            songStarting = false
+        -- fade out and then load map
+        if fadeOut > 0 then
+            fadeOut -= 0.1
         else
-            -- fade out and then load map
-            if fadeOut > 0 then
-                fadeOut -= 0.1
-            else
-                local bpm = currentSong.bpm
-                local beatOffset = currentSong.beatOffset
-                if music:isPlaying() then
-                    music:stop()
-                end
-                menuBgm:stop()
-                setUpSong(bpm, beatOffset, musicFile, songTablePath)
-                resetAnimationValues()
-                songStarting = false
-                return "song"
+            local bpm = currentSong.bpm
+            local beatOffset = currentSong.beatOffset
+            if music:isPlaying() then
+                music:stop()
             end
+            menuBgm:stop()
+            setUpSong(bpm, beatOffset, musicFile, songTablePath)
+            resetAnimationValues()
+            songStarting = false
+            return "song"
         end
     end
 
@@ -486,6 +485,19 @@ function drawSongSelect()
         local mapX = screenCenterX + (songBarCurrentRadius+100) * math.cos(math.rad(mapPos-90+mapSelectionOffset))
         local mapY = songBarCurrentY/(songBarCurrentY/725) + (songBarCurrentRadius+100) * math.sin(math.rad(mapPos-90+mapSelectionOffset))
 
+        -- draw difficuty availability
+        local songTablePath = "songs/"..currentSong.name.."/"..mapList[i]..".json"
+        -- check if the map exists, do nothing if not
+        if not pd.file.exists(songTablePath) then
+            local textWidth, textHeight = gfx.getTextSize("Unavailable", fonts.orbeatsSmall)
+            local textX = mapX-textWidth/2
+            local textY = mapY-textHeight/2-32*mapScale
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+            gfx.drawText("Unavailable", textX, textY, fonts.orbeatsSmall)
+        end
+
+        -- draw difficulty name
         local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSans)
         if textWidth > 100 then
             local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSmall)
@@ -502,7 +514,7 @@ function drawSongSelect()
             gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSans)
         end
         
-
+        -- draw difficulty icon
         local mapArtFilePath = "songs/"..currentSong.name.."/"..currentSong.difficulties[i]..".pdi"
         local missingArt = "sprites/missingMap"..(i%5)
 
