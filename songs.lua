@@ -488,7 +488,7 @@ function drawSongSelect()
         -- draw difficuty availability
         local songTablePath = "songs/"..currentSong.name.."/"..mapList[i]..".json"
         -- check if the map exists, do nothing if not
-        if not pd.file.exists(songTablePath) then
+        if not pd.file.exists(songTablePath) and selecting == "map" then
             local textWidth, textHeight = gfx.getTextSize("Unavailable", fonts.orbeatsSmall)
             local textX = mapX-textWidth/2
             local textY = mapY-textHeight/2-32*mapScale
