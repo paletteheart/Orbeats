@@ -194,9 +194,19 @@ local function round(number)
 end
 
 local imageCache = {}
-local function getImage(path)
+local function getImage(path, mapNum)
     if imageCache[path] == nil then
-        imageCache[path] = gfx.image.new(path)
+        if pd.file.exists(path) then
+            imageCache[path] = gfx.image.new(path)
+        else
+            -- check if we're caching a difficulty map icon
+            if mapNum == nil then
+                imageCache[path] = gfx.image.new("sprites/missingArt")
+            else
+                -- if true, give it the correct icons
+                imageCache[path] = gfx.image.new("sprites/missingMap"..(mapNum%5))
+            end
+        end
     end
     return imageCache[path]
 end
@@ -516,15 +526,8 @@ function drawSongSelect()
         
         -- draw difficulty icon
         local mapArtFilePath = "songs/"..currentSong.name.."/"..currentSong.difficulties[i]..".pdi"
-        local missingArt = "sprites/missingMap"..(i%5)
-
-        if pd.file.exists(mapArtFilePath) then
-            -- getImage(mapArtFilePath):drawScaled(mapX-24*mapScale, mapY-24*mapScale, mapScale)
-            getImage(mapArtFilePath):draw(mapX-24*mapScale, mapY-24*mapScale)
-        else
-            -- getImage(missingArt):drawScaled(mapX-24*mapScale, mapY-24*mapScale, mapScale)
-            getImage(missingArt):draw(mapX-24*mapScale, mapY-24*mapScale)
-        end
+        
+        getImage(mapArtFilePath, i):draw(mapX-24*mapScale, mapY-24*mapScale)
     end
 
     -- draw the song data
@@ -579,7 +582,7 @@ function drawSongSelect()
     
 
     -- draw the album art
-    local missingArt = "sprites/missingArt"
+    
 
     for i=songSelectionRounded+3,songSelectionRounded-3,-1 do
         if i <= #songList and i >= 1 then
@@ -591,13 +594,7 @@ function drawSongSelect()
             local albumX = screenCenterX + songBarCurrentRadius * math.cos(math.rad(albumPos-90)) - 32*albumScale
             local albumY = songBarCurrentY + songBarCurrentRadius * math.sin(math.rad(albumPos-90)) - 32*albumScale
             
-            if pd.file.exists(albumArtFilePath) then
-                -- getImage(albumArtFilePath):drawScaled(albumX, albumY, albumScale)
-                getImage(albumArtFilePath):draw(albumX, albumY)
-            else
-                -- getImage(missingArt):drawScaled(albumX, albumY, albumScale)
-                getImage(missingArt):draw(albumX, albumY)
-            end
+            getImage(albumArtFilePath):draw(albumX, albumY)
         end
     end
 

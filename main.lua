@@ -94,7 +94,7 @@ local function draw()
 	elseif gameState == "songSelect" then
 		drawSongSelect()
 	elseif gameState == "credits" then
-		
+		gameState = "title"
 	else
 		drawTitle()
 	end
