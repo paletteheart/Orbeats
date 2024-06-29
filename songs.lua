@@ -113,6 +113,7 @@ songTable = {}
 sortBy = ""
 sortSongs = true
 local songStarting = false
+local toTitle = false
 tutorialStarting = false
 local songSelection = 1
 local songSelectionRounded = songSelection
@@ -316,6 +317,10 @@ function updateSongSelect()
                 selecting = "map"
                 -- selectBarCurrentY = -52
                 sfx.mid:play()
+            elseif selecting == "song" then
+                sfx.low:play()
+                -- go back to the title
+                toTitle = true
             end
         end
 
@@ -416,12 +421,13 @@ function updateSongSelect()
             fadeOut -= 0.1
         else
             local bpm = currentSong.bpm
+            local bpmChanges = currentSong.bpmChange
             local beatOffset = currentSong.beatOffset
             if music:isPlaying() then
                 music:stop()
             end
             menuBgm:stop()
-            setUpSong(bpm, beatOffset, musicFile, songTablePath)
+            setUpSong(bpm, bpmChanges, beatOffset, musicFile, songTablePath)
             resetAnimationValues()
             songStarting = false
             return "song"
@@ -441,17 +447,33 @@ function updateSongSelect()
             else
                 local tutorialData = json.decodeFile(pd.file.open("tutorial/songData.json"))
                 local bpm = tutorialData.bpm
+                local bpmChanges = tutorialData.bpmChange
                 local beatOffset = tutorialData.beatOffset
                 if music:isPlaying() then
                     music:stop()
                 end
                 menuBgm:stop()
                 local tutorialMusicFile = ("tutorial/Tutorial")
-                setUpSong(bpm, beatOffset, tutorialMusicFile, songTablePath)
+                setUpSong(bpm, bpmChanges, beatOffset, tutorialMusicFile, songTablePath)
                 resetAnimationValues()
                 tutorialStarting = false
                 return "song"
             end
+        end
+    end
+
+    if toTitle then
+        -- go back to the title screen
+        if fadeOut > 0 then
+            fadeOut -= 0.1
+        else
+            resetAnimationValues()
+            if music:isPlaying() then
+                music:stop()
+            end
+            menuBgm:stop()
+            toTitle = false
+            return "title"
         end
     end
 
@@ -478,7 +500,8 @@ function drawSongSelect()
     gfx.setColor(gfx.kColorWhite)
     gfx.fillCircleAtPoint(screenCenterX, songBarCurrentY, songBarCurrentRadius)
     gfx.setColor(gfx.kColorBlack)
-    gfx.setDitherPattern(1/3, gfx.image.kDitherTypeDiagonalLine)
+    -- gfx.setDitherPattern(1/3, gfx.image.kDitherTypeDiagonalLine)
+    gfx.setPattern({0x95, 0x6A, 0xA9, 0x56, 0x59, 0xA6, 0x9A, 0x65})
     gfx.fillCircleAtPoint(screenCenterX, songBarCurrentY, songBarCurrentRadius)
     gfx.setColor(gfx.kColorWhite)
     gfx.setLineWidth(5)

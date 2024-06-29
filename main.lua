@@ -2,6 +2,7 @@ import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/ui"
 import "CoreLibs/animation"
+import "CoreLibs/timer"
 
 import "pdParticles"
 
@@ -13,7 +14,10 @@ import "title"
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics
+local tmr <const> = pd.timer
 local menu <const> = pd.getSystemMenu()
+
+pd.display.setRefreshRate(0)
 
 -- pd.datastore.delete("settings")
 
@@ -71,12 +75,12 @@ local function addTutorialMenuItem()
 	end)
 end
 
-local songSelectMenuItem = addSongSelectMenuItem()
-local restartMenuItem = addRestartMenuItem()
-local toggleSfxMenuItem = addToggleSfxMenuItem()
-local resetHiScoresMenuItem = addResetHiScoresMenuItem()
-local sortByMenuItem = addSortByMenuItem()
-local tutorialMenuItem = addTutorialMenuItem()
+addSongSelectMenuItem()
+addRestartMenuItem()
+addToggleSfxMenuItem()
+addResetHiScoresMenuItem()
+addSortByMenuItem()
+addTutorialMenuItem()
 
 local gameState = "title"
 
@@ -99,7 +103,7 @@ local function draw()
 		drawTitle()
 	end
 
-	-- pd.drawFPS(0, 0)
+	pd.drawFPS(0, 0)
 
 end
 
@@ -107,6 +111,8 @@ end
 function pd.update()
 	-- update inputs
 	updateInputs()
+	-- update timers
+	tmr.updateTimers()
 	
 	-- reset system menu items
 	menu:removeAllMenuItems()
@@ -114,17 +120,17 @@ function pd.update()
 	-- update the current game state
 	if gameState == "song" then
 		gameState = updateSong()
-		songSelectMenuItem = addSongSelectMenuItem()
-		restartMenuItem = addRestartMenuItem()
-		toggleSfxMenuItem = addToggleSfxMenuItem()
+		addSongSelectMenuItem()
+		addRestartMenuItem()
+		addToggleSfxMenuItem()
 	elseif gameState == "songEndScreen" then
 		gameState = updateEndScreen()
-		songSelectMenuItem = addSongSelectMenuItem()
+		addSongSelectMenuItem()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
-		resetHiScoresMenuItem = addResetHiScoresMenuItem()
-		tutorialMenuItem = addTutorialMenuItem()
-		sortByMenuItem = addSortByMenuItem()
+		addSortByMenuItem()
+		addTutorialMenuItem()
+		addResetHiScoresMenuItem()
 	elseif gameState == "credits" then
 
 	else

@@ -41,7 +41,6 @@ fonts.odinRounded = gfx.font.newFamily({
 -- System variables
 toMenu = false
 restart = false
-tickSpeed = 30
 p = ParticleCircle()
 p:setColor(gfx.kColorBlack)
 p:setMode(Particles.modes.DECAY)
@@ -100,16 +99,17 @@ hitNotes = 0
 missedNotes = 0
 local combo = 0
 largestCombo = 0
-local delta = -(tickSpeed*3)
 local fadeOut = 1
 local fadeIn = 0
 local beatOffset = 0 -- a value to slightly offset the beat until it looks like it's perfectly on beat
 restartTable = {}
 restartTable.tablePath = "songs/Orubooru/Easy.json"
 restartTable.bpm = songBpm
+restartTable.bpmChanges = {}
 restartTable.beatOffset = beatOffset
 restartTable.musicFilePath = "songs/Orubooru/Orubooru"
 songEnded = false
+local bpmChange = {}
 
 -- Score display variables
 score = 0
@@ -133,6 +133,7 @@ local fakeCurrentBeat = 0
 local lastBeat = 0 -- is only used for the pulses right now
 local referenceTime = 0 -- used to calculate the current beat in music with changing bpm
 local referenceBeat = 0 -- used to represent how many beats came before a bpm change
+local startTime = pd.sound.getCurrentTime()
 
 -- Note variables   
 noteInstances = {}
@@ -176,7 +177,7 @@ local function updateNotes()
 		-- update the current note with the current level speed and get it's current radius, old radius, and position
         local noteData
         -- if the music isn't playing, fake the beat
-        if delta < 0 then
+        if fakeCurrentBeat < 0 then
             noteData = note:update(fakeCurrentBeat, orbitRadius)
         else
             noteData = note:update(currentBeat, orbitRadius)
@@ -328,7 +329,7 @@ local function createNotes()
         -- check if it's time to add that note
         -- check if the note is spawned before the music starts or not
         if nextNote.spawnBeat < 0 then
-            -- fake the currenBeat with delta
+            -- fake the currentBeat
             if nextNote.spawnBeat <= fakeCurrentBeat then
                 -- Add note to instances
                 if nextNote.type == "flipnote" then
@@ -551,14 +552,14 @@ local function updateEffects()
         end
 
         -- update the bpm
-        if fx.bpmChange ~= nil then
+        if bpmChange ~= nil then
             -- check if there's any more bpm changes
-            if #fx.bpmChange ~= 0 then
-                local nextBpmChange = fx.bpmChange[1]
+            if #bpmChange ~= 0 then
+                local nextBpmChange = bpmChange[1]
                 -- check if it's time for the next bpm change
                 if nextBpmChange.beat <= currentBeat then
                     songBpm = nextBpmChange.bpm
-                    table.remove(fx.bpmChange, 1)
+                    table.remove(bpmChange, 1)
                     referenceTime = musicTime
                     referenceBeat = currentBeat
                 end
@@ -571,10 +572,10 @@ end
 -- global functions
 
 function updateSong()
-    -- Update the delta
-    delta += 1
     -- update the fake beat if the music isn't playing
-    fakeCurrentBeat = delta / math.floor((tickSpeed*60)/songBpm)
+    timeSinceStart = pd.sound.getCurrentTime()-startTime-3
+    fakeCurrentBeat = (timeSinceStart)*(songBpm/60)
+    print(fakeCurrentBeat)
 
     -- update the audio timer variable
     musicTime = music:getOffset()
@@ -585,8 +586,8 @@ function updateSong()
     -- check if the song is over
     songEnded = songTable.songEnd <= currentBeat or songEnded
 
-    -- if delta is 0, begin playing song
-    if (delta >= 0 and not music:isPlaying()) or songEnded then
+    -- if seconds since level loaded is 0, begin playing song
+    if (timeSinceStart >= 0 and not music:isPlaying()) or songEnded then
         music:play()
     end
 
@@ -596,10 +597,11 @@ function updateSong()
     -- Update the pulse if it's on a beat
     -- If it's before the music is playing, fake the pulses
     if not music:isPlaying() then
-        if delta % math.floor((tickSpeed*60)/songBpm) == 0 then
+        if fakeCurrentBeat > lastBeat then
             pulse = pulseDepth
+            lastBeat += 1
         else
-            pulse = 0
+            pulse = math.max(pulse-1, 0)
         end
     else
         -- music is playing now, do real pulses
@@ -607,7 +609,7 @@ function updateSong()
             pulse = pulseDepth
             lastBeat += 1
         else
-            pulse = 0
+            pulse = math.max(pulse-1, 0)
         end
     end
 
@@ -645,7 +647,7 @@ function updateSong()
     -- check if they're restarting the song
     if restart then
         music:stop()
-        setUpSong(restartTable.bpm, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
+        setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
         restart = false
     end
     -- check if they are going back to the song select menu
@@ -808,7 +810,28 @@ function drawSong()
 end
 
 
-function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
+function setUpSong(bpm, bpmChanges, beatOffset, musicFilePath, tablePath)
+    -- set song data vars
+    songTable = json.decodeFile(pd.file.open(tablePath))
+    songBpm = bpm
+    bpmChange = bpmChanges
+    beatOffset = beatOffset
+
+    textInstances = {}
+
+
+    restartTable.bpm = bpm
+    restartTable.bpmChanges = bpmChanges
+    restartTable.beatOffset = beatOffset
+    restartTable.musicFilePath = musicFilePath
+    restartTable.tablePath = tablePath
+
+    -- load the music file
+    music = pd.sound.fileplayer.new()
+    music:load(musicFilePath)
+    music:setVolume(1)
+    music:setFinishCallback(songOver())
+
     -- reset vars
     -- Note variables
     noteInstances = {}
@@ -819,14 +842,14 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     missedNotes = 0
     combo = 0
     largestCombo = 0
-    delta = -(tickSpeed*3)
     fadeOut = 1
     fadeIn = 0
     songEnded = false
     -- Music Variables
-    lastBeat = 0
+    lastBeat = -(songBpm/60)*3
     referenceTime = 0
     referenceBeat = 0
+    startTime = pd.sound.getCurrentTime()
     -- Misc variables
     invertedScreen = false
     playerFlipped = false
@@ -834,29 +857,8 @@ function setUpSong(bpm, beatOffset, musicFilePath, tablePath)
     orbitCenterY = screenCenterY
     oldOrbitCenterX = orbitCenterX
     oldOrbitCenterY = orbitCenterY
-    lastMovementBeatX = delta / math.floor((tickSpeed*60)/songBpm)
+    lastMovementBeatX = lastBeat
     lastMovementBeatY = lastMovementBeatX
-
-
-
-    -- set song data vars
-    songTable = json.decodeFile(pd.file.open(tablePath))
-    songBpm = bpm
-    beatOffset = beatOffset
-
-    textInstances = {}
-    
-
-    restartTable.bpm = bpm
-    restartTable.beatOffset = beatOffset
-    restartTable.musicFilePath = musicFilePath
-    restartTable.tablePath = tablePath
-
-    -- load the music file
-    music = pd.sound.fileplayer.new()
-    music:load(musicFilePath)
-    music:setVolume(1)
-    music:setFinishCallback(songOver())
 end
 
 

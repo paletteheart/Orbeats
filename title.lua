@@ -5,6 +5,7 @@ import "game"
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics
+local tmr <const> = pd.timer
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -22,36 +23,76 @@ local bgSprite = {
 local start = false
 
 -- animation variables
-local delta = 0
+local init = true
 local jingleBpm = 127
-local tickSpeed = 30
+-- pulse vars
 local pulse = false
 local pulseDepth = 4
+-- orbit vars
 local orbitCurrentDither = 1
 local orbitTargetDither = orbitCurrentDither
+local drawOrbit = false
+-- title vars
 local titleCurrentY = -100
 local titleTargetY = titleCurrentY
-local fadeOut = 1
+local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fonts.odinRounded)
+local titleX = screenCenterX - (titleWidth/2)
+local titleY = screenCenterY - (titleHeight/2)
+-- input vars
 local inputCurrentY = screenHeight
 local inputTargetY = inputCurrentY
+-- timing vars
+local animStartTime = 0
+local audioTime = 0
+local lastPulse = 0
+local currentBeat = 0
+-- misc vars
+local fadeOut = 1
+local bgStage = 1
+
+
+local function nextStage()
+    bgStage += 1
+    if bgStage < 4 then
+        tmr.performAfterDelay((1/3)*1000, nextStage)
+    end
+end
 
 
 function updateTitle()
-    -- update the delta
-    delta += 1
-
-    -- play the jingle
-    if delta == 1 then
+    -- init
+    if init then
         sfx.jingle:play()
+        -- set up bg animation
+        tmr.performAfterDelay((1/3)*1000, nextStage)
+        -- set up orbit animation
+        tmr.performAfterDelay(1500, function()
+            drawOrbit = true
+        end)
+        -- set up title animation
+        tmr.performAfterDelay((11/3)*1000, function()
+            titleTargetY = titleY            
+        end)
+        -- set up input prompt animation
+        tmr.performAfterDelay(4500, function()
+            inputTargetY = 215
+        end)
+        -- get start time
+        animStartTime = pd.sound.getCurrentTime()
+        init = false
     end
 
+    -- update the current audio time and current beat
+    audioTime = pd.sound.getCurrentTime()
+    currentBeat = (audioTime-animStartTime)*(jingleBpm/60)
+    print(currentBeat)
+
     -- calculate if the orbit should pulse
-    if delta > 50 then
-        if delta % math.floor((60*tickSpeed)/jingleBpm) == 0 then
-            pulse = true
-        else
-            pulse = false
-        end
+    if math.floor(currentBeat) > lastPulse then
+        pulse = true
+        lastPulse = math.floor(currentBeat)
+    else
+        pulse = false
     end
 
     -- if jingle finished and we're still on the title, start the menu music
@@ -71,7 +112,17 @@ function updateTitle()
         if fadeOut > 0 then
             fadeOut -= 0.1
         else
+            -- reset variables
             start = false
+            fadeOut = 1
+            init = true
+            inputCurrentY = screenHeight
+            inputTargetY = screenHeight
+            titleCurrentY = -100
+            titleTargetY = titleCurrentY
+            drawOrbit = false
+            bgStage = 1
+            lastPulse = 0
             return "songSelect"
         end
     end
@@ -85,26 +136,13 @@ function drawTitle()
     gfx.fillRect(0, 0, screenWidth, screenHeight)
 
     -- draw the stars on the bg
-    if delta < 10 then
-        bgSprite[1]:draw(0,0)
-    elseif delta < 20 then
-        bgSprite[2]:draw(0,0)
-    elseif delta < 30 then
-        bgSprite[3]:draw(0,0)
-    else
-        bgSprite[4]:draw(0,0)
-    end
-
-    -- get the title variables
-    local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fonts.odinRounded)
-    local titleX = screenCenterX - (titleWidth/2)
-    local titleY = screenCenterY - (titleHeight/2)
+    bgSprite[bgStage]:draw(0,0)
 
     -- draw the orbit
     local orbitRadius = 235
     local orbitCenterX = titleX+253
     local orbitCenterY = titleY+72
-    if delta > 45 then
+    if drawOrbit then
         orbitTargetDither = 0.75
         orbitCurrentDither = closeDistance(orbitCurrentDither, orbitTargetDither, 0.3)
         gfx.setColor(gfx.kColorWhite)
@@ -119,32 +157,25 @@ function drawTitle()
 
     -- draw the orbit pulse
     local pulseLength = 50
-    local fakeCurrentBeat = delta / math.floor((tickSpeed*60)/jingleBpm)
     gfx.setColor(gfx.kColorWhite)
-    if delta > 45 then
-        gfx.setDitherPattern(orbitCurrentDither+0.25*(fakeCurrentBeat%1))
-        gfx.setLineWidth(7*(1-fakeCurrentBeat%1))
-        gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(fakeCurrentBeat%1))
+    if drawOrbit then
+        gfx.setDitherPattern(orbitCurrentDither+0.25*(currentBeat%1))
+        gfx.setLineWidth(7*(1-currentBeat%1))
+        gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(currentBeat%1))
     end
 
     -- draw the title
-    if delta > 110 then
-        titleTargetY = titleY
-        titleCurrentY = closeDistance(titleCurrentY, titleTargetY, 0.3)
-        titleSprite:draw(titleX, titleCurrentY)
-    end
+    titleCurrentY = closeDistance(titleCurrentY, titleTargetY, 0.1)
+    titleSprite:draw(titleX, titleCurrentY)
 
     -- draw the input prompt
-    if delta > 135 then
-        inputTargetY = 215
-        inputCurrentY = closeDistance(inputCurrentY, inputTargetY, 0.3)
-        local inputText = "Press "..char.up.."/"..char.A.." to start"
-        local textWidth, textHeight = gfx.getTextSize(inputText, fonts.orbeatsSans)
-        local inputX = screenCenterX-(textWidth/2)-3
-        gfx.setColor(gfx.kColorWhite)
-        gfx.fillRoundRect(inputX, inputCurrentY, textWidth+6, 30, 3)
-        gfx.drawText(inputText, inputX+3, inputCurrentY+5, fonts.orbeatsSans)
-    end
+    inputCurrentY = closeDistance(inputCurrentY, inputTargetY, 0.1)
+    local inputText = "Press "..char.up.."/"..char.A.." to start"
+    local textWidth, textHeight = gfx.getTextSize(inputText, fonts.orbeatsSans)
+    local inputX = screenCenterX-(textWidth/2)-3
+    gfx.setColor(gfx.kColorWhite)
+    gfx.fillRoundRect(inputX, inputCurrentY, textWidth+6, 30, 3)
+    gfx.drawText(inputText, inputX+3, inputCurrentY+5, fonts.orbeatsSans)
 
     -- draw the fade out if fading out
     if fadeOut < 1 then

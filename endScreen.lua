@@ -176,7 +176,7 @@ function updateEndScreen()
         if fadeOutWhite > 0 then
             fadeOutWhite -= 0.1
         else
-            setUpSong(restartTable.bpm, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
+            setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             restart = false
             initialized = false
             if menuBgm:isPlaying() then
