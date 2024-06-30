@@ -6,6 +6,7 @@ import "game"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 local tmr <const> = pd.timer
+local ease <const> = pd.easingFunctions
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -30,17 +31,21 @@ local pulse = false
 local pulseDepth = 4
 -- orbit vars
 local orbitCurrentDither = 1
-local orbitTargetDither = orbitCurrentDither
+local orbitDitherTimer = tmr.new(0, orbitCurrentDither, orbitCurrentDither)
 local drawOrbit = false
 -- title vars
-local titleCurrentY = -100
-local titleTargetY = titleCurrentY
+local titleHideY = -100
+local titleCurrentY = titleHideY
+local titleYTimer = tmr.new(0, titleHideY, titleHideY)
 local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fonts.odinRounded)
 local titleX = screenCenterX - (titleWidth/2)
 local titleY = screenCenterY - (titleHeight/2)
+local drawTitle = false
 -- input vars
 local inputCurrentY = screenHeight
-local inputTargetY = inputCurrentY
+local inputY = 215
+local inputYTimer = tmr.new(0, screenHeight, screenHeight)
+local drawInput = false
 -- timing vars
 local animStartTime = 0
 local audioTime = 0
@@ -50,16 +55,33 @@ local currentBeat = 0
 local fadeOut = 1
 local bgStage = 1
 
+local function resetVars()
+    -- reset variables
+    inputCurrentY = screenHeight
+    titleCurrentY = titleHideY
+    drawOrbit = false
+    drawTitle = false
+    drawInput = false
+    orbitCurrentDither = 1
+    bgStage = 1
+    lastPulse = 0
+
+    -- reset all timers
+    local timers = tmr.allTimers()
+    for i=1,#timers do
+        timers[i]:remove()
+    end
+end
 
 local function nextStage()
-    bgStage += 1
+    bgStage = math.min(bgStage+1, 4)
     if bgStage < 4 then
         tmr.performAfterDelay((1/3)*1000, nextStage)
     end
 end
 
 
-function updateTitle()
+function updateTitleScreen()
     -- init
     if init then
         sfx.jingle:play()
@@ -68,14 +90,17 @@ function updateTitle()
         -- set up orbit animation
         tmr.performAfterDelay(1500, function()
             drawOrbit = true
+            orbitDitherTimer = tmr.new(animationTime, orbitCurrentDither, 0.75)
         end)
         -- set up title animation
         tmr.performAfterDelay((11/3)*1000, function()
-            titleTargetY = titleY            
+            drawTitle = true
+            titleYTimer = tmr.new(animationTime, titleHideY, titleY, ease.outCubic)
         end)
         -- set up input prompt animation
         tmr.performAfterDelay(4500, function()
-            inputTargetY = 215
+            drawInput = true
+            inputYTimer = tmr.new(animationTime, screenHeight, inputY, ease.outCubic)
         end)
         -- get start time
         animStartTime = pd.sound.getCurrentTime()
@@ -85,7 +110,6 @@ function updateTitle()
     -- update the current audio time and current beat
     audioTime = pd.sound.getCurrentTime()
     currentBeat = (audioTime-animStartTime)*(jingleBpm/60)
-    print(currentBeat)
 
     -- calculate if the orbit should pulse
     if math.floor(currentBeat) > lastPulse then
@@ -112,17 +136,10 @@ function updateTitle()
         if fadeOut > 0 then
             fadeOut -= 0.1
         else
-            -- reset variables
             start = false
             fadeOut = 1
             init = true
-            inputCurrentY = screenHeight
-            inputTargetY = screenHeight
-            titleCurrentY = -100
-            titleTargetY = titleCurrentY
-            drawOrbit = false
-            bgStage = 1
-            lastPulse = 0
+            resetVars()
             return "songSelect"
         end
     end
@@ -130,7 +147,7 @@ function updateTitle()
     return "title"
 end
 
-function drawTitle()
+function drawTitleScreen()
     -- draw the black bg
     gfx.setColor(gfx.kColorBlack)
     gfx.fillRect(0, 0, screenWidth, screenHeight)
@@ -143,8 +160,7 @@ function drawTitle()
     local orbitCenterX = titleX+253
     local orbitCenterY = titleY+72
     if drawOrbit then
-        orbitTargetDither = 0.75
-        orbitCurrentDither = closeDistance(orbitCurrentDither, orbitTargetDither, 0.3)
+        orbitCurrentDither = orbitDitherTimer.value
         gfx.setColor(gfx.kColorWhite)
         gfx.setDitherPattern(orbitCurrentDither)
         gfx.setLineWidth(7)
@@ -165,17 +181,21 @@ function drawTitle()
     end
 
     -- draw the title
-    titleCurrentY = closeDistance(titleCurrentY, titleTargetY, 0.1)
-    titleSprite:draw(titleX, titleCurrentY)
+    if drawTitle then
+        titleCurrentY = titleYTimer.value
+        titleSprite:draw(titleX, titleCurrentY)
+    end
 
     -- draw the input prompt
-    inputCurrentY = closeDistance(inputCurrentY, inputTargetY, 0.1)
-    local inputText = "Press "..char.up.."/"..char.A.." to start"
-    local textWidth, textHeight = gfx.getTextSize(inputText, fonts.orbeatsSans)
-    local inputX = screenCenterX-(textWidth/2)-3
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillRoundRect(inputX, inputCurrentY, textWidth+6, 30, 3)
-    gfx.drawText(inputText, inputX+3, inputCurrentY+5, fonts.orbeatsSans)
+    if drawInput then
+        inputCurrentY = inputYTimer.value
+        local inputText = "Press "..char.up.."/"..char.A.." to start"
+        local textWidth, textHeight = gfx.getTextSize(inputText, fonts.orbeatsSans)
+        local inputX = screenCenterX-(textWidth/2)-3
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRoundRect(inputX, inputCurrentY, textWidth+6, 30, 3)
+        gfx.drawText(inputText, inputX+3, inputCurrentY+5, fonts.orbeatsSans)
+    end
 
     -- draw the fade out if fading out
     if fadeOut < 1 then

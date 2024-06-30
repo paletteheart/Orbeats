@@ -5,6 +5,8 @@ import "songs"
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics
+local tmr <const> = pd.timer
+local ease <const> = pd.easingFunctions
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -34,20 +36,48 @@ local ratingY = (screenHeight-ratingImageHeight)/2
 
 -- Animation variables
 local completedCurrentY = -45
-local completedTargetY = 5
+local completedYTimer = tmr.new(0, completedCurrentY, completedCurrentY)
+
 local statsCurrentX = -165
-local statsTargetX = statsCurrentX
+local statsXTimer = tmr.new(0, statsCurrentX, statsCurrentX)
+
 local ratingCurrentX = screenWidth
-local ratingTargetX = ratingCurrentX
+local ratingXTimer = tmr.new(0, ratingCurrentX, ratingCurrentX)
+
 local continueCurrentY = screenHeight
-local continueTargetY = continueCurrentY
-local sheenDuration = 600
+local continueYTimer = tmr.new(0, continueCurrentY, continueCurrentY)
+local tickerTimer = tmr.new(0, 0, 0)
+tickerTimer.repeats = true
+local tickerText = "To Menu:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
+local tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
+
+local sheenTimer = tmr.new(0, 600, 600)
+sheenTimer.repeats = true
+
 local fadeOutBlack = 1
 local fadeOutWhite = 1
-local delta = 0
 
 local function initEndScreen()
     local pointPercentage = score/((hitNotes+missedNotes)*100)
+
+    -- set up animations
+    completedYTimer = replaceTimer(completedYTimer, animationTime, completedCurrentY, 5, ease.outCubic)
+    tmr.new(500, function()
+        statsXTimer = replaceTimer(statsXTimer, animationTime, statsCurrentX, 15, ease.outCubic)
+    end)
+    tmr.new(1500, function()
+        ratingXTimer = replaceTimer(ratingXTimer, animationTime, ratingCurrentX, screenWidth-ratingImageWidth-5, ease.outCubic)
+    end)
+    tmr.new(2000, function()
+        continueYTimer = replaceTimer(continueYTimer, animationTime, continueCurrentY, 215, ease.outCubic)
+        menuBgm:play(0)
+        menuBgm:setVolume(1)
+    end)
+
+    sheenTimer = replaceTimer(sheenTimer, 20000, 600, -200)
+    sheenTimer.repeats = true
+    tickerTimer = replaceTimer(tickerTimer, 7500, 0, tickerTextWidth)
+    tickerTimer.repeats = true
 
     -- calculate what rating they got
     if pointPercentage == 1 then
@@ -116,34 +146,18 @@ end
 
 local function resetAnimationValues()
     completedCurrentY = -45
-    completedTargetY = 5
+    completedYTimer = replaceTimer(completedYTimer, 0, completedCurrentY, completedCurrentY)
     statsCurrentX = -165
-    statsTargetX = statsCurrentX
+    statsXTimer = replaceTimer(statsXTimer, 0, statsCurrentX, statsCurrentX)
     ratingCurrentX = screenWidth+ratingImage.SS:getSize()
-    ratingTargetX = ratingCurrentX
+    ratingXTimer = replaceTimer(ratingXTimer, 0, ratingCurrentX, ratingCurrentX)
     continueCurrentY = screenHeight+25
-    continueTargetY = continueCurrentY
+    continueYTimer = replaceTimer(continueYTimer, 0, continueCurrentY, continueCurrentY)
     fadeOutBlack = 1
     fadeOutWhite = 1
-    delta = 0
 end
 
 function updateEndScreen()
-    -- update the delta
-    delta += 1
-    -- if delta >= sheenDuration+(sheenDuration-400)+60 then delta = 60 end
-    -- update the animation variables based on the delta
-    if delta > 15 then
-        statsTargetX = 15
-    end
-    if delta > 45 then
-        ratingTargetX = screenWidth-ratingImageWidth-5
-    end
-    if delta > 60 then
-        continueTargetY = 215
-        menuBgm:play(0)
-        menuBgm:setVolume(1)
-    end
 
     -- initialize the end screen
     if not initialized then
@@ -153,22 +167,14 @@ function updateEndScreen()
 
     -- check inputs
     if upPressed or aPressed then
-        if delta < 60 then
-            delta = 60
-        else
-            toMenu = true
-            restart = false
-            sfx.low:play()
-        end
+        toMenu = true
+        restart = false
+        sfx.low:play()
     end
     if downPressed or bPressed then
-        if delta < 60 then
-            delta = 60
-        else
-            restart = true
-            toMenu = false
-            sfx.low:play()
-        end
+        restart = true
+        toMenu = false
+        sfx.low:play()
     end
 
     -- check if they're restarting the song
@@ -206,20 +212,20 @@ function drawEndScreen()
     gfx.fillRect(0, 0, screenWidth, screenHeight)
 
     -- draw background sheen
-    local sheenX = sheenDuration-(delta%(sheenDuration+(sheenDuration-400)))
+    local sheenX = sheenTimer.value
     gfx.setColor(gfx.kColorWhite)
     gfx.setDitherPattern(0.5)
     gfx.setLineWidth(250)
     gfx.drawLine(sheenX, screenHeight+50, sheenX+30, -50)
 
     -- draw completed text
-    completedCurrentY = closeDistance(completedCurrentY, completedTargetY, 0.3)
+    completedCurrentY = completedYTimer.value
     gfx.drawText("Song Completed!", 5, completedCurrentY, fonts.odinRounded)
 
     -- draw stats bubbles
     local statsY = 55
     gfx.setColor(gfx.kColorWhite)
-    statsCurrentX = closeDistance(statsCurrentX, statsTargetX, 0.25)
+    statsCurrentX = statsXTimer.value
     gfx.fillRoundRect(statsCurrentX, statsY, 165, 155, 3)
     -- draw stats
     gfx.setColor(gfx.kColorBlack)
@@ -242,7 +248,7 @@ function drawEndScreen()
     end
 
     -- draw rating
-    ratingCurrentX = closeDistance(ratingCurrentX, ratingTargetX, 0.25)
+    ratingCurrentX = ratingXTimer.value
     if songRating == "P" then
         ratingImage.P:draw(ratingCurrentX, ratingY)
     elseif songRating == "SS" then
@@ -267,18 +273,16 @@ function drawEndScreen()
     end
 
     -- draw continue bar
-    continueCurrentY = closeDistance(continueCurrentY, continueTargetY, 0.3)
+    continueCurrentY = continueYTimer.value
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRect(0, continueCurrentY, screenWidth, 25)
     -- draw continue text
-    local continueText = "To Menu:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
-    local continueTextWidth = gfx.getTextSize(continueText, fonts.orbeatsSans)
-    local continueX1 = (delta % (continueTextWidth*3))-continueTextWidth
-    local continueX2 = ((delta+continueTextWidth) % (continueTextWidth*3))-continueTextWidth
-    local continueX3 = ((delta+(continueTextWidth*2)) % (continueTextWidth*3))-continueTextWidth
-    gfx.drawText(continueText, continueX1, continueCurrentY+5, fonts.orbeatsSans)
-    gfx.drawText(continueText, continueX2, continueCurrentY+5, fonts.orbeatsSans)
-    gfx.drawText(continueText, continueX3, continueCurrentY+5, fonts.orbeatsSans)
+    local tickerX1 = tickerTimer.value
+    local tickerX2 = tickerTimer.value-tickerTextWidth
+    local tickerX3 = tickerTimer.value+tickerTextWidth
+    gfx.drawText(tickerText, tickerX1, continueCurrentY+5, fonts.orbeatsSans)
+    gfx.drawText(tickerText, tickerX2, continueCurrentY+5, fonts.orbeatsSans)
+    gfx.drawText(tickerText, tickerX3, continueCurrentY+5, fonts.orbeatsSans)
 
     -- draw fade out if fading out
     if fadeOutWhite ~= 1 then

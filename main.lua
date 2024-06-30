@@ -3,6 +3,7 @@ import "CoreLibs/graphics"
 import "CoreLibs/ui"
 import "CoreLibs/animation"
 import "CoreLibs/timer"
+import "CoreLibs/easing"
 
 import "pdParticles"
 
@@ -15,6 +16,7 @@ import "title"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 local tmr <const> = pd.timer
+local ease <const> = pd.easingFunctions
 local menu <const> = pd.getSystemMenu()
 
 pd.display.setRefreshRate(0)
@@ -56,7 +58,7 @@ end
 local function addResetHiScoresMenuItem()
 	return menu:addMenuItem("Reset HiScore", function()
 		resetHiScores = true
-		warningTargetY = 5
+		warningYTimer = tmr.new(animationTime, warningCurrentY, 5, ease.outCubic)
 	end)
 end
 local function addSortByMenuItem()
@@ -100,7 +102,7 @@ local function draw()
 	elseif gameState == "credits" then
 		gameState = "title"
 	else
-		drawTitle()
+		drawTitleScreen()
 	end
 
 	pd.drawFPS(0, 0)
@@ -128,13 +130,13 @@ function pd.update()
 		addSongSelectMenuItem()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
-		addSortByMenuItem()
-		addTutorialMenuItem()
 		addResetHiScoresMenuItem()
+		addTutorialMenuItem()
+		addSortByMenuItem()
 	elseif gameState == "credits" then
 
 	else
-		gameState = updateTitle()
+		gameState = updateTitleScreen()
 	end
 
 	draw()

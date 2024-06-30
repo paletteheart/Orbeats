@@ -137,6 +137,7 @@ local startTime = pd.sound.getCurrentTime()
 
 -- Note variables   
 noteInstances = {}
+local notePool = {}
 local missedNoteRadius = 300 -- the radius where notes get deleted
 local hitForgiveness = 25 -- the distance from the orbit radius from which you can still hit notes
 local maxNoteScore = 100 --the max score you can get from a note
@@ -145,6 +146,7 @@ local perfectDistance = 4 -- the distance from the center of a note or from the 
 -- Effects variables
 local invertedScreen = false
 local textInstances = {}
+local textPool = {}
 local oldOrbitCenterX = orbitCenterX -- used for animating orbit movement
 local oldOrbitCenterY = orbitCenterY -- used for animating orbit movement
 local lastMovementBeatX = 0 -- used for animating the orbit movement
@@ -156,7 +158,7 @@ local lastMovementBeatY = 0 -- used for animating the orbit movement
 
 local function incrementCombo()
     combo += 1
-    if combo > largestCombo then largestCombo = combo end
+    largestCombo = math.max(largestCombo, combo)
 end
 
 local function drawTextCentered(text, x, y, font)
@@ -169,6 +171,41 @@ end
 local function songOver()
     
 end
+
+local function killNote(noteIndex)
+    table.insert(notePool, noteInstances[noteIndex])
+    table.remove(noteInstances, noteIndex)
+end
+
+local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, spin)
+    -- test if a note of this type is already in the pool
+    local newNote
+    for i=#notePool,1,-1 do
+        -- if so, move it from the pool
+        if notePool[i]:isa(noteType) then
+            newNote = notePool[i]
+            table.remove(notePool, i)
+            -- redefine the pool note's attributes to fit the new note
+            newNote:init(spawnBeat, hitBeat, speed, width, position, spin)
+            break
+        end
+    end
+
+    -- if not, create a note
+    if newNote == nil then
+        if noteType == "FlipNote" then
+            newNote = FlipNote(spawnBeat, hitBeat, speed, width, position, spin)
+        elseif noteType == "HoldNote" then
+            newNote = HoldNote(spawnBeat, hitBeat, speed, width, position, spin)
+        else
+            newNote = Note(spawnBeat, hitBeat, speed, width, position, spin)
+        end
+    end
+
+    -- add new note to noteInstances
+    table.insert(noteInstances, newNote)
+end
+
 
 local function updateNotes()
     for i = #noteInstances, 1, -1 do
@@ -186,9 +223,9 @@ local function updateNotes()
         -- Check if note can be hit
         if noteData.noteType == "note" then
             if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
-                local noteAngles = note:getNoteAngles()
+                local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
-                if (playerPos > noteAngles.startAngle and playerPos < noteAngles.endAngle) or (playerPos+360 > noteAngles.startAngle and playerPos+360 < noteAngles.endAngle) or (playerPos-360 > noteAngles.startAngle and playerPos-360 < noteAngles.endAngle) then
+                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
                     if downPressed or bPressed then
                         --note is hit
                         --figure out how many points you get
@@ -214,7 +251,7 @@ local function updateNotes()
                         hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
                         hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
                         --remove note
-                        table.remove(noteInstances, i)
+                        killNote(i)
                         -- up the hit note score and combo counter
                         hitNotes += 1
                         incrementCombo()
@@ -231,9 +268,9 @@ local function updateNotes()
             end
         elseif noteData.noteType == "holdnote" then
             if (noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and noteData.newRadius >= orbitRadius then
-                local noteAngles = note:getNoteAngles()
+                local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
-                if (playerPos > noteAngles.startAngle and playerPos < noteAngles.endAngle) or (playerPos+360 > noteAngles.startAngle and playerPos+360 < noteAngles.endAngle) or (playerPos-360 > noteAngles.startAngle and playerPos-360 < noteAngles.endAngle) then
+                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
                     if downHeld or bHeld or upHeld or aHeld then
                         --note is hit
                         score += maxNoteScore
@@ -243,7 +280,7 @@ local function updateNotes()
                         hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
                         hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
                         --remove note
-                        table.remove(noteInstances, i)
+                        killNote(i)
                         -- up the hit note score
                         hitNotes += 1
                         incrementCombo()
@@ -261,9 +298,9 @@ local function updateNotes()
         elseif noteData.noteType == "flipnote" then
             -- check if the note is close enough to be hit
             if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
-                local noteAngles = note:getNoteAngles()
+                local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
-                if (playerPos > noteAngles.startAngle and playerPos < noteAngles.endAngle) or (playerPos+360 > noteAngles.startAngle and playerPos+360 < noteAngles.endAngle) or (playerPos-360 > noteAngles.startAngle and playerPos-360 < noteAngles.endAngle) then
+                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
                     if upPressed or aPressed then
                         -- note is hit
                         --figure out how many points you get
@@ -289,7 +326,7 @@ local function updateNotes()
                         hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position-90))
                         hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position-90))
                         --remove note
-                        table.remove(noteInstances, i)
+                        killNote(i)
                         -- up the hit note score
                         hitNotes += 1
                         incrementCombo()
@@ -307,7 +344,7 @@ local function updateNotes()
         end
         -- remove the current note if the radius is too large
         if noteData.newRadius > missedNoteRadius then
-            table.remove(noteInstances, i)
+            killNote(i)
             -- up the missed note score
             missedNotes += 1
             combo = 0
@@ -332,28 +369,15 @@ local function createNotes()
             -- fake the currentBeat
             if nextNote.spawnBeat <= fakeCurrentBeat then
                 -- Add note to instances
-                if nextNote.type == "flipnote" then
-                    table.insert(noteInstances, FlipNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
-                elseif nextNote.type == "holdnote" then
-                    table.insert(noteInstances, HoldNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
-                else
-                    table.insert(noteInstances, Note(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
-                end
+                spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin)
                 -- Remove note from the table
                 table.remove(songTable.notes, 1)
-
             end
 
         elseif nextNote.spawnBeat <= currentBeat then
 
             -- Add note to instances
-            if nextNote.type == "flipnote" then
-                table.insert(noteInstances, FlipNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
-            elseif nextNote.type == "holdnote" then
-                table.insert(noteInstances, HoldNote(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
-            else
-                table.insert(noteInstances, Note(nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin))
-            end
+            spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin)
             -- Remove note from the table
             table.remove(songTable.notes, 1)
         end
@@ -565,7 +589,6 @@ local function updateEffects()
                 end
             end
         end
-
     end
 end
 
@@ -575,13 +598,11 @@ function updateSong()
     -- update the fake beat if the music isn't playing
     timeSinceStart = pd.sound.getCurrentTime()-startTime-3
     fakeCurrentBeat = (timeSinceStart)*(songBpm/60)
-    print(fakeCurrentBeat)
 
     -- update the audio timer variable
     musicTime = music:getOffset()
     -- update the current beat
     currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
-    -- print(currentBeat)
 
     -- check if the song is over
     songEnded = songTable.songEnd <= currentBeat or songEnded
