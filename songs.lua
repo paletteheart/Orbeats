@@ -311,7 +311,7 @@ function updateSongSelect()
             songSelection += crankChange/30
             -- move the songSelection to the nearest integer if not moving the crank or if past the edge of the list
             if math.abs(crankChange) < 0.1 or songSelection > #songList or songSelection < 1 then
-                songSelection = closeDistance(songSelection, math.min(#songList, math.max(1, round(songSelection))), 0.1)
+                songSelection = closeDistance(songSelection, math.min(#songList, math.max(1, round(songSelection))), 0.3)
             end
         end
 
@@ -336,7 +336,7 @@ function updateSongSelect()
 
         -- move the mapSelection to the nearest integer if not moving the crank or if past the edge of the list
         if math.abs(crankChange) < 0.5 or mapSelection > #mapList or mapSelection < 1 or selecting ~= "map" then
-            mapSelection = closeDistance(mapSelection, math.min(#mapList, math.max(1, round(mapSelection))), 0.1)
+            mapSelection = closeDistance(mapSelection, math.min(#mapList, math.max(1, round(mapSelection))), 0.3)
         end
         -- round the mapSelection for things that need the exact mapSelection
         mapSelectionRounded = math.min(#mapList, math.max(1, round(mapSelection)))
