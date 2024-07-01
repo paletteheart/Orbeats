@@ -19,12 +19,14 @@ local menuItems <const> = {
     "tutorial",
     "songSelect",
     "settings",
+    "stats",
     "levelEditor"
 }
 local menuItemNames <const> = {
     "Tutorial",
     "Songs",
     "Settings",
+    "Stats",
     "Level Editor"
 }
 
@@ -58,6 +60,7 @@ local menuSelectionRounded = menuSelection
 local toTitle = false
 local leavingMenu = false
 local fadeBlack = 1
+local fadeWhite = 1
 
 local wheelRadius = 50
 local wheelRadiusTimer = tmr.new(0, wheelRadius, wheelRadius)
@@ -75,7 +78,7 @@ local startHideAnimation = true
 
 local function resetAnim()
     wheelY = 450
-    wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, 200, ease.outBack)
+    wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, screenHeight, ease.outBack)
     wheelRadius = 50
     wheelRadiusTimer = replaceTimer(wheelRadiusTimer, 500, wheelRadius, 150, ease.outBack)
     sheenTimer = replaceTimer(sheenTimer, 20000, 600, -200)
@@ -117,7 +120,7 @@ function updateMainMenu()
         if toTitle then
             toTitle = false
             wheelRadiusTimer = replaceTimer(wheelRadiusTimer, animationTime, wheelRadius, 150, ease.outCubic)
-            wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, 200, ease.outBack)
+            wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, screenHeight, ease.outBack)
             sfx.mid:play()
         else
             if menuItems[menuSelectionRounded] == "tutorial" then
@@ -221,6 +224,7 @@ function updateMainMenu()
     return "menu"
 end
 
+
 function drawMainMenu()
     -- draw background
     gfx.setColor(gfx.kColorBlack)
@@ -247,34 +251,35 @@ function drawMainMenu()
     gfx.drawCircleAtPoint(screenCenterX, wheelY, wheelRadius)
 
     -- draw menu item icons
-    for i=menuSelectionRounded+3,menuSelectionRounded-3,-1 do
-        if i <= #menuItems and i >= 1 then
-            local itemArtFilePath = "sprites/"..menuItems[i]..".pdi"
+    for i=1,#menuItems do
+        local itemArtFilePath = "sprites/"..menuItems[i]..".pdi"
 
-            local itemPos = -(menuSelection-i)*90
-            local itemScale = wheelRadius/600
+        local itemPos = -(menuSelection-i)*(360/#menuItems)
 
-            local itemX = screenCenterX + wheelRadius * math.cos(math.rad(itemPos-90)) - 32
-            local itemY = wheelY + wheelRadius * math.sin(math.rad(itemPos-90)) - 32
-            
-            getImage(itemArtFilePath):draw(itemX, itemY)
+        local itemX = screenCenterX + wheelRadius * math.cos(math.rad(itemPos-90)) - 32
+        local itemY = wheelY + wheelRadius * math.sin(math.rad(itemPos-90)) - 32
+        
+        getImage(itemArtFilePath):draw(itemX, itemY)
 
-            -- draw menu item names
-            local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSans)
-            local textX = screenCenterX + (wheelRadius-64) * math.cos(math.rad(itemPos-90)) - textWidth/2
-            local textY = wheelY + (wheelRadius-64) * math.sin(math.rad(itemPos-90)) - textHeight/2
-            if textWidth > 100 then
-                local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSmall)
-                gfx.setColor(gfx.kColorWhite)
-                gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-                gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSmall)
-            else
-                gfx.setColor(gfx.kColorWhite)
-                gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-                gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSans)
-            end
+        -- draw menu item names
+        local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSans)
+        local textX = screenCenterX + (wheelRadius-64) * math.cos(math.rad(itemPos-90)) - textWidth/2
+        local textY = wheelY + (wheelRadius-64) * math.sin(math.rad(itemPos-90)) - textHeight/2
+        if textWidth > 100 then
+            local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSmall)
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+            gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSmall)
+        else
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+            gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSans)
         end
     end
+
+    -- draw the pointer
+    local pointerY = wheelYTimer.value-(wheelRadiusTimer.value*1.35)
+    pointerSprite:draw(screenCenterX-7, pointerY) 
 
     
     -- draw the input prompts
@@ -333,8 +338,8 @@ function drawMainMenu()
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
     if fadeWhite ~= 1 then
-        gfx.setColor(gfx.kColorBlack)
-        gfx.setDitherPattern(fadeBlack)
+        gfx.setColor(gfx.kColorWhite)
+        gfx.setDitherPattern(fadeWhite)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
 end

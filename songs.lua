@@ -485,9 +485,6 @@ end
 
 
 function drawSongSelect()
-    -- draw background
-    gfx.setColor(gfx.kColorBlack)
-    gfx.fillRect(0, 0, screenWidth, screenHeight)
 
     -- draw background sheen
     local sheenX = sheenTimer.value

@@ -1,4 +1,6 @@
 
+import "stats"
+
 --import note classes
 import "notes/note"
 import "notes/flipnote"
@@ -699,11 +701,17 @@ end
 
 
 function drawSong()
+    if missedNotes == 0 and combo >= #songTable.notes then
+        gfx.setImageDrawMode(gfx.kDrawModeInverted)
+        gfx.clear(gfx.kColorBlack)
+    end
+    
     --draw background
     local bgW, bgH = bgAnim:image():getSize()
     local bgX = orbitCenterX-(bgW/2)
     local bgY = orbitCenterY-(bgH/2)
     bgAnim:draw(bgX, bgY)
+
 
     --draw the point total
     gfx.setColor(gfx.kColorBlack)
@@ -715,11 +723,7 @@ function drawSong()
         gfx.drawText("Combo:"..combo, 2, 220, fonts.orbeatsSans)
     end
 
-    --invert behind the orbit if 50% of the way through with no misses
-    if missedNotes == 0 and combo >= #songTable.notes then
-        gfx.setColor(gfx.kColorXOR)
-        gfx.fillRect(0, 0, screenWidth, screenHeight)
-    end
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
     --draw the orbit
     gfx.setColor(gfx.kColorWhite)
@@ -888,6 +892,7 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     -- update crank position
     crankPos = pd.getCrankPosition()
     crankChange = pd.getCrankChange()
+    stats.crankTurns += math.abs(crankChange)/360
     -- update button inputs
     upPressed = pd.buttonJustPressed(pd.kButtonUp)
     downPressed = pd.buttonJustPressed(pd.kButtonDown)

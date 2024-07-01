@@ -149,9 +149,6 @@ function updateTitleScreen()
 end
 
 function drawTitleScreen()
-    -- draw the black bg
-    gfx.setColor(gfx.kColorBlack)
-    gfx.fillRect(0, 0, screenWidth, screenHeight)
 
     -- draw the stars on the bg
     bgSprite[bgStage]:draw(0,0)

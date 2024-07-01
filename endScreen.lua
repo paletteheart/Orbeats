@@ -1,6 +1,7 @@
 
 import "game"
 import "songs"
+import "stats"
 
 -- Define constants
 local pd <const> = playdate
@@ -142,6 +143,57 @@ local function initEndScreen()
     end
     
     pd.datastore.write(scores, "scores")
+
+    -- update stats
+    if stats.lifetimeScore ~= nil then
+        stats.lifetimeScore += score
+    else
+        stats.lifetimeScore = score
+    end
+
+    if stats.hitNotes ~= nil then
+        stats.hitNotes += hitNotes
+    else
+        stats.hitNotes = hitNotes
+    end
+    
+    if stats.perfectHits ~= nil then
+        stats.perfectHits += perfectHits
+    else
+        stats.perfectHits = perfectHits
+    end
+
+    if stats.missedNotes ~= nil then
+        stats.missedNotes += missedNotes
+    else
+        stats.missedNotes = missedNotes
+    end
+
+    if stats.levelsCompleted ~= nil then
+        stats.levelsCompleted += 1
+    else
+        stats.levelsCompleted = 1
+    end
+
+    if fullCombo then
+        if stats.fullCombos ~= nil then
+            stats.fullCombos += 1
+        else
+            stats.fullCombos = 1
+        end
+    end
+
+    if stats.ranksReceived == nil then
+        stats.ranksReceived = {}
+    end
+
+    if stats.ranksReceived[songRating] ~= nil then
+        stats.ranksReceived[songRating] += 1
+    else
+        stats.ranksReceived[songRating] = 1
+    end
+
+    pd.datastore.write(stats, "stats")
 end
 
 local function resetAnimationValues()
@@ -208,9 +260,6 @@ function updateEndScreen()
 end
 
 function drawEndScreen()
-    -- draw background
-    gfx.setColor(gfx.kColorBlack)
-    gfx.fillRect(0, 0, screenWidth, screenHeight)
 
     -- draw background sheen
     local sheenX = sheenTimer.value

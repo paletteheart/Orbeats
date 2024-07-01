@@ -20,6 +20,9 @@ local tmr <const> = pd.timer
 local ease <const> = pd.easingFunctions
 local menu <const> = pd.getSystemMenu()
 
+local screenWidth <const> = 400
+local screenHeight <const> = 240
+
 pd.display.setRefreshRate(0)
 
 -- pd.datastore.delete("settings")
@@ -76,38 +79,59 @@ addResetHiScoresMenuItem() --settings
 addSortByMenuItem() --pause
 
 local gameState = "title"
+local oldGameState = gameState
 
 local function draw()
-	gfx.clear()
 
 	if gameState == "song" then
+		gfx.clear()
 		drawSong()
 		--alert the user to use crank if docked
 		if pd.isCrankDocked() then
 			pd.ui.crankIndicator:draw()
 		end
 	elseif gameState == "songEndScreen" then
+		gfx.clear(gfx.kColorBlack)
 		drawEndScreen()
 	elseif gameState == "songSelect" then
+		gfx.clear(gfx.kColorBlack)
 		drawSongSelect()
 	elseif gameState == "menu" then
+		gfx.clear(gfx.kColorBlack)
 		drawMainMenu()
+	elseif gameState == "stats" then
+		gfx.clear(gfx.kColorBlack)
+		drawStatsPage()
+		--alert the user to use crank if docked
+		if pd.isCrankDocked() then
+			pd.ui.crankIndicator:draw()
+		end
 	elseif gameState == "credits" then
-		gameState = "title"
 	else
+		gfx.clear(gfx.kColorBlack)
 		drawTitleScreen()
 	end
 
-	pd.drawFPS(0, 0)
+	pd.drawFPS(screenWidth-15, screenHeight-12)
 
 end
 
+pd.resetElapsedTime()
 
 function pd.update()
 	-- update inputs
 	updateInputs()
 	-- update timers
 	tmr.updateTimers()
+	-- update play time
+	stats.playTime += pd.getElapsedTime()
+	pd.resetElapsedTime()
+
+	-- save stats if changing game state
+	if gameState ~= oldGameState then
+		pd.datastore.write(stats, "stats")
+		oldGameState = gameState
+	end
 	
 	-- reset system menu items
 	menu:removeAllMenuItems()
@@ -127,12 +151,24 @@ function pd.update()
 		addSortByMenuItem()
 	elseif gameState == "menu" then
 		gameState = updateMainMenu()
+	elseif gameState == "stats" then
+		gameState = updateStatsPage()
 	elseif gameState == "credits" then
-
+		gameState = "title"
 	else
 		gameState = updateTitleScreen()
 	end
 
 	draw()
 
+end
+
+function pd.gameWillTerminate()
+	pd.datastore.write(stats, "stats")
+end
+function pd.deviceWillSleep()
+	pd.datastore.write(stats, "stats")
+end
+function pd.deviceWillLock()
+	pd.datastore.write(stats, "stats")
 end
