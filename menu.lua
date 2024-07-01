@@ -209,7 +209,6 @@ function updateMainMenu()
         if fadeBlack > 0 then
             fadeBlack -= 0.1
         else
-            menuBgm:stop()
             leavingMenu = false
             init = false
             return menuItems[menuSelectionRounded]
