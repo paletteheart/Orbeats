@@ -145,6 +145,7 @@ local function initEndScreen()
 end
 
 local function resetAnimationValues()
+    sheenTimer = replaceTimer(sheenTimer, 0, 600, 600)
     completedCurrentY = -45
     completedYTimer = replaceTimer(completedYTimer, 0, completedCurrentY, completedCurrentY)
     statsCurrentX = -165

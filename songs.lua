@@ -74,25 +74,17 @@ local songListSortedByName <const> = sortSongListByName()
 local songListSortedByArtist <const> = sortSongListByArtist()
 local songListSortedByBpm <const> = sortSongListByBpm()
 
+local songBarDither <const> = {0x95, 0x6A, 0xA9, 0x56, 0x59, 0xA6, 0x9A, 0x65}
+
 -- Define variables
 -- Misc variables
 scores = pd.datastore.read("scores")
-
-settings = pd.datastore.read("settings")
-tutorialPlayed = false
-if settings ~= nil then
-    if settings.tutorial ~= nil then tutorialPlayed = settings.tutorial end
-    if settings.sfx ~= nil then playHitSfx = settings.sfx end
-else
-    settings = {}
-end
-
 
 local leftHeldFor = 0 -- a measurement in ticks of how long left has been held
 local rightHeldFor = 0 -- a measurement in ticks of how long right has been held
 local selecting = "song"
 
-local pointerSprite = gfx.image.new("sprites/pointer")
+pointerSprite = gfx.image.new("sprites/pointer")
 
 -- Audio Variables
 sfx.low = pd.sound.sampleplayer.new("sfx/low")
@@ -114,8 +106,7 @@ songTable = {}
 sortBy = ""
 sortSongs = true
 local songStarting = false
-local toTitle = false
-tutorialStarting = false
+local toMenu = false
 local songSelection = 1
 local songSelectionRounded = songSelection
 local mapSelection = -100
@@ -128,8 +119,8 @@ local playedPreview = false
 
 -- Reset high scores variables
 resetHiScores = false
-warningCurrentY = -45
-warningYTimer = tmr.new(0, warningCurrentY, warningCurrentY)
+warningY = -45
+warningYTimer = tmr.new(0, warningY, warningY)
 
 -- Animation variables
 local init = false
@@ -146,33 +137,34 @@ local tickerTextConfirm = "Confirm:"..char.up.."/"..char.A.." --- Back:"..char.d
 local tickerText = tickerTextConfirm
 local tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
 
-local songBarCurrentY = 1000
-local songBarYTimer = tmr.new(0, songBarCurrentY, songBarCurrentY)
-local songBarCurrentRadius = 600
-local songBarRadiusTimer = tmr.new(0, songBarCurrentRadius, songBarCurrentRadius)
+local songBarY = 1000
+local songBarYTimer = tmr.new(0, songBarY, songBarY)
+local songBarRadius = 600
+local songBarRadiusTimer = tmr.new(0, songBarRadius, songBarRadius)
 
-local selectBarCurrentY = -52
-local selectBarYTimer = tmr.new(0, selectBarCurrentY, selectBarCurrentY)
+local selectBarY = -52
+local selectBarYTimer = tmr.new(0, selectBarY, selectBarY)
 local drawInputPrompts = true
 
-local songDataCurrentX = math.min(-gfx.getTextSize(currentSong.name), -100)
-local songDataXTimer = tmr.new(0, songDataCurrentX, songDataCurrentX)
+local songDataX = math.min(-gfx.getTextSize(currentSong.name), -100)
+local songDataXTimer = tmr.new(0, songDataX, songDataX)
 
-local pointerCurrentY = screenHeight
-local pointerYTimer = tmr.new(0, pointerCurrentY, pointerCurrentY)
+local pointerY = screenHeight
+local pointerYTimer = tmr.new(0, pointerY, pointerY)
 
-local fadeOut = 1
+local fadeWhite = 1
+local fadeBlack = 1
 
 local playText = "Let's Go!"
 local playTextWidth, playTextHeight = gfx.getTextSize(playText, fonts.odinRounded)
-local playCurrentY = -playTextHeight
-local playYTimer = tmr.new(0, playCurrentY, playCurrentY)
+local playY = -playTextHeight
+local playYTimer = tmr.new(0, playY, playY)
 
-local controlsCurrentY = 250
-local controlsYTimer = tmr.new(0, controlsCurrentY, controlsCurrentY)
+local controlsY = 250
+local controlsYTimer = tmr.new(0, controlsY, controlsY)
 
-local mapCurrentDist = 5
-local mapDistTimer = tmr.new(0, mapCurrentDist, mapCurrentDist)
+local mapDist = 5
+local mapDistTimer = tmr.new(0, mapDist, mapDist)
 local mapSelectionOffset = -100
 
 local inputTimer = tmr.new(0)
@@ -181,58 +173,44 @@ local startHideAnimation = true
 
 local function resetAnimValues()
     init = false
-    songBarCurrentY = 1000
-    songBarYTimer = replaceTimer(songBarYTimer, 0, songBarCurrentY, songBarCurrentY)
-    songBarCurrentRadius = 600
-    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, 0, songBarCurrentRadius, songBarCurrentRadius)
-    selectBarCurrentY = -52
-    selectBarYTimer = replaceTimer(selectBarYTimer, 0, selectBarCurrentY, selectBarCurrentY)
+    sheenTimer = replaceTimer(sheenTimer, 0, 600, 600)
+    songBarY = 1000
+    songBarYTimer = replaceTimer(songBarYTimer, 0, songBarY, songBarY)
+    songBarRadius = 600
+    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, 0, songBarRadius, songBarRadius)
+    selectBarY = -52
+    selectBarYTimer = replaceTimer(selectBarYTimer, 0, selectBarY, selectBarY)
     selecting = "song"
     mapSelectionOffset = -100
-    songDataCurrentX = math.min(-gfx.getTextSize(currentSong.name), -100)
-    songDataXTimer = replaceTimer(songDataXTimer, 0, songDataCurrentX, songDataCurrentX)
-    pointerCurrentY = screenHeight
-    pointerYTimer = replaceTimer(pointerYTimer, 0, pointerCurrentY, pointerCurrentY)
-    fadeOut = 1
-    playCurrentY = -playTextHeight
-    playYTimer = replaceTimer(playYTimer, 0, playCurrentY, playCurrentY)
-    controlsCurrentY = 250
-    controlsYTimer = replaceTimer(controlsYTimer, 0, controlsCurrentY, controlsCurrentY)
-    mapCurrentDist = 5
-    mapDistTimer = replaceTimer(mapDistTimer, 0, mapCurrentDist, mapCurrentDist)
+    songDataX = math.min(-gfx.getTextSize(currentSong.name), -100)
+    songDataXTimer = replaceTimer(songDataXTimer, 0, songDataX, songDataX)
+    pointerY = screenHeight
+    pointerYTimer = replaceTimer(pointerYTimer, 0, pointerY, pointerY)
+    fadeWhite = 1
+    fadeBlack = 1
+    playY = -playTextHeight
+    playYTimer = replaceTimer(playYTimer, 0, playY, playY)
+    controlsY = 250
+    controlsYTimer = replaceTimer(controlsYTimer, 0, controlsY, controlsY)
+    mapDist = 5
+    mapDistTimer = replaceTimer(mapDistTimer, 0, mapDist, mapDist)
 end
 
 local function resetAnimTimers()
-    songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarCurrentY, 775, ease.outCubic)
-    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarCurrentRadius, 600, ease.outCubic)
-    selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarCurrentY, 0, ease.outCubic)
-    songDataXTimer = replaceTimer(songDataXTimer, animationTime, songDataCurrentX, 0, ease.outCubic)
-    controlsYTimer = replaceTimer(controlsYTimer, animationTime, controlsCurrentY, 200, ease.outCubic)
-    pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerCurrentY, screenHeight-115, ease.outCubic)
+    songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 775, ease.outBack)
+    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 600, ease.outBack)
+    selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarY, 0, ease.outCubic)
+    songDataXTimer = replaceTimer(songDataXTimer, animationTime, songDataX, 0, ease.outCubic)
+    controlsYTimer = replaceTimer(controlsYTimer, animationTime, controlsY, 200, ease.outCubic)
+    pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerY, screenHeight-115, ease.outBack)
     sheenTimer = replaceTimer(sheenTimer, 20000, 600, -200)
     sheenTimer.repeats = true
     tickerTimer = replaceTimer(tickerTimer, 7500, 0, tickerTextWidth)
     tickerTimer.repeats = true
 end
 
-local function round(number)
-    local integralPart = math.floor(number)
-    local fractionalPart = number - integralPart
-
-    if fractionalPart == 0.5 then
-        -- Check if the integral part is even
-        if integralPart % 2 == 0 then
-            return integralPart  -- Round to the nearest even number
-        else
-            return math.floor(number + 0.5)  -- Round up for odd integral part
-        end
-    else
-        return math.floor(number + 0.5)  -- Round normally for other cases
-    end
-end
-
 local imageCache = {}
-local function getImage(path, mapNum)
+function getImage(path, mapNum)
     if imageCache[path] == nil then
         if pd.file.exists(path) then
             imageCache[path] = gfx.image.new(path)
@@ -278,8 +256,8 @@ function updateSongSelect()
     if leftHeld or rightHeld or upHeld or downHeld or math.abs(crankChange) > 0.5 then
         inputTimer = replaceTimer(inputTimer, 4000, function()
             drawInputPrompts = true
-            selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarCurrentY, 0, ease.outCubic)
-            controlsYTimer = replaceTimer(controlsYTimer, animationTime, controlsCurrentY, 200, ease.outCubic)
+            selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarY, 0, ease.outCubic)
+            controlsYTimer = replaceTimer(controlsYTimer, animationTime, controlsY, 200, ease.outCubic)
             startHideAnimation = true
         end)
 
@@ -287,12 +265,8 @@ function updateSongSelect()
             drawInputPrompts = false
         end
         if startHideAnimation then
-            if tutorialPlayed then
-                selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarCurrentY, -52, ease.outCubic)
-            else
-                selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarCurrentY, -26, ease.outCubic)
-            end
-            controlsYTimer = replaceTimer(controlsYTimer, animationTime, controlsCurrentY, screenHeight+10, ease.outCubic)
+            selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarY, -52, ease.outCubic)
+            controlsYTimer = replaceTimer(controlsYTimer, animationTime, controlsY, screenHeight+10, ease.outCubic)
             startHideAnimation = false
         end
     end
@@ -346,7 +320,6 @@ function updateSongSelect()
         if (upPressed or aPressed) and not songStarting then
             if selecting == "play" then
                 songStarting = true
-                tutorialStarting = false
                 sfx.play:play()
             elseif selecting == "map" then
                 local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
@@ -354,9 +327,9 @@ function updateSongSelect()
                 if pd.file.exists(songTablePath) then
                     selecting = "play"
                     sfx.high:play()
-                    songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarCurrentY, 700, ease.outCubic)
-                    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarCurrentRadius, 400, ease.outCubic)
-                    playYTimer = replaceTimer(playYTimer, animationTime, playCurrentY, screenCenterY-playTextHeight/2, ease.outCubic)
+                    songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 700, ease.outBack)
+                    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 400, ease.outBack)
+                    playYTimer = replaceTimer(playYTimer, animationTime, playY, screenCenterY-playTextHeight/2, ease.outBack)
                     tickerText = tickerTextPlay
                     tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
                     tickerTimer = replaceTimer(tickerTimer, 7500, 0, tickerTextWidth)
@@ -365,10 +338,10 @@ function updateSongSelect()
             elseif selecting == "song" then
                 selecting = "map"
                 sfx.mid:play()
-                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarCurrentY, 725, ease.outCubic)
-                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarCurrentRadius, 500, ease.outCubic)
-                pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerCurrentY, screenHeight-160, ease.outCubic)
-                mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapCurrentDist, 10, ease.outCubic)
+                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 725, ease.outBack)
+                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 500, ease.outBack)
+                pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerY, screenHeight-160, ease.outCubic)
+                mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapDist, 10, ease.outBack)
             end
         end
 
@@ -376,15 +349,15 @@ function updateSongSelect()
             if selecting == "map" then
                 selecting = "song"
                 sfx.low:play()
-                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarCurrentY, 775, ease.outCubic)
-                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarCurrentRadius, 600, ease.outCubic)
-                pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerCurrentY, screenHeight-115, ease.outCubic)
-                mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapCurrentDist, 5, ease.outCubic)
+                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 775, ease.outBack)
+                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 600, ease.outBack)
+                pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerY, screenHeight-115, ease.outCubic)
+                mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapDist, 5, ease.outBack)
             elseif selecting == "play" then
                 selecting = "map"
-                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarCurrentY, 725, ease.outCubic)
-                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarCurrentRadius, 500, ease.outCubic)
-                playYTimer = replaceTimer(playYTimer, animationTime, playCurrentY, -playTextHeight, ease.outCubic)
+                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 725, ease.outBack)
+                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 500, ease.outBack)
+                playYTimer = replaceTimer(playYTimer, animationTime, playY, -playTextHeight, ease.outBack)
                 sfx.mid:play()
                 tickerText = tickerTextConfirm
                 tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
@@ -393,7 +366,7 @@ function updateSongSelect()
             elseif selecting == "song" then
                 sfx.low:play()
                 -- go back to the title
-                toTitle = true
+                toMenu = true
             end
         end
     
@@ -402,10 +375,10 @@ function updateSongSelect()
         if upHeld and aHeld then
             pd.datastore.write({}, "scores")
             scores = pd.datastore.read("scores")
-            warningYTimer = replaceTimer(warningYTimer, animationTime, warningCurrentY, -45, ease.outCubic)
+            warningYTimer = replaceTimer(warningYTimer, animationTime, warningY, -45, ease.outCubic)
             resetHiScores = false
         elseif downPressed or bPressed then
-            warningYTimer = replaceTimer(warningYTimer, animationTime, warningCurrentY, -45, ease.outCubic)
+            warningYTimer = replaceTimer(warningYTimer, animationTime, warningY, -45, ease.outCubic)
             resetHiScores = false
         end
     end
@@ -472,8 +445,8 @@ function updateSongSelect()
         -- get the map file path
         local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
         -- fade out and then load map
-        if fadeOut > 0 then
-            fadeOut -= 0.1
+        if fadeWhite > 0 then
+            fadeWhite -= 0.1
         else
             local bpm = currentSong.bpm
             local bpmChanges = currentSong.bpmChange
@@ -489,46 +462,20 @@ function updateSongSelect()
         end
     end
 
-    if tutorialStarting then
-        -- get the map file path
-        local songTablePath = "tutorial/Tutorial.json"
-        -- check if the map exists, do nothing if not
-        if not pd.file.exists(songTablePath) then
-            songStarting = false
-        else
-            -- fade out and then load map
-            if fadeOut > 0 then
-                fadeOut -= 0.1
-            else
-                local tutorialData = json.decodeFile(pd.file.open("tutorial/songData.json"))
-                local bpm = tutorialData.bpm
-                local bpmChanges = tutorialData.bpmChange
-                local beatOffset = tutorialData.beatOffset
-                if music:isPlaying() then
-                    music:stop()
-                end
-                menuBgm:stop()
-                local tutorialMusicFile = ("tutorial/Tutorial")
-                setUpSong(bpm, bpmChanges, beatOffset, tutorialMusicFile, songTablePath)
-                resetAnimValues()
-                tutorialStarting = false
-                return "song"
-            end
-        end
-    end
+    
 
-    if toTitle then
+    if toMenu then
         -- go back to the title screen
-        if fadeOut > 0 then
-            fadeOut -= 0.1
+        if fadeBlack > 0 then
+            fadeBlack -= 0.1
         else
             resetAnimValues()
             if music:isPlaying() then
                 music:stop()
             end
             menuBgm:stop()
-            toTitle = false
-            return "title"
+            toMenu = false
+            return "menu"
         end
     end
 
@@ -550,28 +497,28 @@ function drawSongSelect()
     gfx.drawLine(sheenX, screenHeight+50, sheenX+30, -50)
 
     -- draw the song bar
-    songBarCurrentY = songBarYTimer.value
-    songBarCurrentRadius = songBarRadiusTimer.value
+    songBarY = songBarYTimer.value
+    songBarRadius = songBarRadiusTimer.value
     gfx.setColor(gfx.kColorWhite)
-    gfx.fillCircleAtPoint(screenCenterX, songBarCurrentY, songBarCurrentRadius)
+    gfx.fillCircleAtPoint(screenCenterX, songBarY, songBarRadius)
     gfx.setColor(gfx.kColorBlack)
     -- gfx.setDitherPattern(1/3, gfx.image.kDitherTypeDiagonalLine)
-    gfx.setPattern({0x95, 0x6A, 0xA9, 0x56, 0x59, 0xA6, 0x9A, 0x65})
-    gfx.fillCircleAtPoint(screenCenterX, songBarCurrentY, songBarCurrentRadius)
+    gfx.setPattern(songBarDither)
+    gfx.fillCircleAtPoint(screenCenterX, songBarY, songBarRadius)
     gfx.setColor(gfx.kColorWhite)
     gfx.setLineWidth(5)
-    gfx.drawCircleAtPoint(screenCenterX, songBarCurrentY, songBarCurrentRadius)
-    -- songBarSprite:draw(0, songBarCurrentY-songBarCurrentRadius)
+    gfx.drawCircleAtPoint(screenCenterX, songBarY, songBarRadius)
+    -- songBarSprite:draw(0, songBarY-songBarRadius)
 
 
     -- draw the difficulty satellites
-    mapCurrentDist = mapDistTimer.value
+    mapDist = mapDistTimer.value
     mapSelectionOffset = closeDistance(mapSelectionOffset, 0, 0.3)
     for i=#mapList,1,-1 do
-        local mapPos = (i-mapSelection)*mapCurrentDist
-        local mapScale = songBarCurrentRadius/500
-        local mapX = screenCenterX + (songBarCurrentRadius+100) * math.cos(math.rad(mapPos-90+mapSelectionOffset))
-        local mapY = songBarCurrentY/(songBarCurrentY/725) + (songBarCurrentRadius+100) * math.sin(math.rad(mapPos-90+mapSelectionOffset))
+        local mapPos = (i-mapSelection)*mapDist
+        local mapScale = songBarRadius/500
+        local mapX = screenCenterX + (songBarRadius+100) * math.cos(math.rad(mapPos-90+mapSelectionOffset))
+        local mapY = songBarY/(songBarY/725) + (songBarRadius+100) * math.sin(math.rad(mapPos-90+mapSelectionOffset))
 
         -- draw difficuty availability
         local songTablePath = "songs/"..currentSong.name.."/"..mapList[i]..".json"
@@ -609,13 +556,13 @@ function drawSongSelect()
     end
 
     -- draw the song data
-    songDataCurrentX = songDataXTimer.value
+    songDataX = songDataXTimer.value
     local dataBubbleWidth = 100
     local dataBubbleHeight = 85
     local dataBubbleY = 85
     -- draw main data bubble
     gfx.setColor(gfx.kColorWhite)
-    gfx.fillRoundRect(songDataCurrentX, dataBubbleY, dataBubbleWidth, dataBubbleHeight, 5)
+    gfx.fillRoundRect(songDataX, dataBubbleY, dataBubbleWidth, dataBubbleHeight, 5)
     local currentHiScore = 0
     local currentHiCombo = 0
     local currentBestRank = "-"
@@ -638,24 +585,24 @@ function drawSongSelect()
             end
         end
     end
-    gfx.drawText("Best Score:", songDataCurrentX+5, dataBubbleY+5, fonts.orbeatsSmall)
-    gfx.drawText(currentHiScore, songDataCurrentX+5, dataBubbleY+15, fonts.orbeatsSans)
-    gfx.drawText("Best Combo:", songDataCurrentX+5, dataBubbleY+30, fonts.orbeatsSmall)
+    gfx.drawText("Best Score:", songDataX+5, dataBubbleY+5, fonts.orbeatsSmall)
+    gfx.drawText(currentHiScore, songDataX+5, dataBubbleY+15, fonts.orbeatsSans)
+    gfx.drawText("Best Combo:", songDataX+5, dataBubbleY+30, fonts.orbeatsSmall)
     if currentHiCombo < 0 then
-        gfx.drawText("Full Combo", songDataCurrentX+5, dataBubbleY+40, fonts.orbeatsSans)
+        gfx.drawText("Full Combo", songDataX+5, dataBubbleY+40, fonts.orbeatsSans)
     else
-        gfx.drawText(currentHiCombo, songDataCurrentX+5, dataBubbleY+40, fonts.orbeatsSans)
+        gfx.drawText(currentHiCombo, songDataX+5, dataBubbleY+40, fonts.orbeatsSans)
     end
-    gfx.drawText("Best Rank:", songDataCurrentX+5, dataBubbleY+55, fonts.orbeatsSmall)
-    gfx.drawText(currentBestRank, songDataCurrentX+5, dataBubbleY+65, fonts.orbeatsSans)
+    gfx.drawText("Best Rank:", songDataX+5, dataBubbleY+55, fonts.orbeatsSmall)
+    gfx.drawText(currentBestRank, songDataX+5, dataBubbleY+65, fonts.orbeatsSans)
     -- draw the name/artist/bpm bubble
     local bpmText = currentSong.bpm.."BPM"
     local nameBubbleWidth = math.max(gfx.getTextSize(currentSong.name, fonts.orbeatsSans)+10, gfx.getTextSize(currentSong.artist, fonts.orbeatsSmall)+gfx.getTextSize(bpmText, fonts. orbeatsSmall)+20)
     gfx.setColor(gfx.kColorWhite)
-    gfx.fillRoundRect(songDataCurrentX, 30, nameBubbleWidth, 40, 5)
-    gfx.drawText(bpmText, songDataCurrentX+gfx.getTextSize(currentSong.artist, fonts.orbeatsSmall)+13, 55, fonts.orbeatsSmall)
-    gfx.drawText(currentSong.artist, songDataCurrentX+5, 55, fonts.orbeatsSmall)
-    gfx.drawText(currentSong.name, songDataCurrentX+5, 35, fonts.orbeatsSans)
+    gfx.fillRoundRect(songDataX, 30, nameBubbleWidth, 40, 5)
+    gfx.drawText(bpmText, songDataX+gfx.getTextSize(currentSong.artist, fonts.orbeatsSmall)+13, 55, fonts.orbeatsSmall)
+    gfx.drawText(currentSong.artist, songDataX+5, 55, fonts.orbeatsSmall)
+    gfx.drawText(currentSong.name, songDataX+5, 35, fonts.orbeatsSans)
     
     
 
@@ -667,71 +614,71 @@ function drawSongSelect()
             local albumArtFilePath = "songs/"..currentSongList[i].name.."/albumArt.pdi"
 
             local albumPos = -(songSelection-i)*8
-            local albumScale = songBarCurrentRadius/600
+            local albumScale = songBarRadius/600
 
-            local albumX = screenCenterX + songBarCurrentRadius * math.cos(math.rad(albumPos-90)) - 32*albumScale
-            local albumY = songBarCurrentY + songBarCurrentRadius * math.sin(math.rad(albumPos-90)) - 32*albumScale
+            local albumX = screenCenterX + songBarRadius * math.cos(math.rad(albumPos-90)) - 32*albumScale
+            local albumY = songBarY + songBarRadius * math.sin(math.rad(albumPos-90)) - 32*albumScale
             
             getImage(albumArtFilePath):draw(albumX, albumY)
         end
     end
 
     -- draw the play text
-    playCurrentY = playYTimer.value
-    if playCurrentY > -33 then
-        gfx.drawText(playText, screenCenterX-playTextWidth/2, playCurrentY, fonts.odinRounded)
+    playY = playYTimer.value
+    if playY > -33 then
+        gfx.drawText(playText, screenCenterX-playTextWidth/2, playY, fonts.odinRounded)
     end
 
     -- draw the pointer
-    pointerCurrentY = pointerYTimer.value
-    pointerSprite:draw(screenCenterX-7, pointerCurrentY) 
+    pointerY = pointerYTimer.value
+    pointerSprite:draw(screenCenterX-7, pointerY) 
 
     -- draw menu controls
     local controlsBubbleWidth = 50
     local controlsBubbleHeight = 26
-    controlsCurrentY = controlsYTimer.value
+    controlsY = controlsYTimer.value
     if drawInputPrompts and selecting ~= "play" then
         -- draw the left controls bubble
         gfx.setColor(gfx.kColorWhite)
-        gfx.fillRoundRect(0, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
+        gfx.fillRoundRect(0, controlsY, controlsBubbleWidth, controlsBubbleHeight, 3)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
-        gfx.drawRoundRect(0, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
-        gfx.drawText(char.left.."/"..char.ccw, 4, controlsCurrentY+4, fonts.orbeatsSans)
+        gfx.drawRoundRect(0, controlsY, controlsBubbleWidth, controlsBubbleHeight, 3)
+        gfx.drawText(char.left.."/"..char.ccw, 4, controlsY+4, fonts.orbeatsSans)
         -- draw the right controls bubble
         gfx.setColor(gfx.kColorWhite)
-        gfx.fillRoundRect(350, controlsCurrentY, controlsBubbleWidth, controlsBubbleHeight, 3)
+        gfx.fillRoundRect(350, controlsY, controlsBubbleWidth, controlsBubbleHeight, 3)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
-        gfx.drawRoundRect(350, controlsCurrentY, controlsBubbleWidth, 26, 3)
-        gfx.drawText(char.right.."/"..char.cw, 355, controlsCurrentY+4, fonts.orbeatsSans)
+        gfx.drawRoundRect(350, controlsY, controlsBubbleWidth, 26, 3)
+        gfx.drawText(char.right.."/"..char.cw, 355, controlsY+4, fonts.orbeatsSans)
     end
     
-    -- draw the tutorial bubble
-    selectBarCurrentY = selectBarYTimer.value
+    -- draw the sorting bubble and controls ticker
+    selectBarY = selectBarYTimer.value
 
-    local tutorialText = ("Tutorial & Options:"..char.menu)
-    local tutorialTextWidth = gfx.getTextSize(tutorialText, fonts.orbeatsSans)
+    local sortingText = ("Sorting:"..char.menu)
+    local sortingTextWidth = gfx.getTextSize(sortingText, fonts.orbeatsSans)
     if drawInputPrompts then
         gfx.setColor(gfx.kColorWhite)
-        gfx.fillRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
+        gfx.fillRoundRect(screenWidth-sortingTextWidth-6, selectBarY, sortingTextWidth+6, 50, 3)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
-        gfx.drawRoundRect(screenWidth-tutorialTextWidth-6, selectBarCurrentY, tutorialTextWidth+6, 50, 3)
-        gfx.drawText(tutorialText, screenWidth-tutorialTextWidth-3, selectBarCurrentY+30, fonts.orbeatsSans)
+        gfx.drawRoundRect(screenWidth-sortingTextWidth-6, selectBarY, sortingTextWidth+6, 50, 3)
+        gfx.drawText(sortingText, screenWidth-sortingTextWidth-3, selectBarY+30, fonts.orbeatsSans)
     
         -- draw the up/down controls bar
         gfx.setColor(gfx.kColorWhite)
-        gfx.fillRect(0, selectBarCurrentY, screenWidth, 25)
+        gfx.fillRect(0, selectBarY, screenWidth, 25)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
-        gfx.drawLine(0, selectBarCurrentY+25, screenWidth, selectBarCurrentY+25)
+        gfx.drawLine(0, selectBarY+25, screenWidth, selectBarY+25)
         local tickerX1 = tickerTimer.value
         local tickerX2 = tickerTimer.value-tickerTextWidth
         local tickerX3 = tickerTimer.value+tickerTextWidth
-        gfx.drawText(tickerText, tickerX1, selectBarCurrentY+4, fonts.orbeatsSans)
-        gfx.drawText(tickerText, tickerX2, selectBarCurrentY+4, fonts.orbeatsSans)
-        gfx.drawText(tickerText, tickerX3, selectBarCurrentY+4, fonts.orbeatsSans)
+        gfx.drawText(tickerText, tickerX1, selectBarY+4, fonts.orbeatsSans)
+        gfx.drawText(tickerText, tickerX2, selectBarY+4, fonts.orbeatsSans)
+        gfx.drawText(tickerText, tickerX3, selectBarY+4, fonts.orbeatsSans)
     end
 
 
@@ -755,10 +702,10 @@ function drawSongSelect()
         gfx.drawRoundRect(resetBubbleX, resetBubbleY, resetBubbleWidth, resetBubbleHeight, 3)
 
         -- draw text
-        if warningCurrentY ~= warningYTimer.value then
-            warningCurrentY = warningYTimer.value
+        if warningY ~= warningYTimer.value then
+            warningY = warningYTimer.value
         end
-        gfx.drawText("WARNING!", screenCenterX-(gfx.getTextSize("WARNING!", fonts.odinRounded)/2), warningCurrentY, fonts.odinRounded)
+        gfx.drawText("WARNING!", screenCenterX-(gfx.getTextSize("WARNING!", fonts.odinRounded)/2), warningY, fonts.odinRounded)
         local textX = screenCenterX-(gfx.getTextSize("THIS WILL RESET ALL\nYOUR SCORES!", fonts.orbeatsSans)/2)
         gfx.drawText("THIS WILL RESET ALL\nYOUR SCORES!", textX, resetBubbleY+11, fonts.orbeatsSans)
         gfx.drawText("Press "..char.up.." and "..char.A.." to\nconfirm.", textX, resetBubbleY+51, fonts.orbeatsSans)
@@ -767,9 +714,14 @@ function drawSongSelect()
     end
 
     -- draw fade out if fading out
-    if fadeOut ~= 1 then
+    if fadeWhite ~= 1 then
         gfx.setColor(gfx.kColorWhite)
-        gfx.setDitherPattern(fadeOut)
+        gfx.setDitherPattern(fadeWhite)
+        gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
+    if fadeBlack ~= 1 then
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setDitherPattern(fadeBlack)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
 end
@@ -783,6 +735,22 @@ function closeDistance(currentVal, targetVal, speed)
         newVal = currentVal+change
     end
     return newVal
+end
+
+function round(number)
+    local integralPart = math.floor(number)
+    local fractionalPart = number - integralPart
+
+    if fractionalPart == 0.5 then
+        -- Check if the integral part is even
+        if integralPart % 2 == 0 then
+            return integralPart  -- Round to the nearest even number
+        else
+            return math.floor(number + 0.5)  -- Round up for odd integral part
+        end
+    else
+        return math.floor(number + 0.5)  -- Round normally for other cases
+    end
 end
 
 function replaceTimer(timer, ...)

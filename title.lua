@@ -30,8 +30,8 @@ local jingleBpm = 127
 local pulse = false
 local pulseDepth = 4
 -- orbit vars
-local orbitCurrentDither = 1
-local orbitDitherTimer = tmr.new(0, orbitCurrentDither, orbitCurrentDither)
+local orbitDither = 1
+local orbitDitherTimer = tmr.new(0, orbitDither, orbitDither)
 local drawOrbit = false
 -- title vars
 local titleHideY = -100
@@ -62,7 +62,7 @@ local function resetVars()
     drawOrbit = false
     drawTitle = false
     drawInput = false
-    orbitCurrentDither = 1
+    orbitDither = 1
     bgStage = 1
     lastPulse = 0
 
@@ -90,12 +90,12 @@ function updateTitleScreen()
         -- set up orbit animation
         tmr.performAfterDelay(1500, function()
             drawOrbit = true
-            orbitDitherTimer = tmr.new(animationTime, orbitCurrentDither, 0.75)
+            orbitDitherTimer = tmr.new(animationTime, orbitDither, 0.75)
         end)
         -- set up title animation
         tmr.performAfterDelay((11/3)*1000, function()
             drawTitle = true
-            titleYTimer = tmr.new(animationTime, titleHideY, titleY, ease.outCubic)
+            titleYTimer = tmr.new(500, titleHideY, titleY, ease.outBack)
         end)
         -- set up input prompt animation
         tmr.performAfterDelay(4500, function()
@@ -122,11 +122,12 @@ function updateTitleScreen()
     -- if jingle finished and we're still on the title, start the menu music
     if not sfx.jingle:isPlaying() then
         menuBgm:play(0)
+        menuBgm:setVolume(1)
     end
 
     -- check if any button has been pressed
     if (upPressed or downPressed or leftPressed or rightPressed or aPressed or bPressed) and not start then
-        sfx.low:play()
+        sfx.mid:play()
         sfx.jingle:stop()
         start = true
     end
@@ -140,7 +141,7 @@ function updateTitleScreen()
             fadeOut = 1
             init = true
             resetVars()
-            return "songSelect"
+            return "menu"
         end
     end
 
@@ -160,9 +161,9 @@ function drawTitleScreen()
     local orbitCenterX = titleX+253
     local orbitCenterY = titleY+72
     if drawOrbit then
-        orbitCurrentDither = orbitDitherTimer.value
+        orbitDither = orbitDitherTimer.value
         gfx.setColor(gfx.kColorWhite)
-        gfx.setDitherPattern(orbitCurrentDither)
+        gfx.setDitherPattern(orbitDither)
         gfx.setLineWidth(7)
         if pulse then
             gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth)
@@ -175,7 +176,7 @@ function drawTitleScreen()
     local pulseLength = 50
     gfx.setColor(gfx.kColorWhite)
     if drawOrbit then
-        gfx.setDitherPattern(orbitCurrentDither+0.25*(currentBeat%1))
+        gfx.setDitherPattern(orbitDither+0.25*(currentBeat%1))
         gfx.setLineWidth(7*(1-currentBeat%1))
         gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(currentBeat%1))
     end

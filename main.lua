@@ -11,6 +11,7 @@ import "songs"
 import "game"
 import "endScreen"
 import "title"
+import "menu"
 
 -- Define constants
 local pd <const> = playdate
@@ -67,22 +68,12 @@ local function addSortByMenuItem()
 		sortSongs = true
 	end)
 end
-local function addTutorialMenuItem()
-	return menu:addMenuItem("Tutorial", function()
-		tutorialStarting = true
-		songStarting = false
-		tutorialPlayed = true
-		settings.tutorial = tutorialPlayed
-		pd.datastore.write(settings, "settings")
-	end)
-end
 
-addSongSelectMenuItem()
-addRestartMenuItem()
-addToggleSfxMenuItem()
-addResetHiScoresMenuItem()
-addSortByMenuItem()
-addTutorialMenuItem()
+addSongSelectMenuItem() --pause
+addRestartMenuItem() --pause
+addToggleSfxMenuItem() --settings
+addResetHiScoresMenuItem() --settings
+addSortByMenuItem() --pause
 
 local gameState = "title"
 
@@ -99,6 +90,8 @@ local function draw()
 		drawEndScreen()
 	elseif gameState == "songSelect" then
 		drawSongSelect()
+	elseif gameState == "menu" then
+		drawMainMenu()
 	elseif gameState == "credits" then
 		gameState = "title"
 	else
@@ -131,8 +124,9 @@ function pd.update()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
 		addResetHiScoresMenuItem()
-		addTutorialMenuItem()
 		addSortByMenuItem()
+	elseif gameState == "menu" then
+		gameState = updateMainMenu()
 	elseif gameState == "credits" then
 
 	else
