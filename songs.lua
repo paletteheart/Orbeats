@@ -473,7 +473,7 @@ function updateSongSelect()
             if music:isPlaying() then
                 music:stop()
             end
-            menuBgm:stop()
+            menuBgm:setVolume(1)
             toMenu = false
             return "menu"
         end
