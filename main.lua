@@ -162,9 +162,7 @@ function pd.update()
 end
 
 function pd.gameWillTerminate()
-	if not (gameState == "restart" and upHeld and aHeld) then
-		pd.datastore.write(stats, "stats")
-	end
+	pd.datastore.write(stats, "stats")
 end
 function pd.deviceWillSleep()
 	pd.datastore.write(stats, "stats")

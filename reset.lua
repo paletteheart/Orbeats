@@ -18,6 +18,7 @@ function updateResetMenu()
 
     if upHeld and aHeld then
         pd.datastore.delete("scores")
+        stats = {}
         pd.datastore.delete("stats")
         pd.datastore.delete("settings")
         pd.restart()
