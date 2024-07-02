@@ -12,7 +12,7 @@ If you already have a song and it's difficulty maps created and ready to play in
 And the level should then be within your game!
 
 ## Creating custom songs and maps
-Create a new song, you'll need to create a folder for it's files (what will be referred to as the song's folder). Inside that, you'll need:
+Create a new song, you'll need to create a folder for it's files (what will be referred to as the song's folder). I highly recommend that the song's folder's name be formatted like "song_title.artist.your_handle" to keep songs from sharing the same folder name. Inside that, you'll need:
  1. **songData.json** - A .json file containing data about the song that is the same between all maps. Info on creating this below.
  2. **albumArt.pdi*** - A PlayDate image file, generated from a 64x64 .png using only black, white, and fully transparent pixels. Currently the only way to make these is to use the SDK to compile a project containing the .png, and taking the resulting .pdi file from the compiled .pdx folder.
  3. **[song name].pda** - The PlayDate audio file of the song, generated from a .wav file. You can convert a .wav file to .pda [here](https://ejb.github.io/wav-pda-converter/), or using the SDK. It's highly recommended that the wav file be 22k Hz and signed 16 bit PCM and ran through [ADPCM-XQ](https://github.com/dbry/adpcm-xq/releases) to keep the file size low. It's recommended the song file has a short amount of silence after if you're going to map the whole song. **The name of the file must match the name of the song as defined in songData.json.**
@@ -23,15 +23,21 @@ Create a new song, you'll need to create a folder for it's files (what will be r
 ### Creating the songData.json file
 songData.json files follow this specific format:
 
-	     {
-		     "name":"",
-		     "artist":"",
-		     "difficulties":[
-			   	 ""
-		     ],
-		     "bpm":#,
-		   	 "beatOffset":#,
-		   	 "preview":#
+     {
+	         "name":"",
+	         "artist":"",
+	         "difficulties":[
+	    		 ""
+	         ],
+	         "bpm":#,
+		 "bpmChange":[
+			{
+				"beat":#,
+				"bpm":#
+			}
+		 ],
+		 "beatOffset":#,
+		 "preview":#
 	     }
 
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
@@ -40,6 +46,10 @@ Any attribute followed by a # takes a number as input, and any attribute followe
  - **artist** - The song's artist.
  - **difficulties** - A list of the difficulty maps within the song's folder. **Each entry in the list should be the name of one of the difficulty maps within the song's folder without .json at the end. It is highly recommended that you order these from easiest to hardest.**
  - **bpm** - The bpm of the song.
+ - **bpmChange*** - A list of objects defining when to change the bpm of the song, and what to change it to. **Does not change the speed of the audio, just the beats per minute.** *The beat count will not change after a bpm change, just the speed of the beats; i.e. if you change bpm at beat 50, it will remain beat 50, but the subsequent beats will be at a different speed.*
+	 - Each bpm change object is defined by a set of attributes:
+		 - **beat** - The beat at which the bpm will change.
+		 - **bpm** - The bpm to change to.
  - **beatOffset** - How much to offset beats when playing the song, in beats. Used for keeping the beats of the map aligned with the beat of the music. As a use example, if the song is half a beat early from the mappings, you can set this to 0.5 to fix this.
  - **preview** - When in the music file to start the preview when on the song select menu, in seconds. **Must have at least ten seconds of audio after.**
 ### Creating a custom difficulty map
@@ -86,12 +96,6 @@ A custom map for a song is stored as a .json file, following this overall struct
 						"y":#,
 						"font":""
 					}
-				],
-				"bpmChange":[
-					{
-						"beat":#,
-						"bpm":#
-					}
 				]
 			},
 			"songEnd":#
@@ -128,10 +132,6 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 			 - **x** - The x value where the top left of the text will be.
 			 - **y** - The y value where the top left of the text will be.
 			 - **font*** - The font that will be used. Can be set to "orbeatsSans", "odinRounded", or "orbeatsSmall". *Defaults to "orbeatsSmall".*
-	 - **bpmChange*** - A list of objects defining when to change the bpm of the song, and what to change it to. **Does not change the speed of the audio, just the beats per minute.** *The beat count will not change after a bpm change, just the speed of the beats; i.e. if you change bpm at beat 50, it will remain beat 50, but the subsequent beats will be at a different speed.*
-		 - Each bpm change object is defined by a set of attributes:
-			 - **beat** - The beat at which the bpm will change.
-			 - **bpm** - The bpm to change to.
  - **songEnd** - The beat when the map will end.
 
 \* \- Optional. Can be left out of a map file without causing errors.
