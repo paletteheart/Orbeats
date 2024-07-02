@@ -1,6 +1,7 @@
 
 import "songs"
 import "game"
+import "settings"
 
 -- Define constants
 local pd <const> = playdate
@@ -11,7 +12,6 @@ local ease <const> = pd.easingFunctions
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
-local screenCenterY <const> = screenHeight / 2
 
 local wheelDither <const> = {0xFF, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}
 
@@ -30,29 +30,13 @@ local menuItemNames <const> = {
     "Level Editor"
 }
 
-local inputText <const> = {
-    left = char.left.."/"..char.ccw,
-    right = char.right.."/"..char.cw,
-    confirm = "Confirm:"..char.up.."/"..char.A,
-    back = "Back:"..char.down.."/"..char.B
-}
-
 -- Define vars
 local init = false
 
 local tutorialStarting = false
 
-settings = pd.datastore.read("settings")
-tutorialPlayed = false
-if settings ~= nil then
-    if settings.tutorial ~= nil then tutorialPlayed = settings.tutorial end
-    if settings.sfx ~= nil then playHitSfx = settings.sfx end
-else
-    settings = {}
-end
-
 local menuSelection = 2
-if not tutorialPlayed then
+if not settings.tutorialPlayed then
     menuSelection = 1
 end
 local menuSelectionRounded = menuSelection
@@ -69,6 +53,15 @@ local wheelYTimer = tmr.new(0, wheelY, wheelY)
 
 local sheenTimer = tmr.new(0, 600, 600)
 
+inputText = {
+    left = char.left.."/"..char.ccw,
+    right = char.right.."/"..char.cw,
+    confirm = "Confirm:"..char.up.."/"..char.A,
+    back = "Back:"..char.down.."/"..char.B,
+    select = "Select:"..char.left.."/"..char.right.."/"..char.A,
+    save = "Save and Exit:"..char.B,
+    scroll = "Scroll:"..char.down.."/"..char.cw.."/"..char.up.."/"..char.ccw
+}
 local inputXTimer = tmr.new(0, 0, 0)
 local drawInputPrompts = true
 local promptTimer = tmr.new(0, 0, 0)
@@ -192,6 +185,9 @@ function updateMainMenu()
                 local tutorialMusicFile = ("tutorial/Tutorial")
                 setUpSong(bpm, bpmChanges, beatOffset, tutorialMusicFile, songTablePath)
                 tutorialStarting = false
+                settings.tutorialPlayed = true
+                pd.datastore.write(settings, "settings")
+                resetSongSelectAnim()
                 init = false
                 return "song"
             end
@@ -283,7 +279,7 @@ function drawMainMenu()
 
     
     -- draw the input prompts
-    inputX = inputXTimer.value
+    local inputX = inputXTimer.value
 
     if drawInputPrompts then
         local padding = 3

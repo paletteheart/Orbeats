@@ -11,8 +11,6 @@ local ease <const> = pd.easingFunctions
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
-local screenCenterX <const> = screenWidth / 2
-local screenCenterY <const> = screenHeight / 2
 
 -- Define Variables
 songRating = ""

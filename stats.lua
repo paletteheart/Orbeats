@@ -4,12 +4,9 @@ import "songs"
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics
-local tmr <const> = pd.timer
-local ease <const> = pd.easingFunctions
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
-local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
 -- Define variables
@@ -272,12 +269,21 @@ function drawStatsPage()
     end
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
-    -- planetAnimImage:clear(gfx.kColorClear)
-    -- gfx.pushContext(planetAnimImage)
-    --     drawPlanetAnim(120, 54, orbitDegrees)
-    -- gfx.popContext()
-    -- planetAnimImage:drawRotated(300, screenCenterY, 60)
+    -- draw the planet animation
     drawPlanetAnim(300, screenCenterY, orbitDegrees)
+
+    -- draw the input prompt
+    local padding = 3
+    local roundedness = 3
+    local inputY = 3
+    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.back, fonts.orbeatsSans)
+    inputX = screenWidth-(inputTextWidth+padding*2)
+    gfx.setColor(gfx.kColorWhite)
+    gfx.fillRoundRect(inputX, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
+    gfx.setColor(gfx.kColorBlack)
+    gfx.setLineWidth(2)
+    gfx.drawRoundRect(inputX, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
+    gfx.drawText(inputText.back, inputX+padding, inputY+padding, fonts.orbeatsSans)
 
     -- draw the fade in/out
     if fadeOut ~= 1 then

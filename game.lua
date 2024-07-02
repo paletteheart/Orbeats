@@ -95,7 +95,7 @@ aHeld = pd.buttonIsPressed(pd.kButtonA)
 bHeld = pd.buttonIsPressed(pd.kButtonB)
 
 -- Song variables
-local songTable = json.decodeFile(pd.file.open("songs/Orubooru/Easy.json"))
+local songTable = {}
 local songBpm = 130
 perfectHits = 0
 hitNotes = 0
@@ -106,11 +106,11 @@ local fadeOut = 1
 local fadeIn = 0
 local beatOffset = 0 -- a value to slightly offset the beat until it looks like it's perfectly on beat
 restartTable = {}
-restartTable.tablePath = "songs/Orubooru/Easy.json"
+restartTable.tablePath = ""
 restartTable.bpm = songBpm
 restartTable.bpmChanges = {}
 restartTable.beatOffset = beatOffset
-restartTable.musicFilePath = "songs/Orubooru/Orubooru"
+restartTable.musicFilePath = ""
 songEnded = false
 local bpmChange = {}
 
@@ -162,13 +162,6 @@ local lastMovementBeatY = 0 -- used for animating the orbit movement
 local function incrementCombo()
     combo += 1
     largestCombo = math.max(largestCombo, combo)
-end
-
-local function drawTextCentered(text, x, y, font)
-    -- draws text centered both horizontally and vertically to the point given
-    local textWidth, textHeight = gfx.getTextSize(text, font)
-    gfx.setFontFamily(font)
-    gfx.drawTextAligned(text, x, y-textHeight/2, kTextAlignment.center)
 end
 
 local function songOver()
@@ -229,7 +222,7 @@ local function updateNotes()
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if downPressed or bPressed then
+                    if downPressed or bPressed or rightPressed then
                         --note is hit
                         --figure out how many points you get
                         local noteDistance = math.abs(orbitRadius-noteData.newRadius)
@@ -259,11 +252,13 @@ local function updateNotes()
                         hitNotes += 1
                         incrementCombo()
                         -- create particles
-                        p:moveTo(playerX, playerY)
-                        p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
-                        p:add(10)
+                        if settings.particles then
+                            p:moveTo(playerX, playerY)
+                            p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                            p:add(10)
+                        end
                         -- play sfx
-                        if playHitSfx then
+                        if settings.sfx then
                             sfx.hit:play()
                         end
                     end
@@ -274,7 +269,7 @@ local function updateNotes()
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if downHeld or bHeld or upHeld or aHeld then
+                    if downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld then
                         --note is hit
                         score += maxNoteScore
                         hitTextDisplay = hitText.perfect
@@ -288,11 +283,13 @@ local function updateNotes()
                         hitNotes += 1
                         incrementCombo()
                         -- create particles
-                        p:moveTo(playerX, playerY)
-                        p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
-                        p:add(3)
+                        if settings.particles then
+                            p:moveTo(playerX, playerY)
+                            p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                            p:add(3)
+                        end
                         -- play sfx
-                        if playHitSfx then
+                        if settings.sfx then
                             sfx.hit:play()
                         end
                     end
@@ -304,7 +301,7 @@ local function updateNotes()
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if upPressed or aPressed then
+                    if upPressed or aPressed or leftPressed then
                         -- note is hit
                         --figure out how many points you get
                         local noteDistance = math.abs(orbitRadius-noteData.newRadius)
@@ -334,11 +331,13 @@ local function updateNotes()
                         hitNotes += 1
                         incrementCombo()
                         -- create particles
-                        p:moveTo(playerX, playerY)
-                        p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
-                        p:add(10)
+                        if settings.particles then
+                            p:moveTo(playerX, playerY)
+                            p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                            p:add(10)
+                        end
                         -- play sfx
-                        if playHitSfx then
+                        if settings.sfx then
                             sfx.hit:play()
                         end
                     end
@@ -653,7 +652,7 @@ function updateSong()
     playerY = orbitCenterY + orbitRadius * math.sin(math.rad(playerPos-90))
 
     --flip player if up is hit
-    if upPressed or aPressed then
+    if upPressed or aPressed or leftPressed then
         playerFlipped = not playerFlipped
         -- set the trail behind the cursor when you flip
         flipTrail = orbitRadius*2
@@ -707,10 +706,12 @@ function drawSong()
     end
     
     --draw background
-    local bgW, bgH = bgAnim:image():getSize()
-    local bgX = orbitCenterX-(bgW/2)
-    local bgY = orbitCenterY-(bgH/2)
-    bgAnim:draw(bgX, bgY)
+    if settings.drawBg then
+        local bgW, bgH = bgAnim:image():getSize()
+        local bgX = orbitCenterX-(bgW/2)
+        local bgY = orbitCenterY-(bgH/2)
+        bgAnim:draw(bgX, bgY)
+    end
 
 
     --draw the point total
@@ -783,7 +784,7 @@ function drawSong()
 
 	--draw the player
     local downBulge = 0
-    if downPressed or bPressed then
+    if downPressed or bPressed or rightPressed then
         downBulge = 2
     end
 	gfx.setColor(gfx.kColorWhite)
@@ -907,4 +908,11 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     rightHeld = pd.buttonIsPressed(pd.kButtonRight)
     aHeld = pd.buttonIsPressed(pd.kButtonA)
     bHeld = pd.buttonIsPressed(pd.kButtonB)
+end
+
+function drawTextCentered(text, x, y, font)
+    -- draws text centered both horizontally and vertically to the point given
+    local textWidth, textHeight = gfx.getTextSize(text, font)
+    gfx.setFontFamily(font)
+    gfx.drawTextAligned(text, x, y-textHeight/2, kTextAlignment.center)
 end

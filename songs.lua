@@ -27,6 +27,8 @@ local function getListOfSongs()
     local songList = {}
     for i=#songFolders,1,-1 do
         local songData = json.decodeFile(pd.file.open("songs/"..songFolders[i].."songData.json"))
+        songData.folder =  songFolders[i]
+        print(songFolders[i])
         table.insert(songList, songData)
     end
 
@@ -116,12 +118,6 @@ local oldSongSelection = songSelectionRounded
 local oldSongSelectionTime = 0
 local playedPreview = false
 
-
--- Reset high scores variables
-resetHiScores = false
-warningY = -45
-warningYTimer = tmr.new(0, warningY, warningY)
-
 -- Animation variables
 local init = false
 
@@ -141,6 +137,11 @@ local songBarY = 1000
 local songBarYTimer = tmr.new(0, songBarY, songBarY)
 local songBarRadius = 600
 local songBarRadiusTimer = tmr.new(0, songBarRadius, songBarRadius)
+local radiusPresets = {
+    song = 600,
+    map = 400,
+    play = 200
+}
 
 local selectBarY = -52
 local selectBarYTimer = tmr.new(0, selectBarY, selectBarY)
@@ -170,35 +171,9 @@ local mapSelectionOffset = -100
 local inputTimer = tmr.new(0)
 local startHideAnimation = true
 
-
-local function resetAnimValues()
-    init = false
-    sheenTimer = replaceTimer(sheenTimer, 0, 600, 600)
-    songBarY = 1000
-    songBarYTimer = replaceTimer(songBarYTimer, 0, songBarY, songBarY)
-    songBarRadius = 600
-    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, 0, songBarRadius, songBarRadius)
-    selectBarY = -52
-    selectBarYTimer = replaceTimer(selectBarYTimer, 0, selectBarY, selectBarY)
-    selecting = "song"
-    mapSelectionOffset = -100
-    songDataX = math.min(-gfx.getTextSize(currentSong.name), -100)
-    songDataXTimer = replaceTimer(songDataXTimer, 0, songDataX, songDataX)
-    pointerY = screenHeight
-    pointerYTimer = replaceTimer(pointerYTimer, 0, pointerY, pointerY)
-    fadeWhite = 1
-    fadeBlack = 1
-    playY = -playTextHeight
-    playYTimer = replaceTimer(playYTimer, 0, playY, playY)
-    controlsY = 250
-    controlsYTimer = replaceTimer(controlsYTimer, 0, controlsY, controlsY)
-    mapDist = 5
-    mapDistTimer = replaceTimer(mapDistTimer, 0, mapDist, mapDist)
-end
-
 local function resetAnimTimers()
     songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 775, ease.outBack)
-    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 600, ease.outBack)
+    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, radiusPresets.song, ease.outBack)
     selectBarYTimer = replaceTimer(selectBarYTimer, animationTime, selectBarY, 0, ease.outCubic)
     songDataXTimer = replaceTimer(songDataXTimer, animationTime, songDataX, 0, ease.outCubic)
     controlsYTimer = replaceTimer(controlsYTimer, animationTime, controlsY, 200, ease.outCubic)
@@ -225,6 +200,31 @@ function getImage(path, mapNum)
         end
     end
     return imageCache[path]
+end
+
+function resetSongSelectAnim()
+    init = false
+    sheenTimer = replaceTimer(sheenTimer, 0, 600, 600)
+    songBarY = 1000
+    songBarYTimer = replaceTimer(songBarYTimer, 0, songBarY, songBarY)
+    songBarRadius = 600
+    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, 0, songBarRadius, songBarRadius)
+    selectBarY = -52
+    selectBarYTimer = replaceTimer(selectBarYTimer, 0, selectBarY, selectBarY)
+    selecting = "song"
+    mapSelectionOffset = -100
+    songDataX = math.min(-gfx.getTextSize(currentSong.name), -100)
+    songDataXTimer = replaceTimer(songDataXTimer, 0, songDataX, songDataX)
+    pointerY = screenHeight
+    pointerYTimer = replaceTimer(pointerYTimer, 0, pointerY, pointerY)
+    fadeWhite = 1
+    fadeBlack = 1
+    playY = -playTextHeight
+    playYTimer = replaceTimer(playYTimer, 0, playY, playY)
+    controlsY = 250
+    controlsYTimer = replaceTimer(controlsYTimer, 0, controlsY, controlsY)
+    mapDist = 5
+    mapDistTimer = replaceTimer(mapDistTimer, 0, mapDist, mapDist)
 end
 
 function updateSongSelect()
@@ -271,115 +271,100 @@ function updateSongSelect()
         end
     end
 
-    -- make sure we're not in the reset high scores menu
-    if not resetHiScores then
-        -- check if we're selecting the song or the map
-        if selecting == "song" then
-            -- update the songSelection based on cranking and left/right presses
-            if leftPressed or leftHeldFor > 15 then
-                songSelection = round(songSelection)-0.51
-            end
-            if rightPressed or rightHeldFor > 15 then
-                songSelection = round(songSelection)+0.51
-            end
-            songSelection += crankChange/30
-            -- move the songSelection to the nearest integer if not moving the crank or if past the edge of the list
-            if math.abs(crankChange) < 0.1 or songSelection > #songList or songSelection < 1 then
-                songSelection = closeDistance(songSelection, math.min(#songList, math.max(1, round(songSelection))), 0.3)
-            end
+    -- check if we're selecting the song or the map
+    if selecting == "song" then
+        -- update the songSelection based on cranking and left/right presses
+        if leftPressed or leftHeldFor > 15 then
+            songSelection = round(songSelection)-0.51
         end
-
-        -- round the songSelection for things that need the exact songSelection
-        songSelectionRounded = math.min(#songList, math.max(1, round(songSelection)))
-
-        -- update the current song
-        currentSong = currentSongList[songSelectionRounded]
-        -- get the current list of maps (difficulties)
-        mapList = currentSong.difficulties
-
-        if selecting == "map" then
-            -- update the mapSelection based on the cranking and left/right presses
-            if leftPressed or leftHeldFor > 15 then
-                mapSelection = round(mapSelection)-0.51
-            end
-            if rightPressed or rightHeldFor > 15 then
-                mapSelection = round(mapSelection)+0.51
-            end
-            mapSelection += crankChange/45
-        end 
-
-        -- move the mapSelection to the nearest integer if not moving the crank or if past the edge of the list
-        if math.abs(crankChange) < 0.5 or mapSelection > #mapList or mapSelection < 1 or selecting ~= "map" then
-            mapSelection = closeDistance(mapSelection, math.min(#mapList, math.max(1, round(mapSelection))), 0.3)
+        if rightPressed or rightHeldFor > 15 then
+            songSelection = round(songSelection)+0.51
         end
-        -- round the mapSelection for things that need the exact mapSelection
-        mapSelectionRounded = math.min(#mapList, math.max(1, round(mapSelection)))
-        -- update what map (difficulty) is selected
-        currentDifficulty = currentSong.difficulties[mapSelectionRounded]
-        
-        if (upPressed or aPressed) and not songStarting then
-            if selecting == "play" then
-                songStarting = true
-                sfx.play:play()
-            elseif selecting == "map" then
-                local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
-                -- check if the map exists, do nothing if not
-                if pd.file.exists(songTablePath) then
-                    selecting = "play"
-                    sfx.high:play()
-                    songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 700, ease.outBack)
-                    songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 400, ease.outBack)
-                    playYTimer = replaceTimer(playYTimer, animationTime, playY, screenCenterY-playTextHeight/2, ease.outBack)
-                    tickerText = tickerTextPlay
-                    tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
-                    tickerTimer = replaceTimer(tickerTimer, 7500, 0, tickerTextWidth)
-                    tickerTimer.repeats = true
-                end
-            elseif selecting == "song" then
-                selecting = "map"
-                sfx.mid:play()
-                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 725, ease.outBack)
-                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 500, ease.outBack)
-                pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerY, screenHeight-160, ease.outCubic)
-                mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapDist, 10, ease.outBack)
-            end
+        songSelection += crankChange/30
+        -- move the songSelection to the nearest integer if not moving the crank or if past the edge of the list
+        if math.abs(crankChange) < 0.1 or songSelection > #songList or songSelection < 1 then
+            songSelection = closeDistance(songSelection, math.min(#songList, math.max(1, round(songSelection))), 0.3)
         end
+    end
 
-        if (downPressed or bPressed) and not songStarting then
-            if selecting == "map" then
-                selecting = "song"
-                sfx.low:play()
-                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 775, ease.outBack)
-                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 600, ease.outBack)
-                pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerY, screenHeight-115, ease.outCubic)
-                mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapDist, 5, ease.outBack)
-            elseif selecting == "play" then
-                selecting = "map"
-                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 725, ease.outBack)
-                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, 500, ease.outBack)
-                playYTimer = replaceTimer(playYTimer, animationTime, playY, -playTextHeight, ease.outBack)
-                sfx.mid:play()
-                tickerText = tickerTextConfirm
+    -- round the songSelection for things that need the exact songSelection
+    songSelectionRounded = math.min(#songList, math.max(1, round(songSelection)))
+
+    -- update the current song
+    currentSong = currentSongList[songSelectionRounded]
+    -- get the current list of maps (difficulties)
+    mapList = currentSong.difficulties
+
+    if selecting == "map" then
+        -- update the mapSelection based on the cranking and left/right presses
+        if leftPressed or leftHeldFor > 15 then
+            mapSelection = round(mapSelection)-0.51
+        end
+        if rightPressed or rightHeldFor > 15 then
+            mapSelection = round(mapSelection)+0.51
+        end
+        mapSelection += crankChange/45
+    end 
+
+    -- move the mapSelection to the nearest integer if not moving the crank or if past the edge of the list
+    if math.abs(crankChange) < 0.5 or mapSelection > #mapList or mapSelection < 1 or selecting ~= "map" then
+        mapSelection = closeDistance(mapSelection, math.min(#mapList, math.max(1, round(mapSelection))), 0.3)
+    end
+    -- round the mapSelection for things that need the exact mapSelection
+    mapSelectionRounded = math.min(#mapList, math.max(1, round(mapSelection)))
+    -- update what map (difficulty) is selected
+    currentDifficulty = currentSong.difficulties[mapSelectionRounded]
+    
+    if (upPressed or aPressed) and not songStarting then
+        if selecting == "play" then
+            songStarting = true
+            sfx.play:play()
+        elseif selecting == "map" then
+            local songTablePath = "songs/"..currentSong.folder..currentDifficulty..".json"
+            -- check if the map exists, do nothing if not
+            if pd.file.exists(songTablePath) then
+                selecting = "play"
+                sfx.high:play()
+                songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 700, ease.outBack)
+                songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, radiusPresets.play, ease.outBack)
+                playYTimer = replaceTimer(playYTimer, animationTime, playY, screenCenterY-playTextHeight/2, ease.outBack)
+                tickerText = tickerTextPlay
                 tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
                 tickerTimer = replaceTimer(tickerTimer, 7500, 0, tickerTextWidth)
                 tickerTimer.repeats = true
-            elseif selecting == "song" then
-                sfx.low:play()
-                -- go back to the title
-                toMenu = true
             end
+        elseif selecting == "song" then
+            selecting = "map"
+            sfx.mid:play()
+            songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 725, ease.outBack)
+            songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, radiusPresets.map, ease.outBack)
+            pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerY, screenHeight-160, ease.outCubic)
+            mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapDist, 10, ease.outBack)
         end
-    
-        
-    else -- if we are in the reset menu
-        if upHeld and aHeld then
-            pd.datastore.write({}, "scores")
-            scores = pd.datastore.read("scores")
-            warningYTimer = replaceTimer(warningYTimer, animationTime, warningY, -45, ease.outCubic)
-            resetHiScores = false
-        elseif downPressed or bPressed then
-            warningYTimer = replaceTimer(warningYTimer, animationTime, warningY, -45, ease.outCubic)
-            resetHiScores = false
+    end
+
+    if (downPressed or bPressed) and not songStarting then
+        if selecting == "map" then
+            selecting = "song"
+            sfx.low:play()
+            songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 775, ease.outBack)
+            songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, radiusPresets.song, ease.outBack)
+            pointerYTimer = replaceTimer(pointerYTimer, animationTime, pointerY, screenHeight-115, ease.outCubic)
+            mapDistTimer = replaceTimer(mapDistTimer, animationTime, mapDist, 5, ease.outBack)
+        elseif selecting == "play" then
+            selecting = "map"
+            songBarYTimer = replaceTimer(songBarYTimer, animationTime, songBarY, 725, ease.outBack)
+            songBarRadiusTimer = replaceTimer(songBarRadiusTimer, animationTime, songBarRadius, radiusPresets.map, ease.outBack)
+            playYTimer = replaceTimer(playYTimer, animationTime, playY, -playTextHeight, ease.outBack)
+            sfx.mid:play()
+            tickerText = tickerTextConfirm
+            tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
+            tickerTimer = replaceTimer(tickerTimer, 7500, 0, tickerTextWidth)
+            tickerTimer.repeats = true
+        elseif selecting == "song" then
+            sfx.low:play()
+            -- go back to the title
+            toMenu = true
         end
     end
 
@@ -396,7 +381,7 @@ function updateSongSelect()
     end
 
     -- play a preview of the currently selected song
-    local musicFile = ("songs/"..currentSong.name.."/"..currentSong.name)
+    local musicFile = ("songs/"..currentSong.folder..currentSong.name)
     if songSelectionRounded == oldSongSelection then
         oldSongSelectionTime += 1
         if oldSongSelectionTime > 15 then
@@ -443,7 +428,7 @@ function updateSongSelect()
     
     if songStarting then
         -- get the map file path
-        local songTablePath = "songs/"..currentSong.name.."/"..currentDifficulty..".json"
+        local songTablePath = "songs/"..currentSong.folder..currentDifficulty..".json"
         -- fade out and then load map
         if fadeWhite > 0 then
             fadeWhite -= 0.1
@@ -456,7 +441,7 @@ function updateSongSelect()
             end
             menuBgm:stop()
             setUpSong(bpm, bpmChanges, beatOffset, musicFile, songTablePath)
-            resetAnimValues()
+            resetSongSelectAnim()
             songStarting = false
             return "song"
         end
@@ -469,7 +454,7 @@ function updateSongSelect()
         if fadeBlack > 0 then
             fadeBlack -= 0.1
         else
-            resetAnimValues()
+            resetSongSelectAnim()
             if music:isPlaying() then
                 music:stop()
             end
@@ -496,60 +481,67 @@ function drawSongSelect()
     -- draw the song bar
     songBarY = songBarYTimer.value
     songBarRadius = songBarRadiusTimer.value
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillCircleAtPoint(screenCenterX, songBarY, songBarRadius)
-    gfx.setColor(gfx.kColorBlack)
-    -- gfx.setDitherPattern(1/3, gfx.image.kDitherTypeDiagonalLine)
-    gfx.setPattern(songBarDither)
-    gfx.fillCircleAtPoint(screenCenterX, songBarY, songBarRadius)
-    gfx.setColor(gfx.kColorWhite)
-    gfx.setLineWidth(5)
-    gfx.drawCircleAtPoint(screenCenterX, songBarY, songBarRadius)
-    -- songBarSprite:draw(0, songBarY-songBarRadius)
+    if selecting == "song" or (selecting == "map" and songBarRadius > radiusPresets.map) then
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillCircleAtPoint(screenCenterX, songBarY, songBarRadius)
+        gfx.setColor(gfx.kColorBlack)
+        -- gfx.setDitherPattern(1/3, gfx.image.kDitherTypeDiagonalLine)
+        gfx.setPattern(songBarDither)
+        gfx.fillCircleAtPoint(screenCenterX, songBarY, songBarRadius)
+        gfx.setColor(gfx.kColorWhite)
+        gfx.setLineWidth(5)
+        gfx.drawCircleAtPoint(screenCenterX, songBarY, songBarRadius)
+        -- songBarSprite:draw(0, songBarY-songBarRadius)
+    end
 
 
     -- draw the difficulty satellites
-    mapDist = mapDistTimer.value
-    mapSelectionOffset = closeDistance(mapSelectionOffset, 0, 0.3)
-    for i=#mapList,1,-1 do
-        local mapPos = (i-mapSelection)*mapDist
-        local mapScale = songBarRadius/500
-        local mapX = screenCenterX + (songBarRadius+100) * math.cos(math.rad(mapPos-90+mapSelectionOffset))
-        local mapY = songBarY/(songBarY/725) + (songBarRadius+100) * math.sin(math.rad(mapPos-90+mapSelectionOffset))
+    if selecting == "map" or (selecting == "play" and songBarRadius > radiusPresets.play) or (selecting == "song" and songBarRadius < radiusPresets.song) then
+        mapDist = mapDistTimer.value
+        mapSelectionOffset = closeDistance(mapSelectionOffset, 0, 0.3)
+        for i=mapSelectionRounded+3,mapSelectionRounded-3,-1 do
+            if i <= #mapList and i >= 1 then
+                local mapPos = (i-mapSelection)*mapDist
+                local mapX = screenCenterX + (songBarRadius+200) * math.cos(math.rad(mapPos-90+mapSelectionOffset))
+                local mapY = songBarY/(songBarY/725) + (songBarRadius+200) * math.sin(math.rad(mapPos-90+mapSelectionOffset))
 
-        -- draw difficuty availability
-        local songTablePath = "songs/"..currentSong.name.."/"..mapList[i]..".json"
-        -- check if the map exists, do nothing if not
-        if not pd.file.exists(songTablePath) and selecting == "map" then
-            local textWidth, textHeight = gfx.getTextSize("Unavailable", fonts.orbeatsSmall)
-            local textX = mapX-textWidth/2
-            local textY = mapY-textHeight/2-32*mapScale
-            gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-            gfx.drawText("Unavailable", textX, textY, fonts.orbeatsSmall)
+                -- draw difficuty availability
+                local songTablePath = "songs/"..currentSong.folder..mapList[i]..".json"
+                -- check if the map exists, do nothing if not
+                if i == mapSelectionRounded then
+                    if not pd.file.exists(songTablePath) then
+                        local textWidth, textHeight = gfx.getTextSize("Unavailable", fonts.orbeatsSmall)
+                        local textX = mapX-textWidth/2
+                        local textY = mapY-textHeight/2+48
+                        gfx.setColor(gfx.kColorWhite)
+                        gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+                        gfx.drawText("Unavailable", textX, textY, fonts.orbeatsSmall)
+                    end
+    
+                    -- draw difficulty name
+                    local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSans)
+                    if textWidth > 100 then
+                        local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSmall)
+                        local textX = mapX-textWidth/2
+                        local textY = mapY-textHeight/2+32
+                        gfx.setColor(gfx.kColorWhite)
+                        gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+                        gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSmall)
+                    else
+                        local textX = mapX-textWidth/2
+                        local textY = mapY-textHeight/2+32
+                        gfx.setColor(gfx.kColorWhite)
+                        gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+                        gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSans)
+                    end
+                end
+            
+            -- draw difficulty icon
+                local mapArtFilePath = "songs/"..currentSong.folder..currentSong.difficulties[i]..".pdi"
+                
+                getImage(mapArtFilePath, i):draw(mapX-24, mapY-24)
+            end
         end
-
-        -- draw difficulty name
-        local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSans)
-        if textWidth > 100 then
-            local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSmall)
-            local textX = mapX-textWidth/2
-            local textY = mapY-textHeight/2+32*mapScale
-            gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-            gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSmall)
-        else
-            local textX = mapX-textWidth/2
-            local textY = mapY-textHeight/2+32*mapScale
-            gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-            gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSans)
-        end
-        
-        -- draw difficulty icon
-        local mapArtFilePath = "songs/"..currentSong.name.."/"..currentSong.difficulties[i]..".pdi"
-        
-        getImage(mapArtFilePath, i):draw(mapX-24*mapScale, mapY-24*mapScale)
     end
 
     -- draw the song data
@@ -604,19 +596,19 @@ function drawSongSelect()
     
 
     -- draw the album art
+    if selecting == "song" or (selecting == "map" and songBarRadius > radiusPresets.map) then
+        for i=songSelectionRounded+3,songSelectionRounded-3,-1 do
+            if i <= #songList and i >= 1 then
+                local albumArtFilePath = "songs/"..currentSongList[i].folder.."/albumArt.pdi"
     
-
-    for i=songSelectionRounded+3,songSelectionRounded-3,-1 do
-        if i <= #songList and i >= 1 then
-            local albumArtFilePath = "songs/"..currentSongList[i].name.."/albumArt.pdi"
-
-            local albumPos = -(songSelection-i)*8
-            local albumScale = songBarRadius/600
-
-            local albumX = screenCenterX + songBarRadius * math.cos(math.rad(albumPos-90)) - 32*albumScale
-            local albumY = songBarY + songBarRadius * math.sin(math.rad(albumPos-90)) - 32*albumScale
-            
-            getImage(albumArtFilePath):draw(albumX, albumY)
+                local albumPos = -(songSelection-i)*8
+                local albumScale = songBarRadius/600
+    
+                local albumX = screenCenterX + songBarRadius * math.cos(math.rad(albumPos-90)) - 32*albumScale
+                local albumY = songBarY + songBarRadius * math.sin(math.rad(albumPos-90)) - 32*albumScale
+                
+                getImage(albumArtFilePath):draw(albumX, albumY)
+            end
         end
     end
 
@@ -676,38 +668,6 @@ function drawSongSelect()
         gfx.drawText(tickerText, tickerX1, selectBarY+4, fonts.orbeatsSans)
         gfx.drawText(tickerText, tickerX2, selectBarY+4, fonts.orbeatsSans)
         gfx.drawText(tickerText, tickerX3, selectBarY+4, fonts.orbeatsSans)
-    end
-
-
-    -- check if we're on the reset high scores menu
-    if resetHiScores then
-        -- draw the reset high scores menu
-        -- draw background
-        gfx.setColor(gfx.kColorBlack)
-        gfx.setDitherPattern(0.5)
-        gfx.fillRect(0, 0, screenWidth, screenHeight)
-
-        -- draw bubble
-        gfx.setColor(gfx.kColorWhite)
-        local resetBubbleWidth = 200
-        local resetBubbleHeight = 120
-        local resetBubbleX = screenCenterX-(resetBubbleWidth/2)
-        local resetBubbleY = screenCenterY-(resetBubbleHeight/2)
-        gfx.fillRoundRect(resetBubbleX, resetBubbleY, resetBubbleWidth, resetBubbleHeight, 3)
-        gfx.setColor(gfx.kColorBlack)
-        gfx.setLineWidth(1)
-        gfx.drawRoundRect(resetBubbleX, resetBubbleY, resetBubbleWidth, resetBubbleHeight, 3)
-
-        -- draw text
-        if warningY ~= warningYTimer.value then
-            warningY = warningYTimer.value
-        end
-        gfx.drawText("WARNING!", screenCenterX-(gfx.getTextSize("WARNING!", fonts.odinRounded)/2), warningY, fonts.odinRounded)
-        local textX = screenCenterX-(gfx.getTextSize("THIS WILL RESET ALL\nYOUR SCORES!", fonts.orbeatsSans)/2)
-        gfx.drawText("THIS WILL RESET ALL\nYOUR SCORES!", textX, resetBubbleY+11, fonts.orbeatsSans)
-        gfx.drawText("Press "..char.up.." and "..char.A.." to\nconfirm.", textX, resetBubbleY+51, fonts.orbeatsSans)
-        gfx.drawText("Press "..char.down.."/"..char.B.." to cancel.", textX, resetBubbleY+91, fonts.orbeatsSans)
-
     end
 
     -- draw fade out if fading out

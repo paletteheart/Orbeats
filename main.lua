@@ -12,6 +12,9 @@ import "game"
 import "endScreen"
 import "title"
 import "menu"
+import "stats"
+import "settings"
+import "reset"
 
 -- Define constants
 local pd <const> = playdate
@@ -52,19 +55,6 @@ local function addRestartMenuItem()
 		end
 	end)
 end
-local function addToggleSfxMenuItem()
-	return menu:addCheckmarkMenuItem("Hit SFX", playHitSfx, function(hitSfx)
-		playHitSfx = hitSfx
-		settings.sfx = hitSfx
-		pd.datastore.write(settings, "settings")
-	end)
-end
-local function addResetHiScoresMenuItem()
-	return menu:addMenuItem("Reset HiScore", function()
-		resetHiScores = true
-		warningYTimer = tmr.new(animationTime, warningCurrentY, 5, ease.outCubic)
-	end)
-end
 local function addSortByMenuItem()
 	return menu:addOptionsMenuItem("Sort By", sortOptions, sortBy, function(option)
 		sortBy = option
@@ -74,8 +64,6 @@ end
 
 addSongSelectMenuItem() --pause
 addRestartMenuItem() --pause
-addToggleSfxMenuItem() --settings
-addResetHiScoresMenuItem() --settings
 addSortByMenuItem() --pause
 
 local gameState = "title"
@@ -99,6 +87,9 @@ local function draw()
 	elseif gameState == "menu" then
 		gfx.clear(gfx.kColorBlack)
 		drawMainMenu()
+	elseif gameState == "settings" then
+		gfx.clear(gfx.kColorBlack)
+		drawSettings()
 	elseif gameState == "stats" then
 		gfx.clear(gfx.kColorBlack)
 		drawStatsPage()
@@ -106,13 +97,18 @@ local function draw()
 		if pd.isCrankDocked() then
 			pd.ui.crankIndicator:draw()
 		end
+	elseif gameState == "reset" then
+		gfx.clear()
+		drawResetMenu()
 	elseif gameState == "credits" then
 	else
 		gfx.clear(gfx.kColorBlack)
 		drawTitleScreen()
 	end
 
-	pd.drawFPS(screenWidth-15, screenHeight-12)
+	if settings.drawFps then
+		pd.drawFPS(screenWidth-15, screenHeight-12)
+	end
 
 end
 
@@ -141,18 +137,20 @@ function pd.update()
 		gameState = updateSong()
 		addSongSelectMenuItem()
 		addRestartMenuItem()
-		addToggleSfxMenuItem()
 	elseif gameState == "songEndScreen" then
 		gameState = updateEndScreen()
 		addSongSelectMenuItem()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
-		addResetHiScoresMenuItem()
 		addSortByMenuItem()
 	elseif gameState == "menu" then
 		gameState = updateMainMenu()
+	elseif gameState == "settings" then
+		gameState = updateSettings()
 	elseif gameState == "stats" then
 		gameState = updateStatsPage()
+	elseif gameState == "reset" then
+		gameState = updateResetMenu()
 	elseif gameState == "credits" then
 		gameState = "title"
 	else
