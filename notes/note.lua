@@ -43,17 +43,17 @@ function Note:update(currentBeat, orbitRadius)
 end
 
 function Note:draw(x, y, rad)
-    local noteAngles = self:getNoteAngles()
+    local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
     gfx.setColor(gfx.kColorBlack)
 	gfx.setLineWidth(5*(self.radius/rad))
-    gfx.drawArc(x, y, self.radius, noteAngles.startAngle, noteAngles.endAngle)
+    gfx.drawArc(x, y, self.radius, noteStartAngle, noteEndAngle)
 end
 
 function Note:getNoteAngles()
     local startAngle = self.currentPos - (self.width/2)
     local endAngle = self.currentPos + (self.width/2)
 
-    return {startAngle = startAngle, endAngle = endAngle}
+    return startAngle, endAngle
 end

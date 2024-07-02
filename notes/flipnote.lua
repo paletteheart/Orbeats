@@ -14,17 +14,17 @@ function FlipNote:update(currentBeat, orbitRadius)
 end
 
 function FlipNote:draw(x, y, rad)
-    local noteAngles = self:getNoteAngles()
+    local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
     gfx.setColor(gfx.kColorBlack)
 	gfx.setLineWidth(5*(self.radius/rad))
-    gfx.drawArc(x, y, self.radius, noteAngles.startAngle, noteAngles.endAngle)
+    gfx.drawArc(x, y, self.radius, noteStartAngle, noteEndAngle)
     --draw lines
-    local lineStartX1 = x + self.radius * math.cos(math.rad(noteAngles.startAngle-90))
-    local lineStartY1 = y + self.radius * math.sin(math.rad(noteAngles.startAngle-90))
-    local lineStartX2 = x + self.radius * math.cos(math.rad(noteAngles.endAngle-90))
-    local lineStartY2 = y + self.radius * math.sin(math.rad(noteAngles.endAngle-90))
+    local lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90))
+    local lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90))
+    local lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
+    local lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
     local lineEndX = x - self.radius * math.cos(math.rad(self.currentPos-90))
     local lineEndY = y - self.radius * math.sin(math.rad(self.currentPos-90))
     gfx.setColor(gfx.kColorBlack)
