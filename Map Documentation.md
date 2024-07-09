@@ -23,21 +23,21 @@ Create a new song, you'll need to create a folder for it's files (what will be r
 ### Creating the songData.json file
 songData.json files follow this specific format:
 
-     {
-	         "name":"",
-	         "artist":"",
-	         "difficulties":[
-	    		 ""
-	         ],
-	         "bpm":#,
-		 "bpmChange":[
-			{
-				"beat":#,
-				"bpm":#
-			}
-		 ],
-		 "beatOffset":#,
-		 "preview":#
+	     {
+		     "name":"",
+		     "artist":"",
+		     "difficulties":[
+			   	 ""
+		     ],
+		     "bpm":#,
+			 "bpmChange":[
+			 	{
+			 		"beat":#,
+					"bpm":#
+			 	}
+			 ],
+		   	 "beatOffset":#,
+		   	 "preview":#
 	     }
 
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
@@ -103,7 +103,7 @@ A custom map for a song is stored as a .json file, following this overall struct
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
  - **notes** - List of note objects.
 	 - Each note is defined by a set of attributes:
-		 - **type** - The type of the note. Can be either "note", "holdnote", or "flipnote". "note" will make it a normal note, hit by pressing down/B while in the right place. "holdnote" will make it a note that is hit if you're holding up/A/down/B and are in the right place. "flipnote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place.
+		 - **type** - The type of the note. Can be either "Note", "HoldNote", or "FlipNote". "Note" will make it a normal note, hit by pressing down/B while in the right place. "HoldNote" will make it a note that is hit if you're holding up/A/down/B and are in the right place. "FlipNote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place.
 		 - **spawnBeat** - The beat of the song when this note will be spawned in. **Notes are expected to be in order by their spawnBeat, earlier notes coming first. Two notes cannot share a spawnBeat.**
 		 - **hitBeat** - The beat of the song when this note will reach the orbit radius and can be hit by the cursor. Notes may share a hitBeat.
 		 - **speed** - How quickly the note approaches the orbit radius.
@@ -116,14 +116,14 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 		 - Each x movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined x value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
 			 - **x** - The x value the orbit will move to.
-			 - **animation** - The animation the orbit will take to reach the x value. Can be "linear", "ease-in", "ease-out", or "none".
-			 - **power** - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out. Doesn't do anything for any other animation value.
+			 - **animation*** - The animation the orbit will take to reach the x value. Can be any easing function from the PlayDate library, "ease-in", "ease-out", or "none".
+			 - **power*** - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out, or will passed as the fifth argument for any other easing function.
 	 - **moveOrbitY*** - A list of objects defining when, where, and how the orbit will move along the y axis.
 		 - Each y movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined y value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
 			 - **y** - The y value the orbit will move to.
-			 - **animation** - The animation the orbit will take to reach the y value. Can be "linear", "ease-in", "ease-out", or "none".
-			 - **power** - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out. Doesn't do anything for any other animation value.
+			 - **animation*** - The animation the orbit will take to reach the x value. Can be any easing function from the PlayDate library, "ease-in", "ease-out", or "none".
+			 - **power*** - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out, or will passed as the fifth argument for any other easing function.
 	 - **text*** - A list of objects defining when, where, and what text will show on the screen. *Text will be drawn centered horizontally and vertically to the given x and y.*
 		 - Each text object is defined by a set of attributes:
 			 - **startBeat** - The beat at which this object's text will be shown.
