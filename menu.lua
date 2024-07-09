@@ -1,8 +1,4 @@
 
-import "songs"
-import "game"
-import "settings"
-
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics
@@ -13,7 +9,7 @@ local screenWidth <const> = 400
 local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 
-local wheelDither <const> = {0xFF, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}
+local wheelDither <const> = {0xAA, 0x0, 0x80, 0x0, 0x80, 0x0, 0x80, 0x0}
 
 local menuItems <const> = {
     "tutorial",
@@ -40,6 +36,7 @@ if not settings.tutorialPlayed then
     menuSelection = 1
 end
 local menuSelectionRounded = menuSelection
+local oldSelection = menuSelection
 
 local toTitle = false
 local leavingMenu = false
@@ -144,6 +141,10 @@ function updateMainMenu()
         menuSelection = closeDistance(menuSelection, math.min(#menuItems, math.max(1, round(menuSelection))), 0.3)
     end
     menuSelectionRounded = round(menuSelection)
+    if oldSelection ~= menuSelectionRounded then
+        sfx.switch:play()
+        oldSelection = menuSelectionRounded
+    end
 
     -- set up timers for input prompts when recieving inputs
     if leftHeld or rightHeld or upHeld or downHeld or math.abs(crankChange) > 0.5 then
@@ -261,14 +262,15 @@ function drawMainMenu()
         local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSans)
         local textX = screenCenterX + (wheelRadius-64) * math.cos(math.rad(itemPos-90)) - textWidth/2
         local textY = wheelY + (wheelRadius-64) * math.sin(math.rad(itemPos-90)) - textHeight/2
+        local padding = 3
         if textWidth > 100 then
             local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSmall)
             gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+            gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 2)
             gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSmall)
         else
             gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+            gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 2)
             gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSans)
         end
     end

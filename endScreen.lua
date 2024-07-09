@@ -1,8 +1,4 @@
 
-import "game"
-import "songs"
-import "stats"
-
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics

@@ -43,7 +43,15 @@ local function sortSongListByName()
         sortedList[i] = v  -- Copy original table's content to the new table
     end
     table.sort(sortedList, function(a, b)
-        return a.name < b.name
+        if a.name ~= b.name then
+            return a.name < b.name
+        else
+            if a.artist ~= b.artist then
+                return a.artist < b.artist
+            else
+                return a.bpm < b.bpm
+            end
+        end
     end)
     return sortedList
 end
@@ -56,7 +64,11 @@ local function sortSongListByArtist()
         if a.artist ~= b.artist then
             return a.artist < b.artist
         else
-            return a.name < b.name
+            if a.name ~= b.name then
+                return a.name < b.name
+            else
+                return a.bpm < b.bpm
+            end
         end
     end)
     return sortedList
@@ -67,7 +79,15 @@ local function sortSongListByBpm()
         sortedList[i] = v  -- Copy original table's content to the new table
     end
     table.sort(sortedList, function(a, b)
-        return a.bpm < b.bpm
+        if a.bpm ~= b.bpm then
+            return a.bpm < b.bpm
+        else
+            if a.name ~= b.name then
+                return a.name < b.name
+            else
+                return a.artist < b.artist
+            end
+        end
     end)
     return sortedList
 end
@@ -94,6 +114,7 @@ sfx.mid = pd.sound.sampleplayer.new("sfx/mid")
 sfx.high = pd.sound.sampleplayer.new("sfx/high")
 sfx.play = pd.sound.sampleplayer.new("sfx/play")
 sfx.click = pd.sound.sampleplayer.new("sfx/click")
+sfx.switch = pd.sound.sampleplayer.new("sfx/switch")
 sfx.tap = pd.sound.sampleplayer.new("sfx/tap")
 sfx.jingle = pd.sound.sampleplayer.new("sfx/jingle")
 

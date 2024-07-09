@@ -1,0 +1,13 @@
+{
+    "name":"Stained Glass Cannon",
+    "artist":"Dawn of Apples",
+    "difficulties":[
+        "Loading",
+        "Lighting",
+        "Firing",
+        "Shattered"
+    ],
+    "bpm":120,
+    "beatOffset":0,
+    "preview":78
+}

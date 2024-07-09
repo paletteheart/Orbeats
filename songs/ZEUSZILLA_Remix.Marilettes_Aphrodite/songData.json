@@ -1,0 +1,13 @@
+{
+    "name":"ZEUSZILLA Remix",
+    "artist":"Marilette's Aphrodite",
+    "difficulties":[
+        "Easy",
+        "Normal",
+        "Hard",
+        "Insane"
+    ],
+    "bpm":140,
+    "beatOffset":2,
+    "preview":25
+}

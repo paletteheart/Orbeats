@@ -15,6 +15,7 @@ import "menu"
 import "stats"
 import "settings"
 import "reset"
+import "levelEditor"
 
 -- Define constants
 local pd <const> = playdate
@@ -35,7 +36,7 @@ local sortOptions <const> = {
 	"name",
 	"bpm"
 }
-sortBy = sortOptions[1]
+sortBy = settings.songSorting
 
 -- Define variables
 -- Menu Item Variables
@@ -58,6 +59,8 @@ end
 local function addSortByMenuItem()
 	return menu:addOptionsMenuItem("Sort By", sortOptions, sortBy, function(option)
 		sortBy = option
+		settings.songSorting = option
+		pd.datastore.write(settings, "settings")
 		sortSongs = true
 	end)
 end
@@ -100,7 +103,8 @@ local function draw()
 	elseif gameState == "reset" then
 		gfx.clear()
 		drawResetMenu()
-	elseif gameState == "credits" then
+	elseif gameState == "levelEditor" then
+		drawLevelEditor()
 	else
 		gfx.clear(gfx.kColorBlack)
 		drawTitleScreen()
@@ -151,6 +155,8 @@ function pd.update()
 		gameState = updateStatsPage()
 	elseif gameState == "reset" then
 		gameState = updateResetMenu()
+	elseif gameState == "levelEditor" then
+		gameState = updateLevelEditor()
 	elseif gameState == "credits" then
 		gameState = "title"
 	else

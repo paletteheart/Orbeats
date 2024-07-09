@@ -1,6 +1,4 @@
 
-import "stats"
-
 --import note classes
 import "notes/note"
 import "notes/flipnote"
@@ -9,6 +7,7 @@ import "notes/holdnote"
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics
+local ease <const> = pd.easingFunctions
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -455,12 +454,12 @@ local function updateEffects()
                     end
                     t = math.max(0, math.min(1, t))
 
-                    if fx.moveOrbitX[1].animation == "linear" then
-                        orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t
-                    elseif fx.moveOrbitX[1].animation == "ease-in" then
+                    if fx.moveOrbitX[1].animation == "ease-in" then
                         orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t^fx.moveOrbitX[1].power
                     elseif fx.moveOrbitX[1].animation == "ease-out" then
                         orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t^(1/fx.moveOrbitX[1].power)
+                    else
+                        orbitCenterX = ease[fx.moveOrbitX[1].animation](t, oldOrbitCenterX, nextOrbitCenterX-oldOrbitCenterX, 1, fx.moveOrbitX[1].power)
                     end
                     -- set the old orbit x to the current one if we've reached the destination
                     if not music:isPlaying() then
@@ -516,12 +515,12 @@ local function updateEffects()
                     end
                     t = math.max(0, math.min(1, t))
 
-                    if fx.moveOrbitY[1].animation == "linear" then
-                        orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t
-                    elseif fx.moveOrbitY[1].animation == "ease-in" then
+                    if fx.moveOrbitY[1].animation == "ease-in" then
                         orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t^fx.moveOrbitY[1].power
                     elseif fx.moveOrbitY[1].animation == "ease-out" then
                         orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t^(1/fx.moveOrbitY[1].power)
+                    else
+                        orbitCenterY = ease[fx.moveOrbitY[1].animation](t, oldOrbitCenterY, nextOrbitCenterY-oldOrbitCenterY, 1, fx.moveOrbitY[1].power)
                     end
                     -- set the old orbit x to the current one if we've reached the destination
                     if not music:isPlaying() then
@@ -599,7 +598,7 @@ end
 function updateSong()
     -- update the fake beat if the music isn't playing
     timeSinceStart = pd.sound.getCurrentTime()-startTime-3
-    fakeCurrentBeat = (timeSinceStart)*(songBpm/60)
+    fakeCurrentBeat = (timeSinceStart)*(songBpm/60)-beatOffset
 
     -- update the audio timer variable
     musicTime = music:getOffset()

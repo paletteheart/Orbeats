@@ -1,7 +1,4 @@
 
-import "game"
-import "songs"
-
 -- Define constants
 local pd = playdate
 local gfx = pd.graphics
@@ -18,6 +15,7 @@ settings = pd.datastore.read("settings")
 if settings == nil then
     settings = {
         tutorialPlayed = false,
+        songSorting = 1,
         sfx = true,
         particles = true,
         notePattern = 1,
