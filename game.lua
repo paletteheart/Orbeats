@@ -111,7 +111,7 @@ restartTable.bpmChanges = {}
 restartTable.beatOffset = beatOffset
 restartTable.musicFilePath = ""
 songEnded = false
-local bpmChange = {}
+local bpmChanges = {}
 
 -- Score display variables
 score = 0
@@ -577,14 +577,14 @@ local function updateEffects()
         end
 
         -- update the bpm
-        if bpmChange ~= nil then
+        if bpmChanges ~= nil then
             -- check if there's any more bpm changes
-            if #bpmChange ~= 0 then
-                local nextBpmChange = bpmChange[1]
+            if #bpmChanges ~= 0 then
+                local nextBpmChange = bpmChanges[1]
                 -- check if it's time for the next bpm change
                 if nextBpmChange.beat <= currentBeat then
                     songBpm = nextBpmChange.bpm
-                    table.remove(bpmChange, 1)
+                    table.remove(bpmChanges, 1)
                     referenceTime = musicTime
                     referenceBeat = currentBeat
                 end
@@ -836,11 +836,11 @@ function drawSong()
 end
 
 
-function setUpSong(bpm, bpmChanges, beatOffset, musicFilePath, tablePath)
+function setUpSong(bpm, bpmChange, beatOffset, musicFilePath, tablePath)
     -- set song data vars
     songTable = json.decodeFile(pd.file.open(tablePath))
     songBpm = bpm
-    bpmChange = bpmChanges
+    bpmChanges = bpmChange
     beatOffset = beatOffset
 
     textInstances = {}

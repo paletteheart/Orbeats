@@ -46,7 +46,7 @@ settingsLabels = {
     sfx = "Note SFX: ",
     particles = "Note Particles: ",
     notePattern = "Hold Note Pattern: ",
-    drawBg = "Animated Background: ",
+    drawBg = "Background FX: ",
     drawFps = "Framerate Display: ",
     resetSave = "Reset Save Data",
     on = "ON",
@@ -214,24 +214,25 @@ function drawSettings()
     gfx.drawCircleAtPoint(arcX, arcY, planetRadius)
 
     -- draw the list of settings
-    local padding = 3
-    for i=1,#settingsText do
-        local textHeight = 18
-        local textY = (padding+textHeight)*i
-        local textX = padding+textXTimer.value
+    drawList(settingsText, selectionRounded, 3, 3+textXTimer.value, 200, 240, 3, fonts.orbeatsSans, true, true)
+    -- local padding = 3
+    -- for i=1,#settingsText do
+    --     local textHeight = 18
+    --     local textY = (padding+textHeight)*i
+    --     local textX = padding+textXTimer.value
         
-        if selectionRounded == i then
-            local textWidth = gfx.getTextSize(settingsText[i], fonts.orbeatsSans)
-            gfx.setColor(gfx.kColorWhite)
-            gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 3)
-            gfx.setImageDrawMode(gfx.kDrawModeCopy)
-            gfx.drawText(settingsText[i], textX, textY, fonts.orbeatsSans)
-        else
-            gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
-            gfx.drawText(settingsText[i], textX, textY, fonts.orbeatsSans)
-        end
-    end
-    gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    --     if selectionRounded == i then
+    --         local textWidth = gfx.getTextSize(settingsText[i], fonts.orbeatsSans)
+    --         gfx.setColor(gfx.kColorWhite)
+    --         gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 3)
+    --         gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    --         gfx.drawText(settingsText[i], textX, textY, fonts.orbeatsSans)
+    --     else
+    --         gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
+    --         gfx.drawText(settingsText[i], textX, textY, fonts.orbeatsSans)
+    --     end
+    -- end
+    -- gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
     -- draw the input prompts
     local padding = 3
@@ -273,4 +274,93 @@ function drawSettings()
         gfx.setDitherPattern(fadeOut)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
+end
+
+
+local function truncateString(string, width, font)
+    local stringWidth = gfx.getTextSize(string, font)
+    local newString = string
+
+    while stringWidth > width do
+        if newString:sub(-3) == "..." then
+            newString = newString:sub(1, newString:len()-4).."..."
+        else
+            newString = newString:sub(1, newString:len()-1).."..."
+        end
+        stringWidth = gfx.getTextSize(newString, font)
+    end
+
+    return newString
+end
+
+function drawScrollingList(list, selectedItem, x, y, width, height, padding, font, fill, invert)
+    local textHeight = font[playdate.graphics.font.kVariantNormal]:getHeight()
+    local maxItems = math.floor(height/(textHeight+padding))
+    for i=math.max(math.ceil(selectedItem-maxItems/2+1), 1),#list do
+        local textY = y+(textHeight+padding)*(math.min(i, math.floor(i-selectedItem+maxItems/2))-1)+padding
+        local textX = x+padding
+        
+        local truncatedText = truncateString(list[i], width, font)
+        local selectBoxColor = gfx.kColorBlack
+        local selectedTextColor = gfx.kDrawModeInverted
+        local textColor = gfx.kDrawModeCopy
+        if invert then
+            selectBoxColor = gfx.kColorWhite
+            selectedTextColor = gfx.kDrawModeCopy
+            textColor = gfx.kDrawModeInverted
+        end
+        if selectedItem == i then
+            local textWidth = gfx.getTextSize(truncatedText, font)
+            gfx.setColor(selectBoxColor)
+            if fill then
+                gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 3)
+                gfx.setImageDrawMode(selectedTextColor)
+                gfx.drawText(truncatedText, textX, textY, font)
+            else
+                gfx.drawRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 3)
+                gfx.setImageDrawMode(textColor)
+                gfx.drawText(truncatedText, textX, textY, font)
+            end
+        else
+            gfx.setImageDrawMode(textColor)
+            gfx.drawText(truncatedText, textX, textY, font)
+        end
+    end
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
+end
+
+function drawList(list, selectedItem, x, y, width, height, padding, font, fill, invert)
+    local textHeight = font[playdate.graphics.font.kVariantNormal]:getHeight()
+    local maxItems = math.floor(height/(textHeight+padding))
+    for i=1,math.min(#list, maxItems) do
+        local textY = y+(textHeight+padding)*(i-1)+padding
+        local textX = x+padding
+        
+        local truncatedText = truncateString(list[i], width, font)
+        local selectBoxColor = gfx.kColorBlack
+        local selectedTextColor = gfx.kDrawModeInverted
+        local textColor = gfx.kDrawModeCopy
+        if invert then
+            selectBoxColor = gfx.kColorWhite
+            selectedTextColor = gfx.kDrawModeCopy
+            textColor = gfx.kDrawModeInverted
+        end
+        if selectedItem == i then
+            local textWidth = gfx.getTextSize(truncatedText, font)
+            gfx.setColor(selectBoxColor)
+            if fill then
+                gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 3)
+                gfx.setImageDrawMode(selectedTextColor)
+                gfx.drawText(truncatedText, textX, textY, font)
+            else
+                gfx.drawRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 3)
+                gfx.setImageDrawMode(textColor)
+                gfx.drawText(truncatedText, textX, textY, font)
+            end
+        else
+            gfx.setImageDrawMode(textColor)
+            gfx.drawText(truncatedText, textX, textY, font)
+        end
+    end
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
 end

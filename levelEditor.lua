@@ -1,4 +1,6 @@
 
+import "CoreLibs/keyboard"
+
 import "editor/songs"
 import "editor/songData"
 

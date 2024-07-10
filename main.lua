@@ -27,7 +27,7 @@ local menu <const> = pd.getSystemMenu()
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 
-pd.display.setRefreshRate(0)
+pd.display.setRefreshRate(50)
 
 -- pd.datastore.delete("settings")
 
