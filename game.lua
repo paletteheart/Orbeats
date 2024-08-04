@@ -55,8 +55,27 @@ bgImageTable = gfx.imagetable.new("sprites/bg")
 bgAnim = gfx.animation.loop.new(10, bgImageTable)
 
 sfx = {}
-sfx.hit = pd.sound.sampleplayer.new("sfx/hit")
-playHitSfx = true
+sfx.hit = {}
+
+local function getListOfHitSfx()
+    local sfxFiles = pd.file.listFiles("/sfx/hit/")
+    if sfxFiles == nil then sfxFiles = {} end
+
+    for i=#sfxFiles,1,-1 do
+        if sfxFiles[i]:sub(-4) ~= '.pda' then
+            table.remove(sfxFiles, i)
+        else
+            sfxFiles[i] = sfxFiles[i]:sub(1, -5)
+            print(sfxFiles[i])
+        end
+    end
+
+    for i=1,#sfxFiles do
+        sfx.hit[i] = pd.sound.sampleplayer.new("sfx/hit/"..sfxFiles[i])
+    end
+end
+
+getListOfHitSfx()
 
 -- Orbit variables
 local orbitRadius = 110
@@ -74,6 +93,9 @@ local playerRadius = 8
 local playerFlipped = false
 local flipTrail = 0
 local flipPos = 0
+local health = 100
+local noteDamage = 20
+failed = false
 
 -- input variables
 crankPos = pd.getCrankPosition()
@@ -99,6 +121,7 @@ local songBpm = 130
 perfectHits = 0
 hitNotes = 0
 missedNotes = 0
+notesLeft = 0
 local combo = 0
 largestCombo = 0
 local fadeOut = 1
@@ -250,6 +273,8 @@ local function updateNotes()
                         -- up the hit note score and combo counter
                         hitNotes += 1
                         incrementCombo()
+                        -- up your health
+                        health += noteDamage/2
                         -- create particles
                         if settings.particles then
                             p:moveTo(playerX, playerY)
@@ -257,8 +282,8 @@ local function updateNotes()
                             p:add(10)
                         end
                         -- play sfx
-                        if settings.sfx then
-                            sfx.hit:play()
+                        if settings.toggleSfx then
+                            sfx.hit[settings.sfx]:play()
                         end
                     end
                 end
@@ -281,6 +306,8 @@ local function updateNotes()
                         -- up the hit note score
                         hitNotes += 1
                         incrementCombo()
+                        -- up your health
+                        health += noteDamage/2
                         -- create particles
                         if settings.particles then
                             p:moveTo(playerX, playerY)
@@ -288,8 +315,8 @@ local function updateNotes()
                             p:add(3)
                         end
                         -- play sfx
-                        if settings.sfx then
-                            sfx.hit:play()
+                        if settings.toggleSfx then
+                            sfx.hit[settings.sfx]:play()
                         end
                     end
                 end
@@ -329,6 +356,8 @@ local function updateNotes()
                         -- up the hit note score
                         hitNotes += 1
                         incrementCombo()
+                        -- up your health
+                        health += noteDamage/2
                         -- create particles
                         if settings.particles then
                             p:moveTo(playerX, playerY)
@@ -336,8 +365,8 @@ local function updateNotes()
                             p:add(10)
                         end
                         -- play sfx
-                        if settings.sfx then
-                            sfx.hit:play()
+                        if settings.toggleSfx then
+                            sfx.hit[settings.sfx]:play()
                         end
                     end
                 end
@@ -353,6 +382,8 @@ local function updateNotes()
             hitTextTimer = hitTextTime
             hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
             hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
+            -- lower health
+            health -= noteDamage
         end
 	end
 end
@@ -605,8 +636,17 @@ function updateSong()
     -- update the current beat
     currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
 
+    -- clamp health
+    health = math.min(100, math.max(0, health))
+    if health == 0 then
+        failed = true
+    end
+
+    -- update how many notes are left
+    notesLeft = #songTable.notes + #noteInstances
+
     -- check if the song is over
-    songEnded = songTable.songEnd <= currentBeat or songEnded
+    songEnded = songTable.songEnd <= currentBeat or songEnded or failed
 
     -- if seconds since level loaded is 0, begin playing song
     if (timeSinceStart >= 0 and not music:isPlaying()) or songEnded then
@@ -691,6 +731,7 @@ function updateSong()
             end
         else
             music:stop()
+            
             return "songEndScreen"
         end
     end
@@ -714,14 +755,18 @@ function drawSong()
 
 
     --draw the point total
-    gfx.setColor(gfx.kColorBlack)
     gfx.drawText(score, 2, 2, fonts.orbeatsSans)
 
     --draw the combo counter
     if combo > 4 then
-        gfx.setColor(gfx.kColorBlack)
-        gfx.drawText("Combo:"..combo, 2, 220, fonts.orbeatsSans)
+        gfx.drawText("Combo:"..combo, 2, 215, fonts.orbeatsSans)
     end
+
+    --draw the health bar
+    gfx.setColor(gfx.kColorBlack)
+    gfx.setPattern({0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA})
+    gfx.setLineWidth(5)
+    gfx.drawLine(0, screenHeight-3, screenWidth*(health/100), screenHeight-3)
 
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
@@ -866,11 +911,14 @@ function setUpSong(bpm, bpmChange, beatOffset, musicFilePath, tablePath)
     perfectHits = 0
     hitNotes = 0
     missedNotes = 0
+    notesLeft = #songTable.notes
     combo = 0
     largestCombo = 0
     fadeOut = 1
     fadeIn = 0
     songEnded = false
+    health = 100
+    failed = false
     -- Music Variables
     lastBeat = -(songBpm/60)*3
     referenceTime = 0

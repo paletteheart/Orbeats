@@ -53,7 +53,7 @@ local fadeOutBlack = 1
 local fadeOutWhite = 1
 
 local function initEndScreen()
-    local pointPercentage = score/((hitNotes+missedNotes)*100)
+    local pointPercentage = score/((hitNotes+missedNotes+notesLeft)*100)
 
     -- set up animations
     completedYTimer = replaceTimer(completedYTimer, animationTime, completedCurrentY, 5, ease.outCubic)
@@ -264,7 +264,11 @@ function drawEndScreen()
 
     -- draw completed text
     completedCurrentY = completedYTimer.value
-    gfx.drawText("Song Completed!", 5, completedCurrentY, fonts.odinRounded)
+    if failed then
+        gfx.drawText("Song Failed.", 5, completedCurrentY, fonts.odinRounded)
+    else
+        gfx.drawText("Song Completed!", 5, completedCurrentY, fonts.odinRounded)
+    end
 
     -- draw stats bubbles
     local statsY = 55
