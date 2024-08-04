@@ -5,7 +5,7 @@
 If you already have a song and it's difficulty maps created and ready to play in game, just follow these steps to add it into your game:
  1. Connect your PlayDate to a computer. If you're playing using the SDK's simulator, skip to step 3.
  2. Go to your PlayDate's settings. Scroll down to and select "System", and then scroll down and select "Reboot to Data Disk".
- 3. On your computer, navigate to the PlayDate's (or Simulator's) "Data" folder, then to "com.paletteheart.orbeats", and then to "songs".
+ 3. On your computer, navigate to the PlayDate's (or Simulator's) "Data" folder, then to "com.paletteheart.orbeats", and then to "songs". If there is no 'songs' folder at the specified directory, you can just create one.
  4. Copy the custom song's folder into "songs".
  5. Eject your PlayDate.
 
