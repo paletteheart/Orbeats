@@ -30,7 +30,7 @@ songData.json files follow this specific format:
 			   	 ""
 		     ],
 		     "bpm":#,
-			 "bpmChange":[
+			 "bpmChanges":[
 			 	{
 			 		"beat":#,
 					"bpm":#
@@ -46,7 +46,7 @@ Any attribute followed by a # takes a number as input, and any attribute followe
  - **artist** - The song's artist.
  - **difficulties** - A list of the difficulty maps within the song's folder. **Each entry in the list should be the name of one of the difficulty maps within the song's folder without .json at the end. It is highly recommended that you order these from easiest to hardest.**
  - **bpm** - The bpm of the song.
- - **bpmChange*** - A list of objects defining when to change the bpm of the song, and what to change it to. **Does not change the speed of the audio, just the beats per minute.** *The beat count will not change after a bpm change, just the speed of the beats; i.e. if you change bpm at beat 50, it will remain beat 50, but the subsequent beats will be at a different speed.*
+ - **bpmChanges*** - A list of objects defining when to change the bpm of the song, and what to change it to. **Does not change the speed of the audio, just the beats per minute.** *The beat count will not change after a bpm change, just the speed of the beats; i.e. if you change bpm at beat 50, it will remain beat 50, but the subsequent beats will be at a different speed.*
 	 - Each bpm change object is defined by a set of attributes:
 		 - **beat** - The beat at which the bpm will change.
 		 - **bpm** - The bpm to change to.
