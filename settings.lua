@@ -16,7 +16,8 @@ if settings == nil then
     settings = {
         tutorialPlayed = false,
         songSorting = 1,
-        sfx = true,
+        toggleSfx = true,
+        sfx = 2,
         particles = true,
         notePattern = 1,
         drawBg = true,
@@ -24,7 +25,8 @@ if settings == nil then
     }
 end
 if settings.tutorialPlayed == nil then settings.tutorialPlayed = false end
-if settings.sfx == nil then settings.sfx = true end
+if settings.toggleSfx == nil then settings.toggleSfx = 1 end
+if settings.sfx == nil or type(settings.sfx) == "boolean" then settings.sfx = 2 end
 if settings.particles == nil then settings.particles = true end
 if settings.notePattern == nil then settings.notePattern = 1 end
 if settings.drawBg == nil then settings.drawBg = true end
@@ -35,6 +37,7 @@ settingsText = {}
 textXTimer = tmr.new(0, -100, -100)
 
 settingsOrder = {
+    "toggleSfx",
     "sfx",
     "particles",
     "notePattern",
@@ -43,6 +46,7 @@ settingsOrder = {
     "resetSave"
 }
 settingsLabels = {
+    toggleSfx = "Note SFX Toggle: ",
     sfx = "Note SFX: ",
     particles = "Note Particles: ",
     notePattern = "Hold Note Pattern: ",
@@ -90,7 +94,7 @@ local function readSettings()
             else
                 table.insert(settingsText, settingsLabels[settingsOrder[i]]..settingsLabels.off)
             end
-        elseif type(settings[settingsOrder[i]]) == "number" then
+        elseif type(settings[settingsOrder[i]]) == "number" or type(settings[settingsOrder[i]]) == "string" then
             table.insert(settingsText, settingsLabels[settingsOrder[i]]..settings[settingsOrder[i]])
         else
             table.insert(settingsText, settingsLabels[settingsOrder[i]])
@@ -131,6 +135,7 @@ function updateSettings()
     if leftPressed or rightPressed or aPressed then
         if type(settings[settingsOrder[selectionRounded]]) == "boolean" then
             settings[settingsOrder[selectionRounded]] = not settings[settingsOrder[selectionRounded]]
+            sfx.tap:play()
         elseif type(settings[settingsOrder[selectionRounded]]) == "number" then
             if settingsOrder[selectionRounded] == "notePattern" then
                 if leftPressed then
@@ -143,6 +148,19 @@ function updateSettings()
                 elseif settings[settingsOrder[selectionRounded]] < 1 then
                     settings[settingsOrder[selectionRounded]] = #notePatterns
                 end
+                sfx.tap:play()
+            elseif settingsOrder[selectionRounded] == "sfx" then
+                if leftPressed then
+                    settings[settingsOrder[selectionRounded]] -= 1
+                else
+                    settings[settingsOrder[selectionRounded]] += 1
+                end
+                if settings[settingsOrder[selectionRounded]] > #sfx.hit then
+                    settings[settingsOrder[selectionRounded]] = 1
+                elseif settings[settingsOrder[selectionRounded]] < 1 then
+                    settings[settingsOrder[selectionRounded]] = #sfx.hit
+                end
+                sfx.hit[settings[settingsOrder[selectionRounded]]]:play()
             end
         else
             if settingsOrder[selectionRounded] == "resetSave" then
@@ -157,7 +175,6 @@ function updateSettings()
             end
         end
 
-        sfx.tap:play()
         readSettings()
     end
     if downPressed then
