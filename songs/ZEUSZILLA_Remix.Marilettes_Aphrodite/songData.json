@@ -2,10 +2,9 @@
     "name":"ZEUSZILLA Remix",
     "artist":"Marilette's Aphrodite",
     "difficulties":[
-        "Easy",
-        "Normal",
-        "Hard",
-        "Insane"
+        "Acquaintances",
+        "Friends",
+        "Lovers"
     ],
     "bpm":140,
     "beatOffset":2,

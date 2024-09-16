@@ -2,10 +2,9 @@
     "name":"ZEUSZILLA",
     "artist":"Wyvren",
     "difficulties":[
-        "Easy",
-        "Normal",
-        "Hard",
-        "Insane"
+        "Rivals",
+        "Foes",
+        "Arch-Nemeses"
     ],
     "bpm":160,
     "bpmChanges":[

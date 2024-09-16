@@ -1,0 +1,12 @@
+{
+    "name":"PLAYLAND",
+    "artist":"Alaska Sargent",
+    "difficulties":[
+        "LOCH NESS",
+        "ALPENGEIST",
+        "GRIFFON"
+    ],
+    "bpm":140,
+    "beatOffset":0,
+    "preview":42.5
+}
