@@ -7,6 +7,11 @@ local screenWidth <const> = 400
 local screenHeight <const> = 240
 local screenCenterY <const> = screenHeight / 2
 
+local planetDither <const> = {0x80, 0x80, 0x7C, 0x2, 0x2, 0x2, 0x7C, 0x80}
+local moon1Dither <const> = {0x7F, 0xA2, 0xDD, 0xBE, 0xBE, 0xBE, 0xDD, 0xA2}
+local moon2Dither <const> = {0x83, 0x7C, 0x45, 0x55, 0x45, 0x7C, 0x83, 0xBB}
+local starsBg <const> = gfx.image.new("sprites/stars")
+
 -- Define variables
 stats = pd.datastore.read("stats")
 if stats == nil then
@@ -28,10 +33,6 @@ local fadeOut = 1
 local fadeIn = 0
 
 local orbitDegrees = 0
-local planetDither = {0x80, 0x80, 0x7C, 0x2, 0x2, 0x2, 0x7C, 0x80}
-local moon1Dither = {0x7F, 0xA2, 0xDD, 0xBE, 0xBE, 0xBE, 0xDD, 0xA2}
-local moon2Dither = {0x83, 0x7C, 0x45, 0x55, 0x45, 0x7C, 0x83, 0xBB}
-local starsBg = gfx.image.new("sprites/stars")
 
 local scroll = -11
 
@@ -49,16 +50,13 @@ local rankings = {
 
 local function calculatePlayTime()
     local days = math.floor(stats.playTime/86400)
-    local hours = math.floor((stats.playTime%8400)/3600)
+    local hours = math.floor((stats.playTime%86400)/3600)
     local minutes = math.floor((stats.playTime%3600)/60)
     local seconds = math.floor(stats.playTime%60)
 
     local playTimeText = ""
-    if days > 0 then
-        playTimeText = days..":"..hours..":"
-    else
-        if hours > 0 then playTimeText = hours..":" end
-    end
+    if days > 0 then playTimeText = days..":"..hours..":"
+    elseif hours > 0 then playTimeText = hours..":" end
     playTimeText = playTimeText..minutes..":"..seconds
     
 
