@@ -7,7 +7,7 @@
             "speed":1,
             "width":60,
             "position":315,
-            "spin":20
+            "spin":90
         },
         {
             "type":"Note",
@@ -16,7 +16,7 @@
             "speed":1,
             "width":60,
             "position":45,
-            "spin":20
+            "spin":90
         },
         {
             "type":"Note",
@@ -25,7 +25,7 @@
             "speed":1,
             "width":60,
             "position":135,
-            "spin":20
+            "spin":90
         },
         {
             "type":"Note",
@@ -34,7 +34,7 @@
             "speed":1,
             "width":60,
             "position":225,
-            "spin":20
+            "spin":90
         },
 
         {
