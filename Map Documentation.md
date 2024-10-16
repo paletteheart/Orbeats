@@ -106,10 +106,10 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 		 - **type** - The type of the note. Can be either "Note", "HoldNote", or "FlipNote". "Note" will make it a normal note, hit by pressing down/B while in the right place. "HoldNote" will make it a note that is hit if you're holding up/A/down/B and are in the right place. "FlipNote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place.
 		 - **spawnBeat** - The beat of the song when this note will be spawned in. **Notes are expected to be in order by their spawnBeat, earlier notes coming first. Two notes cannot share a spawnBeat.**
 		 - **hitBeat** - The beat of the song when this note will reach the orbit radius and can be hit by the cursor. Notes may share a hitBeat.
-		 - **speed** - How quickly the note approaches the orbit radius.
-		 - **width** - How wide the note is.
+		 - **speed*** - How quickly the note approaches the orbit radius. If not specified, will default to 1.
+		 - **width*** - How wide the note is. If not specified, will default to 45.
 		 - **position** - A number from 0 to 360 determining where the middle of the note will be, in degrees, when it reaches the orbit radius.
-		 - **spin** - How quickly the note will spin around as it approaches the orbit radius. Set it to 0 for no spin, positive for clockwise, negative for counterclockwise.
+		 - **spin*** - The number of degrees the note will spin around before reaching the orbit. Negative for counter clockwise. If not specified, will default to 0.
  - **effects*** - An object containing lists of all the visual effects.
 	 - **toggleInvert*** - A list of beats when the screen will invert. **Beats are expected to be ordered from earliest to latest.**
 	 - **moveOrbitX*** - A list of objects defining when, where, and how the orbit will move along the x axis.
