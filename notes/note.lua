@@ -10,11 +10,11 @@ function Note:init(spawnBeat, hitBeat, spd, width, pos, spin)
     self.spawnBeat = spawnBeat -- the beat when the note is spawned
     self.hitBeat = hitBeat -- the beat when the note is supposed to be hit
     self.lifeLength = hitBeat-spawnBeat
-    self.spd = spd -- how quickly the note approaches the 
-    self.width = width
+    if spd ~= nil then self.spd = spd else self.spd = 1 end -- how quickly the note approaches the orbit
+    if width ~= nil then self.width = width else self.width = 45 end
     self.hitPos = pos -- the position where the note will be hit
-    self.currentPos = pos -- the current position of the note
-    self.spin = spin
+    if spin ~= nil then self.spin = spin else self.spin = 0 end
+    self.currentPos = self.hitPos + self.spin -- the current position of the note
     self.radius = initialRadius
 end
 
@@ -27,9 +27,15 @@ function Note:update(currentBeat, orbitRadius)
     -- self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.hitBeat)-math.exp(self.spd*self.spawnBeat)))*(math.exp(self.spd*currentBeat)-math.exp(self.spd*self.spawnBeat))+initialRadius
     self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*beatsSinceSpawn)-1)+initialRadius
 
-    -- this formula creates a linear graph that passes through a point determined by the hitBeat and hitPos in the vector space of beats and positions,
-    -- with the slope determined by self.spin
-    self.currentPos = self.spin*(currentBeat-self.hitBeat)+self.hitPos
+    -- -- this formula creates a linear graph that passes through a point determined by the hitBeat and hitPos in the vector space of beats and positions,
+    -- -- with the slope determined by self.spin
+    -- self.currentPos = self.spin*(currentBeat-self.hitBeat)+self.hitPos
+
+    -- this function creates a linear graph that passes through two points in the vector space of beats and position.
+    -- the first point is the spawnBeat and the spinPos (which is how many degrees away it spins in from),
+    -- the second point is the hitBeat and the position where it will be hit.
+    local spinPos = self.hitPos + self.spin
+    self.currentPos = ((self.hitPos - spinPos)/(self.hitBeat - self.spawnBeat))*(currentBeat - self.spawnBeat) + spinPos
 
     -- keep the position between 0 and 360 degrees
     while self.currentPos > 360 do
