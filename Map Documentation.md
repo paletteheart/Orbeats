@@ -107,7 +107,7 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 		 - **spawnBeat** - The beat of the song when this note will be spawned in. **Notes are expected to be in order by their spawnBeat, earlier notes coming first. Two notes cannot share a spawnBeat.**
 		 - **hitBeat** - The beat of the song when this note will reach the orbit radius and can be hit by the cursor. Notes may share a hitBeat.
 		 - **speed*** - How quickly the note approaches the orbit radius. If not specified, will default to 1.
-		 - **width*** - How wide the note is. If not specified, will default to 45.
+		 - **width*** - How wide the note is in degrees. If not specified, will default to 45.
 		 - **position** - A number from 0 to 360 determining where the middle of the note will be, in degrees, when it reaches the orbit radius.
 		 - **spin*** - The number of degrees the note will spin around before reaching the orbit. Negative for counter clockwise. If not specified, will default to 0.
  - **effects*** - An object containing lists of all the visual effects.
