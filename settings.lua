@@ -21,7 +21,8 @@ if settings == nil then
         particles = true,
         notePattern = 1,
         drawBg = true,
-        drawFps = false
+        drawFps = false,
+        drawSplash = true
     }
 end
 if settings.tutorialPlayed == nil then settings.tutorialPlayed = false end
@@ -31,6 +32,7 @@ if settings.particles == nil then settings.particles = true end
 if settings.notePattern == nil then settings.notePattern = 1 end
 if settings.drawBg == nil then settings.drawBg = true end
 if settings.drawFps == nil then settings.drawFps = false end
+if settings.drawSplash == nil then settings.drawSplash = true end
 pd.datastore.write(settings, "settings")
 
 settingsText = {}
@@ -42,6 +44,7 @@ settingsOrder = {
     "particles",
     "notePattern",
     "drawBg",
+    "drawSplash",
     "drawFps",
     "resetSave"
 }
@@ -54,7 +57,8 @@ settingsLabels = {
     drawFps = "Framerate Display: ",
     resetSave = "Reset Save Data",
     on = "ON",
-    off = "OFF"
+    off = "OFF",
+    drawSplash = "Combo Splash: "
 }
 
 notePatterns = {

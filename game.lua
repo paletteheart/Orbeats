@@ -38,6 +38,9 @@ fonts.orbeatsSmall = gfx.font.newFamily({
 fonts.odinRounded = gfx.font.newFamily({
     [gfx.font.kVariantNormal] = "fonts/Odin Rounded PD"
 })
+fonts.carbonNumbers = gfx.font.newFamily({
+    [gfx.font.kVariantNormal] = "fonts/Carbon Numbers"
+})
 
 -- Define variables
 -- System variables
@@ -122,8 +125,6 @@ perfectHits = 0
 hitNotes = 0
 missedNotes = 0
 notesLeft = 0
-local combo = 0
-largestCombo = 0
 local fadeOut = 1
 local fadeIn = 0
 local beatOffset = 0 -- a value to slightly offset the beat until it looks like it's perfectly on beat
@@ -149,6 +150,13 @@ hitText.great = "Great"
 hitText.good = "Good"
 hitText.ok = "Ok"
 hitText.miss = "Miss!"
+
+-- Combo variables
+local combo = 0
+largestCombo = 0
+local splashText = 0
+local splashTimer = 0
+local splashTime = 30
 
 -- Music variables
 music = pd.sound.fileplayer.new()
@@ -184,6 +192,11 @@ local lastMovementBeatY = 0 -- used for animating the orbit movement
 local function incrementCombo()
     combo += 1
     largestCombo = math.max(largestCombo, combo)
+
+    if combo % 100 == 0 and combo > 0 then
+        splashText = combo
+        splashTimer = splashTime
+    end
 end
 
 local function songOver()
@@ -849,8 +862,8 @@ function drawSong()
             gfx.fillRoundRect(hitTextX-hitTextWidth/2-1, hitTextY-hitTextHeight/2-1, hitTextWidth+2, hitTextHeight+2, 2)
             drawTextCentered(hitTextDisplay, hitTextX, hitTextY, fonts.orbeatsSmall)
         end
+        hitTextTimer -= 1
     end
-    hitTextTimer -= 1
 
     -- draw text effects
     for i=#textInstances,1,-1 do
@@ -858,6 +871,16 @@ function drawSong()
             drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts.orbeatsSmall)
         else
             drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts[textInstances[i].font])
+        end
+    end
+
+    -- draw the combo splash
+    if settings.drawSplash then
+        if splashTimer > 0 then
+            if splashTimer < splashTime - 12 or splashTimer % 4 == 0 or splashTimer-1 % 4 == 0 then
+                drawTextCentered(splashText, screenCenterX, screenCenterY, fonts.carbonNumbers)
+            end
+            splashTimer -= 1
         end
     end
 
@@ -914,6 +937,8 @@ function setUpSong(bpm, bpmChange, beatOffset, musicFilePath, tablePath)
     notesLeft = #songTable.notes
     combo = 0
     largestCombo = 0
+    splashText = 0
+    splashTimer = 0
     fadeOut = 1
     fadeIn = 0
     songEnded = false
