@@ -129,8 +129,8 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 			 - **startBeat** - The beat at which this object's text will be shown.
 			 - **endBeat** - The beat at which this object's text will be removed.
 			 - **text** - A string of text that will be shown.
-			 - **x** - The x value where the top left of the text will be.
-			 - **y** - The y value where the top left of the text will be.
+			 - **x** - The x value where the center of the text will be.
+			 - **y** - The y value where the center of the text will be.
 			 - **font*** - The font that will be used. Can be set to "orbeatsSans", "odinRounded", or "orbeatsSmall". *Defaults to "orbeatsSmall".*
  - **songEnd** - The beat when the map will end.
 
