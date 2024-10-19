@@ -41,6 +41,7 @@ local ratingXTimer = tmr.new(0, ratingCurrentX, ratingCurrentX)
 
 local continueCurrentY = screenHeight
 local continueYTimer = tmr.new(0, continueCurrentY, continueCurrentY)
+local bgmTimer
 local tickerTimer = tmr.new(0, 0, 0)
 tickerTimer.repeats = true
 local tickerText = "To Menu:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
@@ -63,7 +64,7 @@ local function initEndScreen()
     tmr.new(1500, function()
         ratingXTimer = replaceTimer(ratingXTimer, animationTime, ratingCurrentX, screenWidth-ratingImageWidth-5, ease.outCubic)
     end)
-    tmr.new(2000, function()
+    bgmTimer = tmr.new(2000, function()
         continueYTimer = replaceTimer(continueYTimer, animationTime, continueCurrentY, 215, ease.outCubic)
         menuBgm:play(0)
         menuBgm:setVolume(1)
@@ -232,6 +233,7 @@ function updateEndScreen()
             setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             restart = false
             initialized = false
+            bgmTimer:remove()
             if menuBgm:isPlaying() then
                 menuBgm:stop()
             end
