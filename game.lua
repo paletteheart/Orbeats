@@ -193,7 +193,7 @@ local function incrementCombo()
     combo += 1
     largestCombo = math.max(largestCombo, combo)
 
-    if combo % 100 == 0 and combo > 0 then
+    if combo % 25 == 0 and combo > 0 then
         splashText = combo
         splashTimer = splashTime
     end
@@ -417,14 +417,19 @@ local function createNotes()
                 spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin)
                 -- Remove note from the table
                 table.remove(songTable.notes, 1)
+                -- Call again to check for any other notes that need spawning
+                createNotes()
+                -- print("Created at beat "..fakeCurrentBeat)
             end
 
         elseif nextNote.spawnBeat <= currentBeat then
-
             -- Add note to instances
             spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin)
             -- Remove note from the table
             table.remove(songTable.notes, 1)
+            -- Call again to check for any other notes that need spawning
+            createNotes()
+            -- print("Created at beat "..currentBeat)
         end
     end
 end
