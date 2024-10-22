@@ -104,7 +104,7 @@ Any attribute followed by a # takes a number as input, and any attribute followe
  - **notes** - List of note objects.
 	 - Each note is defined by a set of attributes:
 		 - **type** - The type of the note. Can be either "Note", "HoldNote", or "FlipNote". "Note" will make it a normal note, hit by pressing down/B while in the right place. "HoldNote" will make it a note that is hit if you're holding up/A/down/B and are in the right place. "FlipNote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place.
-		 - **spawnBeat** - The beat of the song when this note will be spawned in. **Notes are expected to be in order by their spawnBeat, earlier notes coming first. Two notes cannot share a spawnBeat.**
+		 - **spawnBeat** - The beat of the song when this note will be spawned in. **Notes are expected to be in order by their spawnBeat, earlier notes coming first. Putting notes out of order will cause them to play incorrectly.**
 		 - **hitBeat** - The beat of the song when this note will reach the orbit radius and can be hit by the cursor. Notes may share a hitBeat.
 		 - **speed*** - How quickly the note approaches the orbit radius. *Defaults to 1.*
 		 - **width*** - How wide the note is in degrees. *Defaults to 45.*
