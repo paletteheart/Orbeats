@@ -171,10 +171,10 @@ local startTime = pd.sound.getCurrentTime()
 -- Note variables   
 noteInstances = {}
 local notePool = {}
-local missedNoteRadius = 300 -- the radius where notes get deleted
-local hitForgiveness = 25 -- the distance from the orbit radius from which you can still hit notes
-local maxNoteScore = 100 --the max score you can get from a note
-local perfectDistance = 4 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
+local missedNoteRadius <const> = 300 -- the radius where notes get deleted
+local hitForgiveness <const> = 25 -- the distance from the orbit radius from which you can still hit notes
+local maxNoteScore <const> = 100 --the max score you can get from a note
+local perfectDistance <const> = 12 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
 
 -- Effects variables
 local invertedScreen = false
@@ -208,7 +208,7 @@ local function killNote(noteIndex)
     table.remove(noteInstances, noteIndex)
 end
 
-local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, spin)
+local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, spin, duration)
     -- test if a note of this type is already in the pool
     local newNote
     for i=#notePool,1,-1 do
@@ -217,7 +217,7 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
             newNote = notePool[i]
             table.remove(notePool, i)
             -- redefine the pool note's attributes to fit the new note
-            newNote:init(spawnBeat, hitBeat, speed, width, position, spin)
+            newNote:init(spawnBeat, hitBeat, speed, width, position, spin, duration)
             break
         end
     end
@@ -225,11 +225,11 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
     -- if not, create a note
     if newNote == nil then
         if noteType == "FlipNote" then
-            newNote = FlipNote(spawnBeat, hitBeat, speed, width, position, spin)
+            newNote = FlipNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
         elseif noteType == "HoldNote" then
-            newNote = HoldNote(spawnBeat, hitBeat, speed, width, position, spin)
+            newNote = HoldNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
         else
-            newNote = Note(spawnBeat, hitBeat, speed, width, position, spin)
+            newNote = Note(spawnBeat, hitBeat, speed, width, position, spin, duration)
         end
     end
 
@@ -237,6 +237,71 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
     table.insert(noteInstances, newNote)
 end
 
+local function updateLongNote(note, noteData, noteInstance)
+    local noteStartAngle, noteEndAngle = note:getNoteAngles()
+    if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
+        if downHeld or bHeld or rightHeld or upHeld or leftHeld or aHeld then
+            -- continue hitting note
+            if settings.particles then
+                p:moveTo(playerX, playerY)
+                p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                p:add(1)
+            end
+            if noteData.endRadius >= orbitRadius then
+                killNote(noteInstance)
+            end
+        else
+            -- check if you're within the window of forgiveness
+            if (noteData.endRadius >= orbitRadius-hitForgiveness) then
+                killNote(noteInstance)
+            else
+                -- lose points proportional to the percent of the note you missed
+                local remainingNotePercent
+                if fakeCurrentBeat < 0 then
+                    remainingNotePercent = (noteData.endBeat-fakeCurrentBeat)/(noteData.endBeat-noteData.hitBeat)
+                    score -= math.floor(maxNoteScore*remainingNotePercent)
+                    note:finishHitting(fakeCurrentBeat)
+                else
+                    remainingNotePercent = (noteData.endBeat-currentBeat)/(noteData.endBeat-noteData.hitBeat)
+                    score -= math.floor(maxNoteScore*remainingNotePercent)
+                    note:finishHitting(currentBeat)
+                end-- check if you're within the window of forgiveness
+        if (noteData.endRadius >= orbitRadius-hitForgiveness) then
+            killNote(noteInstance)
+        else
+            -- lose points proportional to the percent of the note you missed
+            local remainingNotePercent
+            if fakeCurrentBeat < 0 then
+                remainingNotePercent = (noteData.endBeat-fakeCurrentBeat)/(noteData.endBeat-noteData.hitBeat)
+                score -= math.floor(maxNoteScore*remainingNotePercent)
+                note:finishHitting(fakeCurrentBeat)
+            else
+                remainingNotePercent = (noteData.endBeat-currentBeat)/(noteData.endBeat-noteData.hitBeat)
+                score -= math.floor(maxNoteScore*remainingNotePercent)
+                note:finishHitting(currentBeat)
+            end
+        end
+            end
+        end
+    else
+        -- check if you're within the window of forgiveness
+        if (noteData.endRadius >= orbitRadius-hitForgiveness) then
+            killNote(noteInstance)
+        else
+            -- lose points proportional to the percent of the note you missed
+            local remainingNotePercent
+            if fakeCurrentBeat < 0 then
+                remainingNotePercent = (noteData.endBeat-fakeCurrentBeat)/(noteData.endBeat-noteData.hitBeat)
+                score -= math.floor(maxNoteScore*remainingNotePercent)
+                note:finishHitting(fakeCurrentBeat)
+            else
+                remainingNotePercent = (noteData.endBeat-currentBeat)/(noteData.endBeat-noteData.hitBeat)
+                score -= math.floor(maxNoteScore*remainingNotePercent)
+                note:finishHitting(currentBeat)
+            end
+        end
+    end
+end
 
 local function updateNotes()
     for i = #noteInstances, 1, -1 do
@@ -251,85 +316,104 @@ local function updateNotes()
             noteData = note:update(currentBeat, orbitRadius)
         end
 		
-        -- Check if note can be hit
+        -- Check if note can be hit or is being hit
         if noteData.noteType == "note" then
-            if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
-                local noteStartAngle, noteEndAngle = note:getNoteAngles()
-                -- check if the player position is within the note
-                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if downPressed or bPressed or rightPressed then
-                        --note is hit
-                        --figure out how many points you get
-                        local noteDistance = math.abs(orbitRadius-noteData.newRadius)
-                        -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
-                        -- you can be, which scores half max points.
-                        if noteDistance <= perfectDistance then
-                            score += maxNoteScore
-                            hitTextDisplay = hitText.perfect
-                            perfectHits += 1
-                        else 
-                            local hitScore = math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
-                            score += hitScore
-                            if hitScore < 65 then
-                                hitTextDisplay = hitText.ok.." "..hitScore
-                            elseif hitScore < 75 then
-                                hitTextDisplay = hitText.good.." "..hitScore
+            if noteData.hitting then
+                updateLongNote(note, noteData, i)
+            else
+                if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
+                    local noteStartAngle, noteEndAngle = note:getNoteAngles()
+                    -- check if the player position is within the note
+                    if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
+                        if downPressed or bPressed or rightPressed then
+                            --note is hit
+                            --figure out how many points you get
+                            local noteDistance = math.abs(orbitRadius-noteData.newRadius)
+                            -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
+                            -- you can be, which scores half max points.
+                            if noteDistance <= perfectDistance then
+                                score += maxNoteScore
+                                hitTextDisplay = hitText.perfect
+                                perfectHits += 1
                             else
-                                hitTextDisplay = hitText.great.." "..hitScore
+                                -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
+                                -- Probably don't mess with this equation
+                                local hitScore = math.floor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
+                                score += hitScore
+                                if hitScore < 65 then
+                                    hitTextDisplay = hitText.ok.." "..hitScore
+                                elseif hitScore < 75 then
+                                    hitTextDisplay = hitText.good.." "..hitScore
+                                else
+                                    hitTextDisplay = hitText.great.." "..hitScore
+                                end
                             end
-                        end
-                        hitTextTimer = hitTextTime
-                        hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
-                        hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
-                        --remove note
-                        killNote(i)
-                        -- up the hit note score and combo counter
-                        hitNotes += 1
-                        incrementCombo()
-                        -- up your health
-                        health += noteDamage/2
-                        -- create particles
-                        if settings.particles then
-                            p:moveTo(playerX, playerY)
-                            p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
-                            p:add(10)
-                        end
-                        -- play sfx
-                        if settings.toggleSfx then
-                            sfx.hit[settings.sfx]:play()
+                            hitTextTimer = hitTextTime
+                            hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
+                            hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
+                            --remove note if a short note, begin hitting if a long note
+                            if noteData.endRadius == noteData.newRadius then
+                                killNote(i)
+                            else
+                                note:beginHitting(orbitRadius)
+                            end
+                            -- up the hit note score and combo counter
+                            hitNotes += 1
+                            incrementCombo()
+                            -- up your health
+                            health += noteDamage/2
+                            -- create particles
+                            if settings.particles then
+                                p:moveTo(playerX, playerY)
+                                p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                                p:add(10)
+                            end
+                            -- play sfx
+                            if settings.toggleSfx then
+                                sfx.hit[settings.sfx]:play()
+                            end
                         end
                     end
                 end
             end
+            
         elseif noteData.noteType == "holdnote" then
-            if (noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and noteData.newRadius >= orbitRadius then
-                local noteStartAngle, noteEndAngle = note:getNoteAngles()
-                -- check if the player position is within the note
-                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld then
-                        --note is hit
-                        score += maxNoteScore
-                        hitTextDisplay = hitText.perfect
-                        perfectHits += 1
-                        hitTextTimer = hitTextTime
-                        hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
-                        hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
-                        --remove note
-                        killNote(i)
-                        -- up the hit note score
-                        hitNotes += 1
-                        incrementCombo()
-                        -- up your health
-                        health += noteDamage/2
-                        -- create particles
-                        if settings.particles then
-                            p:moveTo(playerX, playerY)
-                            p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
-                            p:add(3)
-                        end
-                        -- play sfx
-                        if settings.toggleSfx then
-                            sfx.hit[settings.sfx]:play()
+            if noteData.hitting then
+                updateLongNote(note, noteData, i)
+            else
+                if (noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and noteData.newRadius >= orbitRadius then
+                    local noteStartAngle, noteEndAngle = note:getNoteAngles()
+                    -- check if the player position is within the note
+                    if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
+                        if downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld then
+                            --note is hit
+                            score += maxNoteScore
+                            hitTextDisplay = hitText.perfect
+                            perfectHits += 1
+                            hitTextTimer = hitTextTime
+                            hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
+                            hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
+                            --remove note if a short note, begin hitting if a long note
+                            if noteData.endRadius == noteData.newRadius then
+                                killNote(i)
+                            else
+                                note:beginHitting(orbitRadius)
+                            end
+                            -- up the hit note score
+                            hitNotes += 1
+                            incrementCombo()
+                            -- up your health
+                            health += noteDamage/2
+                            -- create particles
+                            if settings.particles then
+                                p:moveTo(playerX, playerY)
+                                p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                                p:add(3)
+                            end
+                            -- play sfx
+                            if settings.toggleSfx then
+                                sfx.hit[settings.sfx]:play()
+                            end
                         end
                     end
                 end
@@ -351,7 +435,7 @@ local function updateNotes()
                             hitTextDisplay = hitText.perfect
                             perfectHits += 1
                         else 
-                            local hitScore = math.floor(maxNoteScore/(1+(noteDistance/hitForgiveness)))
+                            local hitScore = math.floor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
                             score += hitScore
                             if hitScore < 65 then
                                 hitTextDisplay = hitText.ok.." "..hitScore
@@ -386,7 +470,7 @@ local function updateNotes()
             end
         end
         -- remove the current note if the radius is too large
-        if noteData.newRadius > missedNoteRadius then
+        if noteData.endRadius > missedNoteRadius then
             killNote(i)
             -- up the missed note score
             missedNotes += 1
@@ -414,7 +498,7 @@ local function createNotes()
             -- fake the currentBeat
             if nextNote.spawnBeat <= fakeCurrentBeat then
                 -- Add note to instances
-                spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin)
+                spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin, nextNote.duration)
                 -- Remove note from the table
                 table.remove(songTable.notes, 1)
                 -- Call again to check for any other notes that need spawning
@@ -424,7 +508,7 @@ local function createNotes()
 
         elseif nextNote.spawnBeat <= currentBeat then
             -- Add note to instances
-            spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin)
+            spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin, nextNote.duration)
             -- Remove note from the table
             table.remove(songTable.notes, 1)
             -- Call again to check for any other notes that need spawning
