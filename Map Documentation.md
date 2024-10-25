@@ -30,19 +30,19 @@ songData.json files follow this specific format:
 	"difficulties":[
 		""
 	],
-	"bpm":#,
+	"bpm":0,
 	"bpmChanges":[
 		{
-			"beat":#,
-			"bpm":#
+			"beat":0,
+			"bpm":0
 		}
 	],
-	"beatOffset":#,
-	"preview":#
+	"beatOffset":0,
+	"preview":0
 }
 ```
 
-Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
+Any attribute followed by a 0 takes a number as input, and any attribute followed by "" takes a string.
 
  - **name** - The name of the song. **Should be the same as the name of the song's folder, as well as .pda file in the song's folder.**
  - **artist** - The song's artist.
@@ -64,51 +64,51 @@ A custom map for a song is stored as a .json file, following this overall struct
 	"notes":[
 		{
 			"type":"",
-			"spawnBeat":#,
-			"hitBeat":#,
-			"speed":#,
-			"width":#,
-			"position":#,
-			"spin":#,
-			"duration":#
+			"spawnBeat":0,
+			"hitBeat":0,
+			"speed":0,
+			"width":0,
+			"position":0,
+			"spin":0,
+			"duration":0
 		}
 	],
 	"effects":{
 		"toggleInvert":[
-			#
+			0
 		],
 		"moveOrbitX":[
 			{
-				"beat":#,
-				"x":#,
+				"beat":0,
+				"x":0,
 				"animation":"",
-				"power":#
+				"power":0
 			}
 		],
 		"moveOrbitY":[
 			{
-				"beat":#,
-				"y":#,
+				"beat":0,
+				"y":0,
 				"animation":"",
-				"power":#
+				"power":0
 			}
 		],
 		"text":[
 			{
-				"startBeat":#,
-				"endBeat":#,
+				"startBeat":0,
+				"endBeat":0,
 				"text":"",
-				"x":#,
-				"y":#,
+				"x":0,
+				"y":0,
 				"font":""
 			}
 		]
 	},
-	"songEnd":#
+	"songEnd":0
 }
 ```
 
-Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
+Any attribute followed by a 0 takes a number as input, and any attribute followed by "" takes a string.
  - **notes** - List of note objects.
 	 - Each note is defined by a set of attributes:
 		 - **type**\* - The type of the note. Can be either "Note", "HoldNote", or "FlipNote". "Note" will make it a normal note, hit by pressing down/B while in the right place. "HoldNote" will make it a note that is hit if you're holding up/A/down/B and are in the right place. "FlipNote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place. *Defaults to “Note”.*
