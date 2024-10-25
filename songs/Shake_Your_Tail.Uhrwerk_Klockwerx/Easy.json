@@ -136,7 +136,8 @@
             "speed":1,
             "width":60,
             "position":270,
-            "spin":0
+            "spin":0,
+            "duration":1.5
         },
         {  
             "type":"Note",
@@ -145,7 +146,8 @@
             "speed":1,
             "width":60,
             "position":180,
-            "spin":0
+            "spin":0,
+            "duration":1.5
         },
 
         {  
