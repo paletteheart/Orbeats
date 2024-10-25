@@ -176,3 +176,13 @@ end
 function pd.deviceWillLock()
 	pd.datastore.write(stats, "stats")
 end
+
+-- instantly restart the level in the simulator if pressed
+function pd.keyPressed(key)
+	if key == "r" then
+		restart = true
+		if toMenu then
+			toMenu = false
+		end
+	end
+end
