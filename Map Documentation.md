@@ -23,22 +23,24 @@ Create a new song, you'll need to create a folder for it's files (what will be r
 ### Creating the songData.json file
 songData.json files follow this specific format:
 
- `{`
-	`"name":"",`
-	`"artist":"",`
-	`"difficulties":[`
-		`""`
-	`],`
-	`"bpm":#,`
-	`"bpmChanges":[`
-		`{`
-			`"beat":#,`
-			`"bpm":#`
-		`}`
-	`],`
-	`"beatOffset":#,`
-	`"preview":#`
- `}`
+```JSON
+{
+	"name":"",
+	"artist":"",
+	"difficulties":[
+		""
+	],
+	"bpm":#,
+	"bpmChanges":[
+		{
+			"beat":#,
+			"bpm":#
+		}
+	],
+	"beatOffset":#,
+	"preview":#
+}
+```
 
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
 
@@ -57,52 +59,54 @@ Any attribute followed by a # takes a number as input, and any attribute followe
 ### Creating a custom difficulty map
 A custom map for a song is stored as a .json file, following this overall structure:
 
-`{`
-	`"notes":[`
-		`{`
-			`"type":"",`
-			`"spawnBeat":#,`
-			`"hitBeat":#,`
-			`"speed":#,`
-			`"width":#,`
-			`"position":#,`
-			`"spin":#,`
-			`"duration":#`
-		`}`
-	`],`
-	`"effects":{`
-		`"toggleInvert":[`
-			`#`
-		`],`
-		`"moveOrbitX":[`
-			`{`
-				`"beat":#,`
-				`"x":#,`
-				`"animation":"",`
-				`"power":#`
-			`}`
-		`],`
-		`"moveOrbitY":[`
-			`{`
-				`"beat":#,`
-				`"y":#,`
-				`"animation":"",`
-				`"power":#`
-			`}`
-		`],`
-		`"text":[`
-			`{`
-				`"startBeat":#,`
-				`"endBeat":#,`
-				`"text":"",`
-				`"x":#,`
-				`"y":#,`
-				`"font":""`
-			`}`
-		`]`
-	`},`
-	`"songEnd":#`
-`}`
+```JSON
+{
+	"notes":[
+		{
+			"type":"",
+			"spawnBeat":#,
+			"hitBeat":#,
+			"speed":#,
+			"width":#,
+			"position":#,
+			"spin":#,
+			"duration":#
+		}
+	],
+	"effects":{
+		"toggleInvert":[
+			#
+		],
+		"moveOrbitX":[
+			{
+				"beat":#,
+				"x":#,
+				"animation":"",
+				"power":#
+			}
+		],
+		"moveOrbitY":[
+			{
+				"beat":#,
+				"y":#,
+				"animation":"",
+				"power":#
+			}
+		],
+		"text":[
+			{
+				"startBeat":#,
+				"endBeat":#,
+				"text":"",
+				"x":#,
+				"y":#,
+				"font":""
+			}
+		]
+	},
+	"songEnd":#
+}
+```
 
 Any attribute followed by a # takes a number as input, and any attribute followed by "" takes a string.
  - **notes** - List of note objects.
