@@ -26,18 +26,21 @@ local jingleBpm = 127
 -- pulse vars
 local pulse = false
 local pulseDepth = 4
--- orbit vars
-local orbitDither = 1
-local orbitDitherTimer = tmr.new(0, orbitDither, orbitDither)
-local drawOrbit = false
 -- title vars
 local titleHideY = -100
 local titleCurrentY = titleHideY
 local titleYTimer = tmr.new(0, titleHideY, titleHideY)
 local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fonts.odinRounded)
-local titleX = screenCenterX - (titleWidth/2)
-local titleY = screenCenterY - (titleHeight/2)
+local titleX <const> = screenCenterX - (titleWidth/2)
+local titleY <const> = screenCenterY - (titleHeight/2)
 local drawTitle = false
+-- orbit vars
+local orbitDither = 1
+local orbitDitherTimer = tmr.new(0, orbitDither, orbitDither)
+local drawOrbit = false
+local orbitRadius <const> = 235
+local orbitCenterX <const> = titleX+249
+local orbitCenterY <const> = titleY+72
 -- input vars
 local inputCurrentY = screenHeight
 local inputY = 215
@@ -151,9 +154,6 @@ function drawTitleScreen()
     bgSprite[bgStage]:draw(0,0)
 
     -- draw the orbit
-    local orbitRadius = 235
-    local orbitCenterX = titleX+253
-    local orbitCenterY = titleY+72
     if drawOrbit then
         orbitDither = orbitDitherTimer.value
         gfx.setColor(gfx.kColorWhite)
