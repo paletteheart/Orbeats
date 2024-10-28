@@ -1,0 +1,16 @@
+{
+    "name":"Shortcuts",
+    "artist":"Zane Little",
+    "difficulties":[
+        "Scenic Route",
+        "Usual Route",
+        "Quick Route",
+        "Shortcut"
+    ],
+    "confirmText":{
+        "Shortcut":"Are you sure?"
+    },
+    "bpm":165,
+    "beatOffset":0,
+    "preview":117
+}

@@ -533,7 +533,7 @@ function drawSongSelect()
                     if not pd.file.exists(songTablePath) then
                         local textWidth, textHeight = gfx.getTextSize("Unavailable", fonts.orbeatsSmall)
                         local textX = mapX-textWidth/2
-                        local textY = mapY-textHeight/2+48
+                        local textY = mapY-textHeight/2+56
                         gfx.setColor(gfx.kColorWhite)
                         gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
                         gfx.drawText("Unavailable", textX, textY, fonts.orbeatsSmall)
@@ -544,13 +544,13 @@ function drawSongSelect()
                     if textWidth > 100 then
                         local textWidth, textHeight = gfx.getTextSize(mapList[i], fonts.orbeatsSmall)
                         local textX = mapX-textWidth/2
-                        local textY = mapY-textHeight/2+32
+                        local textY = mapY-textHeight/2+40
                         gfx.setColor(gfx.kColorWhite)
                         gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
                         gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSmall)
                     else
                         local textX = mapX-textWidth/2
-                        local textY = mapY-textHeight/2+32
+                        local textY = mapY-textHeight/2+40
                         gfx.setColor(gfx.kColorWhite)
                         gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
                         gfx.drawText(mapList[i], textX, textY, fonts.orbeatsSans)
@@ -636,7 +636,18 @@ function drawSongSelect()
     -- draw the play text
     playY = playYTimer.value
     if playY > -33 then
-        gfx.drawText(playText, screenCenterX-playTextWidth/2, playY, fonts.odinRounded)
+        if currentSong.confirmText ~= nil then
+            local confirmText = currentSong.confirmText[mapList[mapSelectionRounded]]
+            if confirmText ~= nil then
+                local confirmWidth = gfx.getTextSize(confirmText, fonts.odinRounded)
+                gfx.drawText(confirmText, screenCenterX-confirmWidth/2, playY, fonts.odinRounded)
+            else
+                gfx.drawText(playText, screenCenterX-playTextWidth/2, playY, fonts.odinRounded)
+            end
+        else
+            gfx.drawText(playText, screenCenterX-playTextWidth/2, playY, fonts.odinRounded)
+        end
+        
     end
 
     -- draw the pointer
