@@ -1,8 +1,0 @@
-name=Orbeats
-author=PaletteHeart
-description=A space-themed crank-based rhythm game.
-bundleID=com.paletteheart.orbeats
-version=0.8.2.0
-buildNumber=200
-imagePath=launcher
-launchSoundPath=sfx/play
