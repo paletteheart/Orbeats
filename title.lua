@@ -12,6 +12,7 @@ local screenCenterY <const> = screenHeight / 2
 
 -- Define variables
 local titleSprite = gfx.image.new("sprites/title")
+local titleSpriteBackup = gfx.image.new("sprites/title")
 local bgSprite = {
     gfx.image.new("sprites/titleBg1"),
     gfx.image.new("sprites/titleBg2"),
@@ -26,10 +27,11 @@ local jingleBpm = 127
 -- pulse vars
 local pulse = false
 local pulseDepth = 4
+local pulseTimer = 0
 -- title vars
-local titleHideY = -100
-local titleCurrentY = titleHideY
-local titleYTimer = tmr.new(0, titleHideY, titleHideY)
+local titleHideX = -300
+local titleCurrentX = titleHideX
+local titleXTimer = tmr.new(0, titleHideX, titleHideX)
 local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fonts.odinRounded)
 local titleX <const> = screenCenterX - (titleWidth/2)
 local titleY <const> = screenCenterY - (titleHeight/2)
@@ -38,7 +40,8 @@ local drawTitle = false
 local orbitDither = 1
 local orbitDitherTimer = tmr.new(0, orbitDither, orbitDither)
 local drawOrbit = false
-local orbitRadius <const> = 235
+local orbitRadius = 235
+local orbitMinRadius <const>, orbitMaxRadius <const> = 25, 300
 local orbitCenterX <const> = titleX+249
 local orbitCenterY <const> = titleY+72
 -- input vars
@@ -58,13 +61,15 @@ local bgStage = 1
 local function resetVars()
     -- reset variables
     inputCurrentY = screenHeight
-    titleCurrentY = titleHideY
+    titleCurrentX = titleHideX
+    pulseTimer = 0
     drawOrbit = false
     drawTitle = false
     drawInput = false
     orbitDither = 1
     bgStage = 1
     lastPulse = 0
+    orbitRadius = 235
 
     -- reset all timers
     local timers = tmr.allTimers()
@@ -95,7 +100,7 @@ function updateTitleScreen()
         -- set up title animation
         tmr.performAfterDelay((11/3)*1000, function()
             drawTitle = true
-            titleYTimer = tmr.new(500, titleHideY, titleY, ease.outBack)
+            titleXTimer = tmr.new(500, titleHideX, titleX, ease.outBack)
         end)
         -- set up input prompt animation
         tmr.performAfterDelay(4500, function()
@@ -116,7 +121,12 @@ function updateTitleScreen()
         pulse = true
         lastPulse = math.floor(currentBeat)
     else
-        pulse = false
+        if pulseTimer == 4 then
+            pulse = false
+            pulseTimer = 0
+        else
+            pulseTimer += 1
+        end
     end
 
     -- if jingle finished and we're still on the title, start the menu music
@@ -131,6 +141,9 @@ function updateTitleScreen()
         sfx.jingle:stop()
         start = true
     end
+
+    -- orbit radius toy
+    orbitRadius = math.min(orbitMaxRadius, math.max(orbitMinRadius, orbitRadius+(crankChange/5)))
 
     -- check if we're starting the game
     if start then
@@ -158,7 +171,7 @@ function drawTitleScreen()
         orbitDither = orbitDitherTimer.value
         gfx.setColor(gfx.kColorWhite)
         gfx.setDitherPattern(orbitDither)
-        gfx.setLineWidth(7)
+        gfx.setLineWidth(5)
         if pulse then
             gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth)
         else
@@ -175,10 +188,41 @@ function drawTitleScreen()
         gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(currentBeat%1))
     end
 
+    --draw the title mask
+    local titleMask = titleSpriteBackup:getMaskImage()
+    gfx.pushContext(titleSprite)
+        -- reset the sprite
+        titleSpriteBackup:draw(0, 0)
+
+        -- draw the shadow of the pulse
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(7*(1-currentBeat%1))
+        gfx.drawCircleAtPoint(orbitCenterX-titleCurrentX, orbitCenterY-titleY, orbitRadius-pulseDepth-pulseLength*(currentBeat%1))
+
+        
+        -- draw the cut of the orbit
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setLineWidth(5)
+        if pulse then
+            gfx.drawCircleAtPoint(orbitCenterX-titleCurrentX, orbitCenterY-titleY, orbitRadius-pulseDepth)
+            gfx.setLineWidth(1)
+            gfx.setColor(gfx.kColorWhite)
+            gfx.drawCircleAtPoint(orbitCenterX-titleCurrentX, orbitCenterY-titleY, orbitRadius-pulseDepth+2)
+            gfx.drawCircleAtPoint(orbitCenterX-titleCurrentX, orbitCenterY-titleY, orbitRadius-pulseDepth-2)
+        else
+            gfx.drawCircleAtPoint(orbitCenterX-titleCurrentX, orbitCenterY-titleY, orbitRadius)
+            gfx.setLineWidth(1)
+            gfx.setColor(gfx.kColorWhite)
+            gfx.drawCircleAtPoint(orbitCenterX-titleCurrentX, orbitCenterY-titleY, orbitRadius+2)
+            gfx.drawCircleAtPoint(orbitCenterX-titleCurrentX, orbitCenterY-titleY, orbitRadius-2)
+        end
+    gfx.popContext()
+    titleSprite:setMaskImage(titleMask)
+
     -- draw the title
     if drawTitle then
-        titleCurrentY = titleYTimer.value
-        titleSprite:draw(titleX, titleCurrentY)
+        titleCurrentX = titleXTimer.value
+        titleSprite:draw(titleCurrentX, titleY)
     end
 
     -- draw the input prompt
