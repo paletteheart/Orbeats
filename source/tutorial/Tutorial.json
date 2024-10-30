@@ -132,7 +132,7 @@
             "width":60,
             "position":300,
             "spin":-45,
-            "duration":1
+            "duration":0.5
         },
         {
             "type":"HoldNote",
