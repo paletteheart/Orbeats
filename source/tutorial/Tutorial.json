@@ -50,7 +50,7 @@
             "spin":0
         },
         {
-            "type":"HoldNote",
+            "type":"SlideNote",
             "spawnBeat":229,
             "hitBeat":239,
             "speed":0.75,
@@ -59,7 +59,7 @@
             "spin":0
         },
         {
-            "type":"HoldNote",
+            "type":"SlideNote",
             "spawnBeat":230,
             "hitBeat":240,
             "speed":0.75,
@@ -78,7 +78,7 @@
             "spin":0
         },
         {
-            "type":"HoldNote",
+            "type":"SlideNote",
             "spawnBeat":253,
             "hitBeat":263,
             "speed":0.75,
@@ -87,7 +87,7 @@
             "spin":0
         },
         {
-            "type":"HoldNote",
+            "type":"SlideNote",
             "spawnBeat":254,
             "hitBeat":264,
             "speed":0.75,
@@ -106,7 +106,7 @@
             "spin":0
         },
         {
-            "type":"HoldNote",
+            "type":"SlideNote",
             "spawnBeat":313,
             "hitBeat":323,
             "speed":0.75,
@@ -115,7 +115,7 @@
             "spin":0
         },
         {
-            "type":"HoldNote",
+            "type":"SlideNote",
             "spawnBeat":314,
             "hitBeat":324,
             "speed":0.75,
@@ -135,7 +135,7 @@
             "duration":0.5
         },
         {
-            "type":"HoldNote",
+            "type":"SlideNote",
             "spawnBeat":374,
             "hitBeat":384,
             "speed":0.75,
@@ -273,7 +273,7 @@
             {
                 "startBeat":204,
                 "endBeat":216,
-                "text":"Next up is a Note\nfollowed by two Hold\nNotes.",
+                "text":"Next up is a Note\nfollowed by two Slide\nNotes.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -281,7 +281,7 @@
             {
                 "startBeat":216,
                 "endBeat":228,
-                "text":"Hit the Note with\n↓/→/Ⓑ, and Hold the\nbutton to hit the lighter\nHold Notes.",
+                "text":"Hit the Note with\n↓/→/Ⓑ, and Slide the\nbutton to hit the lighter\nSlide Notes.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -289,7 +289,7 @@
             {
                 "startBeat":240,
                 "endBeat":252,
-                "text":"Did you hit them?\nHere comes another Note\nfollowed by Hold Notes.",
+                "text":"Did you hit them?\nHere comes another Note\nfollowed by Slide Notes.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -297,7 +297,7 @@
             {
                 "startBeat":264,
                 "endBeat":276,
-                "text":"For those you\nneeded to move the\ncrank while Holding the\nbutton.",
+                "text":"For those you\nneeded to move the\ncrank while Sliding the\nbutton.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -305,7 +305,7 @@
             {
                 "startBeat":276,
                 "endBeat":288,
-                "text":"Flip Notes can\nalso have Hold Notes\nafter them.",
+                "text":"Flip Notes can\nalso have Slide Notes\nafter them.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -313,7 +313,7 @@
             {
                 "startBeat":288,
                 "endBeat":300,
-                "text":"The Hold Notes\nwill be on the pointed\nend of the Flip\nNote.",
+                "text":"The Slide Notes\nwill be on the pointed\nend of the Flip\nNote.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -321,7 +321,7 @@
             {
                 "startBeat":300,
                 "endBeat":312,
-                "text":"Continue Holding\ndown ↑/←/Ⓐ after\nFlipping to hit the Hold\nNotes.",
+                "text":"Continue Slideing\ndown ↑/←/Ⓐ after\nFlipping to hit the Slide\nNotes.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -337,7 +337,7 @@
             {
                 "startBeat":336,
                 "endBeat":348,
-                "text":"To hit them properly,\nyou'll have to hold the\nbutton for their length.",
+                "text":"To hit them properly,\nyou'll have to Slide the\nbutton for their length.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"
@@ -345,7 +345,7 @@
             {
                 "startBeat":348,
                 "endBeat":360,
-                "text":"Notes and Hold Notes\ncan be long.",
+                "text":"Notes and Slide Notes\ncan be long.",
                 "x":200,
                 "y":120,
                 "font":"orbeatsSans"

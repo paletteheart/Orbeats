@@ -2,7 +2,7 @@
 --import note classes
 import "notes/note"
 import "notes/flipnote"
-import "notes/holdnote"
+import "notes/slidenote"
 
 -- Define constants
 local pd <const> = playdate
@@ -226,8 +226,8 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
     if newNote == nil then
         if noteType == "FlipNote" then
             newNote = FlipNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
-        elseif noteType == "HoldNote" then
-            newNote = HoldNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
+        elseif noteType == "SlideNote" then
+            newNote = SlideNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
         else
             newNote = Note(spawnBeat, hitBeat, speed, width, position, spin, duration)
         end
@@ -377,7 +377,7 @@ local function updateNotes()
                 end
             end
             
-        elseif noteData.noteType == "holdnote" then
+        elseif noteData.noteType == "slidenote" then
             if noteData.hitting then
                 updateLongNote(note, noteData, i)
             else

@@ -52,7 +52,7 @@ settingsLabels = {
     toggleSfx = "Note SFX Toggle: ",
     sfx = "Note SFX: ",
     particles = "Note Particles: ",
-    notePattern = "Hold Note Pattern: ",
+    notePattern = "Slide Note Pattern: ",
     drawBg = "Background FX: ",
     drawFps = "Framerate Display: ",
     resetSave = "Reset Save Data",
@@ -218,7 +218,7 @@ function drawSettings()
     -- draw the stars background
     starsBg:draw(starsXTimer.value, 0)
 
-    -- draw the example hold note
+    -- draw the example Slide note
     local arcRadius = arcRadiusTimer.value
     local arcX = starsXTimer.value+screenWidth/2
     local arcY = 180
@@ -227,7 +227,7 @@ function drawSettings()
     gfx.setPattern(notePatterns[settings.notePattern])
     gfx.setLineWidth(5*(arcRadius/screenWidth))
     gfx.drawArc(arcX, arcY, arcRadius, arcStart, arcEnd)
-    -- draw the planet the hold note is coming from
+    -- draw the planet the Slide note is coming from
     local planetRadius = 30
     gfx.fillCircleAtPoint(arcX, arcY, planetRadius)
     gfx.setColor(gfx.kColorBlack)

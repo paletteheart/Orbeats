@@ -5,16 +5,16 @@ import "settings"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
-class("HoldNote").extends(Note)
+class("SlideNote").extends(Note)
 
-function HoldNote:update(currentBeat, orbitRadius)
-    local returning = HoldNote.super.update(self, currentBeat, orbitRadius)
-    returning["noteType"] = "holdnote"
+function SlideNote:update(currentBeat, orbitRadius)
+    local returning = SlideNote.super.update(self, currentBeat, orbitRadius)
+    returning["noteType"] = "slidenote"
 
     return returning
 end
 
-function HoldNote:draw(x, y, rad)
+function SlideNote:draw(x, y, rad)
     local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
