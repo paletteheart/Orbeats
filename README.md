@@ -12,7 +12,7 @@ If you want to sideload the game onto your PlayDate, download the latest release
 Alternatively, you could sideload it through the PlayDate Simulator, which you can get in the SDK [here](https://play.date/dev/). You’ll want to go to where you installed the SDK, then to `\PlaydateSDK\Disk\Games`, and put the .pdx there. Then, plug your PlayDate into your computer and unlock it. Open the simulator, open Orbeats, and then press `Alt-U` to upload to your PlayDate.
 
 ## Creating User Levels
-Orbeats was built with user-created levels in mind. Currently, there is no available editor to work with, but there are a couple being worked on at the moment, one that will be available in-game, and a likely more powerful one for Windows.
+Orbeats was built with user-created levels in mind. Currently, there is no available editor to work with, but there are a couple being worked on at the moment; one that will be available in-game, and a likely more powerful one for Windows.
 For now, if you’re really determined to create a level, check out the [Map Documentation](https://github.com/paletteheart/Orbeats/blob/main/Map%20Documentation.md), it should give you all the information you need to begin creating levels by hand.
 
 ## Playing User Levels
