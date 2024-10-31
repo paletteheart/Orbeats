@@ -16,14 +16,16 @@ local menuItems <const> = {
     "songSelect",
     "settings",
     "stats",
-    "levelEditor"
+    "levelEditor",
+    "discord"
 }
 local menuItemNames <const> = {
     "Tutorial",
     "Songs",
     "Settings",
     "Stats",
-    "Level Editor"
+    "Level Editor",
+    "Discord"
 }
 
 -- Define vars

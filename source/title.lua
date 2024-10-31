@@ -13,7 +13,7 @@ local screenCenterY <const> = screenHeight / 2
 -- Define variables
 local titleSprite = gfx.image.new("sprites/title")
 local titleSpriteBackup = gfx.image.new("sprites/title")
-local bgSprite = {
+bgSprite = {
     gfx.image.new("sprites/titleBg1"),
     gfx.image.new("sprites/titleBg2"),
     gfx.image.new("sprites/titleBg3"),

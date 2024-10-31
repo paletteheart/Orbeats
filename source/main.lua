@@ -16,6 +16,7 @@ import "stats"
 import "settings"
 import "reset"
 import "levelEditor"
+import "discord"
 
 -- Define constants
 local pd <const> = playdate
@@ -105,6 +106,9 @@ local function draw()
 		drawResetMenu()
 	elseif gameState == "levelEditor" then
 		drawLevelEditor()
+	elseif gameState == "discord" then
+		gfx.clear(gfx.kColorBlack)
+		drawDiscordInvite()
 	else
 		gfx.clear(gfx.kColorBlack)
 		drawTitleScreen()
@@ -157,6 +161,8 @@ function pd.update()
 		gameState = updateResetMenu()
 	elseif gameState == "levelEditor" then
 		gameState = updateLevelEditor()
+	elseif gameState == "discord" then
+		gameState = updateDiscordInvite()
 	elseif gameState == "credits" then
 		gameState = "title"
 	else
