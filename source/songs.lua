@@ -43,11 +43,16 @@ local function sortSongListByName()
         sortedList[i] = v  -- Copy original table's content to the new table
     end
     table.sort(sortedList, function(a, b)
-        if a.name ~= b.name then
-            return a.name < b.name
+        local loweredAName = string.lower(a.name)
+        local loweredBName = string.lower(b.name)
+        local loweredAArtist = string.lower(a.artist)
+        local loweredBArtist = string.lower(b.artist)
+
+        if loweredAName ~= loweredBName then
+            return loweredAName < loweredBName
         else
-            if a.artist ~= b.artist then
-                return a.artist < b.artist
+            if loweredAArtist ~= loweredBArtist then
+                return loweredAArtist < loweredBArtist
             else
                 return a.bpm < b.bpm
             end
@@ -61,11 +66,16 @@ local function sortSongListByArtist()
         sortedList[i] = v  -- Copy original table's content to the new table
     end
     table.sort(sortedList, function(a, b)
-        if a.artist ~= b.artist then
-            return a.artist < b.artist
+        local loweredAName = string.lower(a.name)
+        local loweredBName = string.lower(b.name)
+        local loweredAArtist = string.lower(a.artist)
+        local loweredBArtist = string.lower(b.artist)
+
+        if loweredAArtist ~= loweredBArtist then
+            return loweredAArtist < loweredBArtist
         else
-            if a.name ~= b.name then
-                return a.name < b.name
+            if loweredAName ~= loweredBName then
+                return loweredAName < loweredBName
             else
                 return a.bpm < b.bpm
             end
@@ -79,13 +89,18 @@ local function sortSongListByBpm()
         sortedList[i] = v  -- Copy original table's content to the new table
     end
     table.sort(sortedList, function(a, b)
+        local loweredAName = string.lower(a.name)
+        local loweredBName = string.lower(b.name)
+        local loweredAArtist = string.lower(a.artist)
+        local loweredBArtist = string.lower(b.artist)
+
         if a.bpm ~= b.bpm then
             return a.bpm < b.bpm
         else
-            if a.name ~= b.name then
-                return a.name < b.name
+            if loweredAName ~= loweredBName then
+                return loweredAName < loweredBName
             else
-                return a.artist < b.artist
+                return loweredAArtist < loweredBArtist
             end
         end
     end)
