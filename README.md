@@ -13,7 +13,7 @@ Alternatively, you could sideload it through the PlayDate Simulator, which you c
 
 ## Creating User Levels
 Orbeats was built with user-created levels in mind. Currently, there is no available editor to work with, but there are a couple being worked on at the moment, one that will be available in-game, and a likely more powerful one for Windows.
-For now, if you’re really determined to create a level, check out the [Map Documentation](https://github.com/paletteheart/Orbeats/blob/main/Map%20Documentation.md), it should give you all the information you need to begin creating levels by hand.
+For now, if you’re really determined to create a level, check out the [[Map Documentation]], it should give you all the information you need to begin creating levels by hand.
 
 ## Playing User Levels
 If you want to play user-created levels, you’ll need to manually put them on your PlayDate. To do this, plug your PlayDate into your computer. Go to `Settings → System → Reboot to Data Disk`, and then you should be able to access the PlayDate’s files from your computer. Go to `PLAYDATE\Data\com.paletteheart.orbeats\songs`. If the `songs` folder doesn’t exist, just create it. In there you’ll put the folders for any user songs. Then, eject your PlayDate, and when you next launch Orbeats the user songs should show up in the song list.
