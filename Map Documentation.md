@@ -1,4 +1,5 @@
-# Map Documentation
+
+# Orbeats Map Documentation
 [Orbeats](https://github.com/paletteheart/Orbeats) is a simple rhythm game for the PlayDate heavily utilizing the crank with an easily expandable song list. Dedicated players can create and add custom maps to their game. This documents the details of creating a song map and adding it into the game.
 ## Adding custom songs/maps to your game
 If you already have a song and it's difficulty maps created and ready to play in game, just follow these steps to add it into your game:
