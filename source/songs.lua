@@ -500,6 +500,7 @@ function updateSongSelect()
             local bpm = currentSong.bpm
             local bpmChanges = currentSong.bpmChange
             local beatOffset = currentSong.beatOffset
+            local musicFile = ("songs/"..currentSong.folder..currentSong.name)
             if music:isPlaying() then
                 music:stop()
             end
