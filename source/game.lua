@@ -14,6 +14,17 @@ local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
+local tableInsert <const> = table.insert
+local tableRemove <const> = table.remove
+local mathSin <const> = math.sin
+local mathCos <const> = math.cos
+local mathRad <const> = math.rad
+local mathMax <const> = math.max
+local mathMin <const> = math.min
+local mathAbs <const> = math.abs
+local mathFloor <const> = math.floor
+local mathCeil <const> = math.ceil
+
 char = {}
 char.A = "Ⓐ"
 char.B = "Ⓑ"
@@ -66,7 +77,7 @@ local function getListOfHitSfx()
 
     for i=#sfxFiles,1,-1 do
         if sfxFiles[i]:sub(-4) ~= '.pda' then
-            table.remove(sfxFiles, i)
+            tableRemove(sfxFiles, i)
         else
             sfxFiles[i] = sfxFiles[i]:sub(1, -5)
             print(sfxFiles[i])
@@ -179,7 +190,6 @@ local perfectDistance <const> = 12 -- the distance from the center of a note or 
 -- Effects variables
 local invertedScreen = false
 local textInstances = {}
-local textPool = {}
 local oldOrbitCenterX = orbitCenterX -- used for animating orbit movement
 local oldOrbitCenterY = orbitCenterY -- used for animating orbit movement
 local lastMovementBeatX = 0 -- used for animating the orbit movement
@@ -191,7 +201,7 @@ local lastMovementBeatY = 0 -- used for animating the orbit movement
 
 local function incrementCombo()
     combo += 1
-    largestCombo = math.max(largestCombo, combo)
+    largestCombo = mathMax(largestCombo, combo)
 
     if combo % 25 == 0 and combo > 0 then
         splashText = combo
@@ -204,8 +214,8 @@ local function songOver()
 end
 
 local function killNote(noteIndex)
-    table.insert(notePool, noteInstances[noteIndex])
-    table.remove(noteInstances, noteIndex)
+    tableInsert(notePool, noteInstances[noteIndex])
+    tableRemove(noteInstances, noteIndex)
 end
 
 local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, spin, duration)
@@ -215,7 +225,7 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
         -- if so, move it from the pool
         if notePool[i]:isa(noteType) then
             newNote = notePool[i]
-            table.remove(notePool, i)
+            tableRemove(notePool, i)
             -- redefine the pool note's attributes to fit the new note
             newNote:init(spawnBeat, hitBeat, speed, width, position, spin, duration)
             break
@@ -234,50 +244,50 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
     end
 
     -- add new note to noteInstances
-    table.insert(noteInstances, newNote)
+    tableInsert(noteInstances, newNote)
 end
 
-local function updateLongNote(note, noteData, noteInstance)
+local function updateLongNote(note, endRadius, endBeat, hitBeat, noteInstance)
     local noteStartAngle, noteEndAngle = note:getNoteAngles()
     if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
         if downHeld or bHeld or rightHeld or upHeld or leftHeld or aHeld then
             -- continue hitting note
             if settings.particles then
                 p:moveTo(playerX, playerY)
-                p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
                 p:add(1)
             end
-            if noteData.endRadius >= orbitRadius then
+            if endRadius >= orbitRadius then
                 killNote(noteInstance)
             end
         else
             -- check if you're within the window of forgiveness
-            if (noteData.endRadius >= orbitRadius-hitForgiveness) then
+            if (endRadius >= orbitRadius-hitForgiveness) then
                 killNote(noteInstance)
             else
                 -- lose points proportional to the percent of the note you missed
                 local remainingNotePercent
                 if fakeCurrentBeat < 0 then
-                    remainingNotePercent = (noteData.endBeat-fakeCurrentBeat)/(noteData.endBeat-noteData.hitBeat)
-                    score -= math.floor(maxNoteScore*remainingNotePercent)
+                    remainingNotePercent = (endBeat-fakeCurrentBeat)/(endBeat-hitBeat)
+                    score -= mathFloor(maxNoteScore*remainingNotePercent)
                     note:finishHitting(fakeCurrentBeat)
                 else
-                    remainingNotePercent = (noteData.endBeat-currentBeat)/(noteData.endBeat-noteData.hitBeat)
-                    score -= math.floor(maxNoteScore*remainingNotePercent)
+                    remainingNotePercent = (endBeat-currentBeat)/(endBeat-hitBeat)
+                    score -= mathFloor(maxNoteScore*remainingNotePercent)
                     note:finishHitting(currentBeat)
                 end-- check if you're within the window of forgiveness
-        if (noteData.endRadius >= orbitRadius-hitForgiveness) then
+        if (endRadius >= orbitRadius-hitForgiveness) then
             killNote(noteInstance)
         else
             -- lose points proportional to the percent of the note you missed
             local remainingNotePercent
             if fakeCurrentBeat < 0 then
-                remainingNotePercent = (noteData.endBeat-fakeCurrentBeat)/(noteData.endBeat-noteData.hitBeat)
-                score -= math.floor(maxNoteScore*remainingNotePercent)
+                remainingNotePercent = (endBeat-fakeCurrentBeat)/(endBeat-hitBeat)
+                score -= mathFloor(maxNoteScore*remainingNotePercent)
                 note:finishHitting(fakeCurrentBeat)
             else
-                remainingNotePercent = (noteData.endBeat-currentBeat)/(noteData.endBeat-noteData.hitBeat)
-                score -= math.floor(maxNoteScore*remainingNotePercent)
+                remainingNotePercent = (endBeat-currentBeat)/(endBeat-hitBeat)
+                score -= mathFloor(maxNoteScore*remainingNotePercent)
                 note:finishHitting(currentBeat)
             end
         end
@@ -285,18 +295,18 @@ local function updateLongNote(note, noteData, noteInstance)
         end
     else
         -- check if you're within the window of forgiveness
-        if (noteData.endRadius >= orbitRadius-hitForgiveness) then
+        if (endRadius >= orbitRadius-hitForgiveness) then
             killNote(noteInstance)
         else
             -- lose points proportional to the percent of the note you missed
             local remainingNotePercent
             if fakeCurrentBeat < 0 then
-                remainingNotePercent = (noteData.endBeat-fakeCurrentBeat)/(noteData.endBeat-noteData.hitBeat)
-                score -= math.floor(maxNoteScore*remainingNotePercent)
+                remainingNotePercent = (endBeat-fakeCurrentBeat)/(endBeat-hitBeat)
+                score -= mathFloor(maxNoteScore*remainingNotePercent)
                 note:finishHitting(fakeCurrentBeat)
             else
-                remainingNotePercent = (noteData.endBeat-currentBeat)/(noteData.endBeat-noteData.hitBeat)
-                score -= math.floor(maxNoteScore*remainingNotePercent)
+                remainingNotePercent = (endBeat-currentBeat)/(endBeat-hitBeat)
+                score -= mathFloor(maxNoteScore*remainingNotePercent)
                 note:finishHitting(currentBeat)
             end
         end
@@ -308,27 +318,34 @@ local function updateNotes()
 		-- get the current note
 		local note = noteInstances[i]
 		-- update the current note with the current level speed and get it's current radius, old radius, and position
-        local noteData
+        local oldRadius
+        local newRadius
+        local position
+        local endRadius
+        local hitting
+        local endBeat
+        local hitBeat
+        local noteType
         -- if the music isn't playing, fake the beat
         if fakeCurrentBeat < 0 then
-            noteData = note:update(fakeCurrentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(fakeCurrentBeat, orbitRadius)
         else
-            noteData = note:update(currentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(currentBeat, orbitRadius)
         end
 		
         -- Check if note can be hit or is being hit
-        if noteData.noteType == "note" then
-            if noteData.hitting then
-                updateLongNote(note, noteData, i)
+        if noteType == "note" then
+            if hitting then
+                updateLongNote(note, endRadius, endBeat, hitBeat, noteType, i)
             else
-                if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
+                if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
                     local noteStartAngle, noteEndAngle = note:getNoteAngles()
                     -- check if the player position is within the note
                     if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
                         if downPressed or bPressed or rightPressed then
                             --note is hit
                             --figure out how many points you get
-                            local noteDistance = math.abs(orbitRadius-noteData.newRadius)
+                            local noteDistance = mathAbs(orbitRadius-newRadius)
                             -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
                             -- you can be, which scores half max points.
                             if noteDistance <= perfectDistance then
@@ -338,7 +355,7 @@ local function updateNotes()
                             else
                                 -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
                                 -- Probably don't mess with this equation
-                                local hitScore = math.floor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
+                                local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
                                 score += hitScore
                                 if hitScore < 65 then
                                     hitTextDisplay = hitText.ok.." "..hitScore
@@ -349,10 +366,10 @@ local function updateNotes()
                                 end
                             end
                             hitTextTimer = hitTextTime
-                            hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
-                            hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
+                            hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
+                            hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
                             --remove note if a short note, begin hitting if a long note
-                            if noteData.endRadius == noteData.newRadius then
+                            if endRadius == newRadius then
                                 killNote(i)
                             else
                                 note:beginHitting(orbitRadius)
@@ -365,7 +382,7 @@ local function updateNotes()
                             -- create particles
                             if settings.particles then
                                 p:moveTo(playerX, playerY)
-                                p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                                p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
                                 p:add(10)
                             end
                             -- play sfx
@@ -377,11 +394,11 @@ local function updateNotes()
                 end
             end
             
-        elseif noteData.noteType == "slidenote" then
-            if noteData.hitting then
+        elseif noteType == "slidenote" then
+            if hitting then
                 updateLongNote(note, noteData, i)
             else
-                if (noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and noteData.newRadius >= orbitRadius then
+                if (oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and newRadius >= orbitRadius then
                     local noteStartAngle, noteEndAngle = note:getNoteAngles()
                     -- check if the player position is within the note
                     if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
@@ -391,10 +408,10 @@ local function updateNotes()
                             hitTextDisplay = hitText.perfect
                             perfectHits += 1
                             hitTextTimer = hitTextTime
-                            hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
-                            hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
+                            hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
+                            hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
                             --remove note if a short note, begin hitting if a long note
-                            if noteData.endRadius == noteData.newRadius then
+                            if endRadius == newRadius then
                                 killNote(i)
                             else
                                 note:beginHitting(orbitRadius)
@@ -407,7 +424,7 @@ local function updateNotes()
                             -- create particles
                             if settings.particles then
                                 p:moveTo(playerX, playerY)
-                                p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                                p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
                                 p:add(3)
                             end
                             -- play sfx
@@ -418,16 +435,16 @@ local function updateNotes()
                     end
                 end
             end
-        elseif noteData.noteType == "flipnote" then
+        elseif noteType == "flipnote" then
             -- check if the note is close enough to be hit
-            if (noteData.newRadius >= orbitRadius-hitForgiveness and noteData.newRadius < orbitRadius) or ((noteData.oldRadius < orbitRadius or noteData.newRadius <= orbitRadius+hitForgiveness) and  noteData.newRadius >= orbitRadius) then
+            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
                     if upPressed or aPressed or leftPressed then
                         -- note is hit
                         --figure out how many points you get
-                        local noteDistance = math.abs(orbitRadius-noteData.newRadius)
+                        local noteDistance = mathAbs(orbitRadius-newRadius)
                         -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
                         -- you can be, which scores half max points.
                         if noteDistance <= perfectDistance then
@@ -435,7 +452,7 @@ local function updateNotes()
                             hitTextDisplay = hitText.perfect
                             perfectHits += 1
                         else 
-                            local hitScore = math.floor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
+                            local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
                             score += hitScore
                             if hitScore < 65 then
                                 hitTextDisplay = hitText.ok.." "..hitScore
@@ -446,8 +463,8 @@ local function updateNotes()
                             end
                         end
                         hitTextTimer = hitTextTime
-                        hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position-90))
-                        hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position-90))
+                        hitTextX = orbitCenterX + 20 * mathCos(mathRad(position-90))
+                        hitTextY = orbitCenterY + 20 * mathSin(mathRad(position-90))
                         --remove note
                         killNote(i)
                         -- up the hit note score
@@ -458,7 +475,7 @@ local function updateNotes()
                         -- create particles
                         if settings.particles then
                             p:moveTo(playerX, playerY)
-                            p:setSpread(math.floor(playerPos-90), math.ceil(playerPos+90))
+                            p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
                             p:add(10)
                         end
                         -- play sfx
@@ -470,15 +487,15 @@ local function updateNotes()
             end
         end
         -- remove the current note if the radius is too large
-        if noteData.endRadius > missedNoteRadius then
+        if endRadius > missedNoteRadius then
             killNote(i)
             -- up the missed note score
             missedNotes += 1
             combo = 0
             hitTextDisplay = hitText.miss
             hitTextTimer = hitTextTime
-            hitTextX = orbitCenterX + 20 * math.cos(math.rad(noteData.position+90))
-            hitTextY = orbitCenterY + 20 * math.sin(math.rad(noteData.position+90))
+            hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
+            hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
             -- lower health
             health -= noteDamage
         end
@@ -500,7 +517,7 @@ local function createNotes()
                 -- Add note to instances
                 spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin, nextNote.duration)
                 -- Remove note from the table
-                table.remove(songTable.notes, 1)
+                tableRemove(songTable.notes, 1)
                 -- Call again to check for any other notes that need spawning
                 createNotes()
                 -- print("Created at beat "..fakeCurrentBeat)
@@ -510,7 +527,7 @@ local function createNotes()
             -- Add note to instances
             spawnNote(nextNote.type, nextNote.spawnBeat, nextNote.hitBeat, nextNote.speed, nextNote.width, nextNote.position, nextNote.spin, nextNote.duration)
             -- Remove note from the table
-            table.remove(songTable.notes, 1)
+            tableRemove(songTable.notes, 1)
             -- Call again to check for any other notes that need spawning
             createNotes()
             -- print("Created at beat "..currentBeat)
@@ -537,14 +554,14 @@ local function updateEffects()
                         -- toggle the screen inversion
                         invertedScreen = not invertedScreen
                         -- remove this inversion from the list
-                        table.remove(fx.toggleInvert, 1)
+                        tableRemove(fx.toggleInvert, 1)
                     end
                 else
                     if nextInversionTime <= currentBeat then
                         -- toggle the screen inversion
                         invertedScreen = not invertedScreen
                         -- remove this inversion from the list
-                        table.remove(fx.toggleInvert, 1)
+                        tableRemove(fx.toggleInvert, 1)
                     end
                 end
             end
@@ -569,14 +586,14 @@ local function updateEffects()
                             orbitCenterX = nextOrbitCenterX
                             oldOrbitCenterX = orbitCenterX
                             lastMovementBeatX = nextMovementBeat
-                            table.remove(fx.moveOrbitX, 1)
+                            tableRemove(fx.moveOrbitX, 1)
                         end
                     else
                         if currentBeat >= nextMovementBeat then
                             orbitCenterX = nextOrbitCenterX
                             oldOrbitCenterX = orbitCenterX
                             lastMovementBeatX = nextMovementBeat
-                            table.remove(fx.moveOrbitX, 1)
+                            tableRemove(fx.moveOrbitX, 1)
                         end
                     end
                 else
@@ -585,7 +602,7 @@ local function updateEffects()
                     if not music:isPlaying() then
                         t = (fakeCurrentBeat - lastMovementBeatX) / (nextMovementBeat - lastMovementBeatX)
                     end
-                    t = math.max(0, math.min(1, t))
+                    t = mathMax(0, mathMin(1, t))
 
                     if fx.moveOrbitX[1].animation == "ease-in" then
                         orbitCenterX = oldOrbitCenterX+(nextOrbitCenterX-oldOrbitCenterX)*t^fx.moveOrbitX[1].power
@@ -599,13 +616,13 @@ local function updateEffects()
                         if fakeCurrentBeat >= nextMovementBeat then
                             oldOrbitCenterX = orbitCenterX
                             lastMovementBeatX = nextMovementBeat
-                            table.remove(fx.moveOrbitX, 1)
+                            tableRemove(fx.moveOrbitX, 1)
                         end
                     else
                         if currentBeat >= nextMovementBeat then
                             oldOrbitCenterX = orbitCenterX
                             lastMovementBeatX = nextMovementBeat
-                            table.remove(fx.moveOrbitX, 1)
+                            tableRemove(fx.moveOrbitX, 1)
                         end
                     end
                 end
@@ -630,14 +647,14 @@ local function updateEffects()
                             orbitCenterY = nextOrbitCenterY
                             oldOrbitCenterY = orbitCenterY
                             lastMovementBeatY = nextMovementBeat
-                            table.remove(fx.moveOrbitY, 1)
+                            tableRemove(fx.moveOrbitY, 1)
                         end
                     else
                         if currentBeat >= nextMovementBeat then
                             orbitCenterY = nextOrbitCenterY
                             oldOrbitCenterY = orbitCenterY
                             lastMovementBeatY = nextMovementBeat
-                            table.remove(fx.moveOrbitY, 1)
+                            tableRemove(fx.moveOrbitY, 1)
                         end
                     end
                 else
@@ -646,7 +663,7 @@ local function updateEffects()
                     if not music:isPlaying() then
                         t = (fakeCurrentBeat - lastMovementBeatY) / (nextMovementBeat - lastMovementBeatY)
                     end
-                    t = math.max(0, math.min(1, t))
+                    t = mathMax(0, mathMin(1, t))
 
                     if fx.moveOrbitY[1].animation == "ease-in" then
                         orbitCenterY = oldOrbitCenterY+(nextOrbitCenterY-oldOrbitCenterY)*t^fx.moveOrbitY[1].power
@@ -660,13 +677,13 @@ local function updateEffects()
                         if fakeCurrentBeat >= nextMovementBeat then
                             oldOrbitCenterY = orbitCenterY
                             lastMovementBeatY = nextMovementBeat
-                            table.remove(fx.moveOrbitY, 1)
+                            tableRemove(fx.moveOrbitY, 1)
                         end
                     else
                         if currentBeat >= nextMovementBeat then
                             oldOrbitCenterY = orbitCenterY
                             lastMovementBeatY = nextMovementBeat
-                            table.remove(fx.moveOrbitY, 1)
+                            tableRemove(fx.moveOrbitY, 1)
                         end
                     end
                 end
@@ -684,13 +701,13 @@ local function updateEffects()
                     -- check if the music is playing yet
                     if music:isPlaying() then
                         if fx.text[i].startBeat <= currentBeat then
-                            table.insert(textInstances, fx.text[i])
-                            table.remove(fx.text, i)
+                            tableInsert(textInstances, fx.text[i])
+                            tableRemove(fx.text, i)
                         end
                     else
                         if fx.text[i].startBeat <= fakeCurrentBeat then
-                            table.insert(textInstances, fx.text[i])
-                            table.remove(fx.text, i)
+                            tableInsert(textInstances, fx.text[i])
+                            tableRemove(fx.text, i)
                         end
                     end
                 end
@@ -700,11 +717,11 @@ local function updateEffects()
         for i=#textInstances,1,-1 do
             if music:isPlaying() then
                 if textInstances[i].endBeat <= currentBeat then
-                    table.remove(textInstances, i)
+                    tableRemove(textInstances, i)
                 end
             else
                 if textInstances[i].endBeat <= fakeCurrentBeat then
-                    table.remove(textInstances, i)
+                    tableRemove(textInstances, i)
                 end
             end
         end
@@ -717,7 +734,7 @@ local function updateEffects()
                 -- check if it's time for the next bpm change
                 if nextBpmChange.beat <= currentBeat then
                     songBpm = nextBpmChange.bpm
-                    table.remove(bpmChanges, 1)
+                    tableRemove(bpmChanges, 1)
                     referenceTime = musicTime
                     referenceBeat = currentBeat
                 end
@@ -739,7 +756,7 @@ function updateSong()
     currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
 
     -- clamp health
-    health = math.min(100, math.max(0, health))
+    health = mathMin(100, mathMax(0, health))
     if health == 0 then
         failed = true
     end
@@ -765,7 +782,7 @@ function updateSong()
             pulse = pulseDepth
             lastBeat += 1
         else
-            pulse = math.max(pulse-1, 0)
+            pulse = mathMax(pulse-1, 0)
         end
     else
         -- music is playing now, do real pulses
@@ -773,7 +790,7 @@ function updateSong()
             pulse = pulseDepth
             lastBeat += 1
         else
-            pulse = math.max(pulse-1, 0)
+            pulse = mathMax(pulse-1, 0)
         end
     end
 
@@ -789,8 +806,8 @@ function updateSong()
     updateEffects()
 
     -- update player x and y based on player position
-    playerX = orbitCenterX + orbitRadius * math.cos(math.rad(playerPos-90))
-    playerY = orbitCenterY + orbitRadius * math.sin(math.rad(playerPos-90))
+    playerX = orbitCenterX + orbitRadius * mathCos(mathRad(playerPos-90))
+    playerY = orbitCenterY + orbitRadius * mathSin(mathRad(playerPos-90))
 
     --flip player if up is hit
     if upPressed or aPressed or leftPressed then
@@ -799,7 +816,7 @@ function updateSong()
         flipTrail = orbitRadius*2
         flipPos = playerPos
     else
-        flipTrail = math.floor(flipTrail/1.4)
+        flipTrail = mathFloor(flipTrail/1.4)
     end
 
 	--update notes
@@ -905,17 +922,17 @@ function drawSong()
     if flipTrail > 0 then
         gfx.setDitherPattern(0.5)
         -- draw a circle where you were flipped to
-        local trailX = orbitCenterX + orbitRadius * math.cos(math.rad(flipPos-270))
-        local trailY = orbitCenterY + orbitRadius * math.sin(math.rad(flipPos-270))
+        local trailX = orbitCenterX + orbitRadius * mathCos(mathRad(flipPos-270))
+        local trailY = orbitCenterY + orbitRadius * mathSin(mathRad(flipPos-270))
         local trailRadius = (flipTrail/(orbitRadius*2))*playerRadius
         gfx.fillCircleAtPoint(trailX, trailY, trailRadius)
         -- draw a triangle pointed where you flipped from
-        local tangentStartX = trailX + trailRadius * math.cos(math.rad(flipPos+180))
-        local tangentStartY = trailY + trailRadius * math.sin(math.rad(flipPos+180))
-        local tangentEndX = trailX + trailRadius * math.cos(math.rad(flipPos))
-        local tangentEndY = trailY + trailRadius * math.sin(math.rad(flipPos))
-        local pointX = trailX - flipTrail * math.cos(math.rad(flipPos+90))
-        local pointY = trailY - flipTrail * math.sin(math.rad(flipPos+90))
+        local tangentStartX = trailX + trailRadius * mathCos(mathRad(flipPos+180))
+        local tangentStartY = trailY + trailRadius * mathSin(mathRad(flipPos+180))
+        local tangentEndX = trailX + trailRadius * mathCos(mathRad(flipPos))
+        local tangentEndY = trailY + trailRadius * mathSin(mathRad(flipPos))
+        local pointX = trailX - flipTrail * mathCos(mathRad(flipPos+90))
+        local pointY = trailY - flipTrail * mathSin(mathRad(flipPos+90))
         gfx.fillTriangle(tangentStartX, tangentStartY, tangentEndX, tangentEndY, pointX, pointY)
     end 
 
@@ -1054,7 +1071,7 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     -- update crank position
     crankPos = pd.getCrankPosition()
     crankChange = pd.getCrankChange()
-    stats.crankTurns += math.abs(crankChange)/360
+    stats.crankTurns += mathAbs(crankChange)/360
     -- update button inputs
     upPressed = pd.buttonJustPressed(pd.kButtonUp)
     downPressed = pd.buttonJustPressed(pd.kButtonDown)

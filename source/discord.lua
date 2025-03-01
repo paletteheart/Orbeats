@@ -54,6 +54,7 @@ function updateDiscordInvite()
     floating += 0.05
 
     if aPressed or bPressed or upPressed or downPressed or leftPressed or rightPressed then
+        sfx.low:play()
         exit = true
     end
 

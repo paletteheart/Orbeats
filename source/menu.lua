@@ -16,7 +16,7 @@ local menuItems <const> = {
     "songSelect",
     "settings",
     "stats",
-    "levelEditor",
+    --"levelEditor",
     "discord"
 }
 local menuItemNames <const> = {
@@ -24,7 +24,7 @@ local menuItemNames <const> = {
     "Songs",
     "Settings",
     "Stats",
-    "Level Editor",
+    --"Level Editor",
     "Discord"
 }
 

@@ -63,7 +63,7 @@ function Note:update(currentBeat, orbitRadius)
         self.currentPos += 360
     end
 
-    return {oldRadius = oldRadius, newRadius = self.radius, position = self.currentPos, noteType = "note", endRadius = self.endRadius, hitting = self.hitting, endBeat = self.duration + self.hitBeat, hitBeat = self.hitBeat}
+    return oldRadius, self.radius, self.currentPos, self.endRadius, self.hitting, self.duration + self.hitBeat, self.hitBeat, "note"
 end
 
 function Note:draw(x, y, rad)

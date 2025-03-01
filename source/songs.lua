@@ -493,7 +493,7 @@ function updateSongSelect()
     if songStarting then
         -- get the map file path
         local songTablePath = "songs/"..currentSong.folder..currentDifficulty..".json"
-        -- fade out and then load map
+        -- fade out and then load map 
         if fadeWhite > 0 then
             fadeWhite -= 0.1
         else
