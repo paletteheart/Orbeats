@@ -257,6 +257,9 @@ function drawMainMenu()
 
         local itemX = screenCenterX + wheelRadius * math.cos(math.rad(itemPos-90)) - 32
         local itemY = wheelY + wheelRadius * math.sin(math.rad(itemPos-90)) - 32
+        -- round the position to the nearest even number so dither doesn't kill anyone
+        itemX = math.floor(itemX/2)*2
+        itemY = math.floor(itemY/2)*2
         
         getImage(itemArtFilePath):draw(itemX, itemY)
 

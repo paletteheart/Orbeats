@@ -570,6 +570,9 @@ function drawSongSelect()
                     local mapPos = (i-mapSelection)*mapDist
                     local mapX = screenCenterX + (songBarRadius+200) * math.cos(math.rad(mapPos-90+mapSelectionOffset))
                     local mapY = songBarY/(songBarY/725) + (songBarRadius+200) * math.sin(math.rad(mapPos-90+mapSelectionOffset))
+                    -- round the position to the nearest even number so dither doesn't kill anyone
+                    mapX = math.floor(mapX/2)*2
+                    mapY = math.floor(mapY/2)*2
     
                     -- draw difficuty availability
                     local songTablePath = "songs/"..currentSong.folder..mapList[i]..".json"
@@ -672,6 +675,9 @@ function drawSongSelect()
         
                     local albumX = screenCenterX + songBarRadius * math.cos(math.rad(albumPos-90)) - 32*albumScale
                     local albumY = songBarY + songBarRadius * math.sin(math.rad(albumPos-90)) - 32*albumScale
+                    -- round the position to the nearest even number so dither doesn't kill anyone
+                    albumX = math.floor(albumX/2)*2
+                    albumY = math.floor(albumY/2)*2
                     
                     getImage(albumArtFilePath):draw(albumX, albumY)
                 end

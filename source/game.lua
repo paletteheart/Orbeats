@@ -336,7 +336,7 @@ local function updateNotes()
         -- Check if note can be hit or is being hit
         if noteType == "note" then
             if hitting then
-                updateLongNote(note, endRadius, endBeat, hitBeat, noteType, i)
+                updateLongNote(note, endRadius, endBeat, hitBeat, i)
             else
                 if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
                     local noteStartAngle, noteEndAngle = note:getNoteAngles()
@@ -396,7 +396,7 @@ local function updateNotes()
             
         elseif noteType == "slidenote" then
             if hitting then
-                updateLongNote(note, noteData, i)
+                updateLongNote(note, endRadius, endBeat, hitBeat, i)
             else
                 if (oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and newRadius >= orbitRadius then
                     local noteStartAngle, noteEndAngle = note:getNoteAngles()
@@ -754,6 +754,9 @@ function updateSong()
     musicTime = music:getOffset()
     -- update the current beat
     currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
+    -- if bPressed then
+    --     print(currentBeat)
+    -- end
 
     -- clamp health
     health = mathMin(100, mathMax(0, health))
@@ -1010,12 +1013,12 @@ function drawSong()
 end
 
 
-function setUpSong(bpm, bpmChange, beatOffset, musicFilePath, tablePath)
+function setUpSong(bpm, bpmChange, newBeatOffset, musicFilePath, tablePath)
     -- set song data vars
     songTable = json.decodeFile(pd.file.open(tablePath))
     songBpm = bpm
     bpmChanges = bpmChange
-    beatOffset = beatOffset
+    beatOffset = newBeatOffset
 
     textInstances = {}
 
