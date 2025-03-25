@@ -236,24 +236,13 @@ function drawSettings()
 
     -- draw the list of settings
     drawList(settingsText, selectionRounded, 3, 3+textXTimer.value, 200, 240, 3, fonts.orbeatsSans, true, true)
-    -- local padding = 3
-    -- for i=1,#settingsText do
-    --     local textHeight = 18
-    --     local textY = (padding+textHeight)*i
-    --     local textX = padding+textXTimer.value
-        
-    --     if selectionRounded == i then
-    --         local textWidth = gfx.getTextSize(settingsText[i], fonts.orbeatsSans)
-    --         gfx.setColor(gfx.kColorWhite)
-    --         gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 3)
-    --         gfx.setImageDrawMode(gfx.kDrawModeCopy)
-    --         gfx.drawText(settingsText[i], textX, textY, fonts.orbeatsSans)
-    --     else
-    --         gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
-    --         gfx.drawText(settingsText[i], textX, textY, fonts.orbeatsSans)
-    --     end
-    -- end
-    -- gfx.setImageDrawMode(gfx.kDrawModeCopy)
+
+    -- draw the game version number
+    local versionWidth, versionHeight = gfx.getTextSize(pd.metadata.version, fonts.orbeatsSmall)
+    local versionPadding = 2
+    gfx.setImageDrawMode(gfx.kDrawModeInverted)
+    gfx.drawText(pd.metadata.version, versionPadding, screenHeight-versionHeight-versionPadding, fonts.orbeatsSmall)
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
     -- draw the input prompts
     local padding = 3

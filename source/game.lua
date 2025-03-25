@@ -314,10 +314,71 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, noteInstance)
 end
 
 local function updateNotes()
+    local closestNotes = {}
+    local closestNoteBeat
+
+    -- check if any notes should be killed, and if not, if they are the closest to the current beat
     for i = #noteInstances, 1, -1 do
-		-- get the current note
-		local note = noteInstances[i]
-		-- update the current note with the current level speed and get it's current radius, old radius, and position
+        local note = noteInstances[i]
+        -- update the current note with the current level speed and get it's current radius, old radius, and position
+        local oldRadius
+        local newRadius
+        local position
+        local endRadius
+        local hitting
+        local endBeat
+        local hitBeat
+        local noteType
+        -- if the music isn't playing, fake the beat
+        if fakeCurrentBeat < 0 then
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(fakeCurrentBeat, orbitRadius)
+            -- check if the note should be removed. if not, get the distance from the fake current beat, and check if it's closer than all other notes
+            if endRadius > missedNoteRadius then
+                killNote(i)
+                -- up the missed note score
+                missedNotes += 1
+                combo = 0
+                hitTextDisplay = hitText.miss
+                hitTextTimer = hitTextTime
+                hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
+                hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+                -- lower health
+                health -= noteDamage
+            elseif closestNoteBeat == nil then
+                closestNotes = {i}
+            elseif mathAbs(fakeCurrentBeat-hitBeat) == closestNoteBeat then
+                tableInsert(closestNotes, i)
+            elseif mathAbs(fakeCurrentBeat-hitBeat) < closestNoteBeat then
+                closestNotes = {i}
+            end
+        else
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(currentBeat, orbitRadius)
+            -- check if the note should be removed. if not, get the distance from the current beat, and check if it's closer than all other notes
+            if endRadius > missedNoteRadius then
+                killNote(i)
+                -- up the missed note score
+                missedNotes += 1
+                combo = 0
+                hitTextDisplay = hitText.miss
+                hitTextTimer = hitTextTime
+                hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
+                hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+                -- lower health
+                health -= noteDamage
+            elseif closestNoteBeat == nil then
+                closestNotes = {i}
+            elseif mathAbs(currentBeat-hitBeat) == closestNoteBeat then
+                tableInsert(closestNotes, i)
+            elseif mathAbs(currentBeat-hitBeat) < closestNoteBeat then
+                closestNotes = {i}
+            end
+        end
+    end
+    
+    -- check if the closest notes to the current beat are hit or not
+    for i = #closestNotes, 1, -1 do
+        local note = noteInstances[closestNotes[i]]
+        -- update the current note with the current level speed and get it's current radius, old radius, and position
         local oldRadius
         local newRadius
         local position
@@ -332,7 +393,7 @@ local function updateNotes()
         else
             oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(currentBeat, orbitRadius)
         end
-		
+
         -- Check if note can be hit or is being hit
         if noteType == "note" then
             if hitting then
@@ -486,20 +547,7 @@ local function updateNotes()
                 end
             end
         end
-        -- remove the current note if the radius is too large
-        if endRadius > missedNoteRadius then
-            killNote(i)
-            -- up the missed note score
-            missedNotes += 1
-            combo = 0
-            hitTextDisplay = hitText.miss
-            hitTextTimer = hitTextTime
-            hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-            hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
-            -- lower health
-            health -= noteDamage
-        end
-	end
+    end
 end
 
 
