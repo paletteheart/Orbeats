@@ -3,6 +3,7 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 
 local initialRadius <const> = 5
+local missedNoteRadius <const> = 300
 
 class('Note').extends(Object)
 
@@ -32,15 +33,15 @@ function Note:update(currentBeat, orbitRadius)
     -- self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.hitBeat)-math.exp(self.spd*self.spawnBeat)))*(math.exp(self.spd*currentBeat)-math.exp(self.spd*self.spawnBeat))+initialRadius
     if not self.hitting then
         if self.finishBeat == nil then
-            self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*beatsSinceSpawn)-1)+initialRadius
+            self.radius = math.min(math.max(0, ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*beatsSinceSpawn)-1)+initialRadius), missedNoteRadius)
         else
-            self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*(beatsSinceSpawn-(self.finishBeat-self.hitBeat)))-1)+initialRadius
+            self.radius = math.min(math.max(0, ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*(beatsSinceSpawn-(self.finishBeat-self.hitBeat)))-1)+initialRadius), missedNoteRadius)
             -- print(beatsSinceSpawn-(self.finishBeat-self.hitBeat))
         end
     end
 
     if self.duration > 0 then
-        self.endRadius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*(beatsSinceSpawn-self.duration))-1)+initialRadius
+        self.endRadius = math.max(0, ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*(beatsSinceSpawn-self.duration))-1)+initialRadius)
     else
         self.endRadius = self.radius
     end
