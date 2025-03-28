@@ -334,10 +334,11 @@ local function updateNotes()
         local hitting
         local endBeat
         local hitBeat
+        local speed
         local noteType
         -- if the music isn't playing, fake the beat
         if fakeCurrentBeat < 0 then
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(fakeCurrentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(fakeCurrentBeat, orbitRadius)
             -- check if the note should be removed. if not, get the distance from the fake current beat, and check if it's closer than all other notes
             if endRadius > missedNoteRadius then
                 killNote(i)
@@ -350,17 +351,26 @@ local function updateNotes()
                 hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
                 -- lower health
                 health -= noteDamage
-            elseif closestNoteBeat == nil then
+            elseif hitting then -- check if you're already hitting it
+                tableInsert(hittingNotes, i)
+            elseif closestNoteBeat == nil then -- check if no other notes have been checked yet
                 closestNotes = {i}
-            elseif mathAbs(fakeCurrentBeat-hitBeat) == closestNoteBeat then
+                closestNoteBeat = fakeCurrentBeat-hitBeat
+            elseif mathAbs(fakeCurrentBeat-hitBeat) == mathAbs(closestNoteBeat) then -- check if this note is the same distance from the orbit
+                if fakeCurrentBeat-hitBeat < closestNoteBeat then -- check if it's early or late, and hit the late one
+                    closestNotes = {i}
+                    closestNoteBeat = fakeCurrentBeat-hitBeat
+                elseif fakeCurrentBeat-hitBeat == closestNoteBeat then
                 tableInsert(closestNotes, i)
-            elseif mathAbs(fakeCurrentBeat-hitBeat) < closestNoteBeat then
+                end
+            elseif mathAbs(fakeCurrentBeat-hitBeat) < mathAbs(closestNoteBeat) then -- check if this note is a shorter distance from the orbit
                 closestNotes = {i}
+                closestNoteBeat = fakeCurrentBeat-hitBeat
             end
         else
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(currentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(currentBeat, orbitRadius)
             -- check if the note should be removed. if not, get the distance from the current beat, and check if it's closer than all other notes
-            if endRadius > missedNoteRadius then
+            if endRadius >= missedNoteRadius then
                 killNote(i)
                 -- up the missed note score
                 missedNotes += 1
@@ -371,19 +381,25 @@ local function updateNotes()
                 hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
                 -- lower health
                 health -= noteDamage
-            elseif hitting then
+            elseif hitting then -- check if you're already hitting it
                 tableInsert(hittingNotes, i)
-            elseif closestNoteBeat == nil then
+            elseif closestNoteBeat == nil then -- check if no other notes have been checked yet
                 closestNotes = {i}
-                closestNoteBeat = mathAbs(currentBeat-hitBeat)
-            elseif mathAbs(currentBeat-hitBeat) == closestNoteBeat then
+                closestNoteBeat = currentBeat-hitBeat
+            elseif mathAbs(currentBeat-hitBeat) == mathAbs(closestNoteBeat) then -- check if this note is the same distance from the orbit
+                if currentBeat-hitBeat < closestNoteBeat then -- check if it's early or late, and hit the late one
+                    closestNotes = {i}
+                    closestNoteBeat = currentBeat-hitBeat
+                elseif currentBeat-hitBeat == closestNoteBeat then
                 tableInsert(closestNotes, i)
-            elseif mathAbs(currentBeat-hitBeat) < closestNoteBeat then
+                end
+            elseif mathAbs(currentBeat-hitBeat) < mathAbs(closestNoteBeat) then -- check if this note is a shorter distance from the orbit
                 closestNotes = {i}
-                closestNoteBeat = mathAbs(currentBeat-hitBeat)
+                closestNoteBeat = currentBeat-hitBeat
             end
         end
     end
+    print(closestNotes[1])
     
     -- check if the closest notes to the current beat are hit or not
     for i = #closestNotes, 1, -1 do
@@ -396,17 +412,18 @@ local function updateNotes()
         local hitting
         local endBeat
         local hitBeat
+        local speed
         local noteType
         -- if the music isn't playing, fake the beat
         if fakeCurrentBeat < 0 then
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(fakeCurrentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(fakeCurrentBeat, orbitRadius)
         else
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = note:update(currentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(currentBeat, orbitRadius)
         end
 
         -- Check if note can be hit or is being hit
         if noteType == "note" then
-            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
+            if (newRadius >= orbitRadius-hitForgiveness*mathMin(speed, 3) and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness*mathMin(speed, 3)) and  newRadius >= orbitRadius) then
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
@@ -438,7 +455,7 @@ local function updateNotes()
                         hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
                         --remove note if a short note, begin hitting if a long note
                         if endRadius == newRadius then
-                            killNote(i)
+                            killNote(closestNotes[i])
                         else
                             note:beginHitting(orbitRadius)
                         end
@@ -462,7 +479,7 @@ local function updateNotes()
             end
             
         elseif noteType == "slidenote" then
-            if (oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and newRadius >= orbitRadius then
+            if (oldRadius < orbitRadius+hitForgiveness*mathMin(speed, 3) or newRadius <= orbitRadius+hitForgiveness*mathMin(speed, 3)) and newRadius >= orbitRadius then
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
@@ -476,7 +493,7 @@ local function updateNotes()
                         hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
                         --remove note if a short note, begin hitting if a long note
                         if endRadius == newRadius then
-                            killNote(i)
+                            killNote(closestNotes[i])
                         else
                             note:beginHitting(orbitRadius)
                         end
@@ -500,7 +517,7 @@ local function updateNotes()
             end
         elseif noteType == "flipnote" then
             -- check if the note is close enough to be hit
-            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
+            if (newRadius >= orbitRadius-hitForgiveness*mathMin(speed, 3) and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness*mathMin(speed, 3)) and  newRadius >= orbitRadius) then
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
@@ -529,7 +546,7 @@ local function updateNotes()
                         hitTextX = orbitCenterX + 20 * mathCos(mathRad(position-90))
                         hitTextY = orbitCenterY + 20 * mathSin(mathRad(position-90))
                         --remove note
-                        killNote(i)
+                        killNote(closestNotes[i])
                         -- up the hit note score
                         hitNotes += 1
                         incrementCombo()

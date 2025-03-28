@@ -8,10 +8,10 @@ local gfx <const> = pd.graphics
 class("SlideNote").extends(Note)
 
 function SlideNote:update(currentBeat, orbitRadius)
-    local oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType = SlideNote.super.update(self, currentBeat, orbitRadius)
+    local oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = SlideNote.super.update(self, currentBeat, orbitRadius)
     noteType = "slidenote"
 
-    return oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, noteType
+    return oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType
 end
 
 function SlideNote:draw(x, y, rad)

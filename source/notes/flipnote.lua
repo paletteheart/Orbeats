@@ -38,7 +38,7 @@ function FlipNote:update(currentBeat, orbitRadius)
         self.currentPos += 360
     end
 
-    return oldRadius, self.radius, self.currentPos, self.endRadius, self.hitting, self.duration + self.hitBeat, self.hitBeat, "flipnote"
+    return oldRadius, self.radius, self.currentPos, self.endRadius, self.hitting, self.duration + self.hitBeat, self.hitBeat, self.spd, "flipnote"
 
 end
 
