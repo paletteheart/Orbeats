@@ -423,7 +423,7 @@ local function updateNotes()
 
         -- Check if note can be hit or is being hit
         if noteType == "note" then
-            if (newRadius >= orbitRadius-hitForgiveness*mathMin(speed, 3) and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness*mathMin(speed, 3)) and  newRadius >= orbitRadius) then
+            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
@@ -479,7 +479,7 @@ local function updateNotes()
             end
             
         elseif noteType == "slidenote" then
-            if (oldRadius < orbitRadius+hitForgiveness*mathMin(speed, 3) or newRadius <= orbitRadius+hitForgiveness*mathMin(speed, 3)) and newRadius >= orbitRadius then
+            if (oldRadius < orbitRadius+hitForgiveness or newRadius <= orbitRadius+hitForgiveness) and newRadius >= orbitRadius then
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
@@ -517,7 +517,7 @@ local function updateNotes()
             end
         elseif noteType == "flipnote" then
             -- check if the note is close enough to be hit
-            if (newRadius >= orbitRadius-hitForgiveness*mathMin(speed, 3) and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness*mathMin(speed, 3)) and  newRadius >= orbitRadius) then
+            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
                 local noteStartAngle, noteEndAngle = note:getNoteAngles()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
