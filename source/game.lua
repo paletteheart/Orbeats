@@ -322,6 +322,7 @@ local function updateNotes()
     local closestNotes = {}
     local hittingNotes = {} -- only for hold notes you're currently hitting
     local closestNoteBeat
+    local deathQueue = {}
 
     -- check if any notes should be killed, and if not, if they are the closest to the current beat
     for i = #noteInstances, 1, -1 do
@@ -341,7 +342,7 @@ local function updateNotes()
             oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(fakeCurrentBeat, orbitRadius)
             -- check if the note should be removed. if not, get the distance from the fake current beat, and check if it's closer than all other notes
             if endRadius > missedNoteRadius then
-                killNote(i)
+                tableInsert(deathQueue, i)
                 -- up the missed note score
                 missedNotes += 1
                 combo = 0
@@ -371,7 +372,7 @@ local function updateNotes()
             oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(currentBeat, orbitRadius)
             -- check if the note should be removed. if not, get the distance from the current beat, and check if it's closer than all other notes
             if endRadius >= missedNoteRadius then
-                killNote(i)
+                tableInsert(deathQueue, i)
                 -- up the missed note score
                 missedNotes += 1
                 combo = 0
@@ -399,10 +400,11 @@ local function updateNotes()
             end
         end
     end
-    print(closestNotes[1])
+    -- print(closestNotes[1])
     
     -- check if the closest notes to the current beat are hit or not
     for i = #closestNotes, 1, -1 do
+        print(closestNotes[i]..", "..#noteInstances)
         local note = noteInstances[closestNotes[i]]
         -- update the current note with the current level speed and get it's current radius, old radius, and position
         local oldRadius
@@ -590,6 +592,10 @@ local function updateNotes()
         updateLongNote(note, endRadius, endBeat, hitBeat, position, hittingNotes[i])
     end
 
+    -- kill everything in the death queue
+    for i = #deathQueue, 1, -1 do
+        killNote(deathQueue[i])
+    end
 end
 
 
