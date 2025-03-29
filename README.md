@@ -1,11 +1,9 @@
-# ![Orbeats](images/logo.png)
+# ![[logo.png]]
 #### A crank-based space-themed rhythm game.
 
 Orbeats is an archetypal rhythm game for the PlayDate created by [Palette](https://github.com/paletteheart). It’s made to be infinitely expandable with user-made levels, and simple to grasp but hard to master. You control a cursor with the crank and hit incoming notes with the buttons.
 
-
-![A preview of the gameplay.](images/preview.gif)
-
+![[preview.gif]]
 ## Sideloading
 If you want to sideload the game onto your PlayDate, download the latest release [here](https://github.com/paletteheart/Orbeats/releases). Then go to [play.date/account/sideload](https://play.date/account/sideload) and upload the .pdx.zip to it. Then on your PlayDate, go to `Settings → Games`, and it should refresh and give you the option to download Orbeats.
 
@@ -19,14 +17,15 @@ For now, if you’re really determined to create a level, check out the [Map Doc
 If you want to play user-created levels, you’ll need to manually put them on your PlayDate. To do this, plug your PlayDate into your computer. Go to `Settings → System → Reboot to Data Disk`, and then you should be able to access the PlayDate’s files from your computer. Go to `PLAYDATE\Data\com.paletteheart.orbeats\songs`. If the `songs` folder doesn’t exist, just create it. In there you’ll put the folders for any user songs. Then, eject your PlayDate, and when you next launch Orbeats the user songs should show up in the song list.
 
 ## Credits
-- Libraries
-	- [PdParticles - PossiblyAxolotl](https://github.com/PossiblyAxolotl/pdParticles)
-- Music Donated By
-	- Alaska Sargent
-	- Dawn of Apples
-	- keyesgen
-	- Marilette’s Aphrodite
-	- Rupert Cole
-	- Uhrwerk Klockwerx
-	- Wyvren
-	- Zane Little
+#### open game art credits:  
+- *"interface beeps" by bart licensed CC0: [https://opengameart.org/content/interface-beeps](https://opengameart.org/content/interface-beeps)*
+- *"51 UI sounds Effects" by Kenney licensed CC0: [https://www.kenney.nl/assets/ui-audio](https://www.kenney.nl/assets/ui-audio)*
+- *"Interface Sounds" by Kenney licensed CC0: [https://www.kenney.nl/assets/interface-sounds](https://www.kenney.nl/assets/interface-sounds)*
+- *"Miscellaneous Jingle" by mieki256 licensed CC0: [https://opengameart.org/content/miscellaneous-jingle](https://opengameart.org/content/miscellaneous-jingle)*
+- *"Impact" by qubodup licensed CC0: [https://opengameart.org/content/impact](https://opengameart.org/content/impact)*
+#### libraries:  
+- *"pdParticle" by PossiblyAxolotl: [https://github.com/PossiblyAxolotl/pdParticles](https://github.com/PossiblyAxolotl/pdParticles)*
+#### music:  
+- *"Cosmos" by Dark Fantasy Studio*  
+- *"Aurora" by Kim Lightyear licenced CC BY 3.0: [https://opengameart.org/content/aurora](https://opengameart.org/content/aurora)*
+- *"Shortcuts" by Zane Little Music licenced CC0: [https://opengameart.org/content/shortcuts](https://opengameart.org/content/shortcuts)*
