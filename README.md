@@ -1,9 +1,9 @@
-# ![[logo.png]]
+# ![Orbeats](images/logo.png)
 #### A crank-based space-themed rhythm game.
 
 Orbeats is an archetypal rhythm game for the PlayDate created by [Palette](https://github.com/paletteheart). It’s made to be infinitely expandable with user-made levels, and simple to grasp but hard to master. You control a cursor with the crank and hit incoming notes with the buttons.
 
-![[preview.gif]]
+![A preview of the gameplay.](images/preview.gif)
 ## Sideloading
 If you want to sideload the game onto your PlayDate, download the latest release [here](https://github.com/paletteheart/Orbeats/releases). Then go to [play.date/account/sideload](https://play.date/account/sideload) and upload the .pdx.zip to it. Then on your PlayDate, go to `Settings → Games`, and it should refresh and give you the option to download Orbeats.
 
