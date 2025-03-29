@@ -28,4 +28,3 @@ If you want to play user-created levels, you’ll need to manually put them on y
 #### music:  
 - *"Cosmos" by Dark Fantasy Studio*  
 - *"Aurora" by Kim Lightyear licenced CC BY 3.0: [https://opengameart.org/content/aurora](https://opengameart.org/content/aurora)*
-- *"Shortcuts" by Zane Little Music licenced CC0: [https://opengameart.org/content/shortcuts](https://opengameart.org/content/shortcuts)*
