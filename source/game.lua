@@ -14,6 +14,8 @@ local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
+local reduceFlashing <const> = pd.getReduceFlashing()
+
 local tableInsert <const> = table.insert
 local tableRemove <const> = table.remove
 local mathSin <const> = math.sin
@@ -1113,7 +1115,7 @@ function drawSong()
     end
 
     --invert the screen if necessary
-    if invertedScreen then
+    if invertedScreen and not reduceFlashing then
         gfx.setColor(gfx.kColorXOR)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
