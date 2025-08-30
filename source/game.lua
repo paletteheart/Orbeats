@@ -422,6 +422,7 @@ local function updateNotes()
             oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(fakeCurrentBeat, orbitRadius)
         else
             oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(currentBeat, orbitRadius)
+            -- print(closestNotes[i].." "..#noteInstances)
         end
 
         -- Check if note can be hit or is being hit
@@ -1074,9 +1075,18 @@ function drawSong()
     if downPressed or bPressed or rightPressed then
         downBulge = 2
     end
-	gfx.setColor(gfx.kColorWhite)
+    local cursorLine
+    local cursorFill
+    if playerFlipped then
+        cursorLine = gfx.kColorWhite
+        cursorFill = gfx.kColorBlack
+    else
+        cursorLine = gfx.kColorBlack
+        cursorFill = gfx.kColorWhite
+    end
+	gfx.setColor(cursorFill)
 	gfx.fillCircleAtPoint(playerX, playerY, playerRadius+downBulge)
-	gfx.setColor(gfx.kColorBlack)
+	gfx.setColor(cursorLine)
 	gfx.setLineWidth(2)
 	gfx.drawCircleAtPoint(playerX, playerY, playerRadius+downBulge)
 
