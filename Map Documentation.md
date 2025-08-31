@@ -123,13 +123,13 @@ Any attribute followed by a 0 takes a number as input, and any attribute followe
 	 - **moveOrbitX**\* - A list of objects defining when, where, and how the orbit will move along the x axis.
 		 - Each x movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined x value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
-			 - **x** - The x value the orbit will move to.
+			 - **x** - The x value the center of the orbit will move to. Set to 200 (screen center) by default.
 			 - **animation**\* - The animation the orbit will take to reach the x value. Can be any easing function from the PlayDate library, "ease-in", "ease-out", or "none". *Defaults to "none".*
 			 - **power**\* - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out, or will passed as the fifth argument for any other easing function.
 	 - **moveOrbitY**\* - A list of objects defining when, where, and how the orbit will move along the y axis.
 		 - Each y movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined y value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
-			 - **y** - The y value the orbit will move to.
+			 - **y** - The x value the center of the orbit will move to. Set to 120 (screen center) by default.
 			 - **animation**\* - The animation the orbit will take to reach the x value. Can be any easing function from the PlayDate library, "ease-in", "ease-out", or "none". *Defaults to "none".*
 			 - **power**\* - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out, or will passed as the fifth argument for any other easing function.
 	 - **text**\* - A list of objects defining when, where, and what text will show on the screen. *Text will be drawn centered horizontally and vertically to the given x and y.*
