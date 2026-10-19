@@ -110,7 +110,7 @@ local playerFlipped = false
 local flipTrail = 0
 local flipPos = 0
 local health = 100
-local noteDamage = 20
+local noteDamage = 0
 failed = false
 
 -- input variables
@@ -330,18 +330,13 @@ local function updateNotes()
     for i = #noteInstances, 1, -1 do
         local note = noteInstances[i]
         -- update the current note with the current level speed and get it's current radius, old radius, and position
-        local oldRadius
-        local newRadius
         local position
         local endRadius
         local hitting
-        local endBeat
         local hitBeat
-        local speed
-        local noteType
         -- if the music isn't playing, fake the beat
         if fakeCurrentBeat < 0 then
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(fakeCurrentBeat, orbitRadius)
+            null, null, position, endRadius, hitting, null, hitBeat, null, null = note:update(fakeCurrentBeat, orbitRadius)
             -- check if the note should be removed. if not, get the distance from the fake current beat, and check if it's closer than all other notes
             if endRadius > missedNoteRadius then
                 tableInsert(deathQueue, i)
@@ -412,16 +407,12 @@ local function updateNotes()
         local newRadius
         local position
         local endRadius
-        local hitting
-        local endBeat
-        local hitBeat
-        local speed
         local noteType
         -- if the music isn't playing, fake the beat
         if fakeCurrentBeat < 0 then
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(fakeCurrentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, null, null, null, null, noteType = note:update(fakeCurrentBeat, orbitRadius)
         else
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(currentBeat, orbitRadius)
+            oldRadius, newRadius, position, endRadius, null, null, null, null, noteType = note:update(currentBeat, orbitRadius)
             -- print(closestNotes[i].." "..#noteInstances)
         end
 
@@ -858,7 +849,7 @@ local function updateEffects()
                     songBpm = nextBpmChange.bpm
                     tableRemove(bpmChanges, 1)
                     referenceTime = musicTime
-                    referenceBeat = currentBeat
+                    referenceBeat = currentBeat + beatOffset
                 end
             end
         end
@@ -876,9 +867,9 @@ function updateSong()
     musicTime = music:getOffset()
     -- update the current beat
     currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
-    -- if bPressed then
-    --     print(currentBeat)
-    -- end
+    if bPressed then
+        print(currentBeat)
+    end
 
     -- clamp health
     health = mathMin(100, mathMax(0, health))
@@ -1148,7 +1139,11 @@ function setUpSong(bpm, bpmChange, newBeatOffset, musicFilePath, tablePath)
     -- set song data vars
     songTable = json.decodeFile(pd.file.open(tablePath))
     songBpm = bpm
-    bpmChanges = bpmChange
+    if bpmChange ~= nil then
+        for i=#bpmChange,1,-1 do
+            bpmChanges[i] = bpmChange[i]
+        end
+    else bpmChanges = nil end
     beatOffset = newBeatOffset
 
     textInstances = {}

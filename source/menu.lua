@@ -179,7 +179,7 @@ function updateMainMenu()
             else
                 local tutorialData = json.decodeFile(pd.file.open("tutorial/songData.json"))
                 local bpm = tutorialData.bpm
-                local bpmChanges = tutorialData.bpmChange
+                local bpmChanges = tutorialData.bpmChanges
                 local beatOffset = tutorialData.beatOffset
                 if music:isPlaying() then
                     music:stop()

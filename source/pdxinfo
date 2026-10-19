@@ -3,6 +3,6 @@ author=PaletteHeart
 description=A circular crank-based rhythm game.
 bundleID=com.paletteheart.orbeats
 version=0.8.14
-buildNumber=214
+buildNumber=215
 imagePath=launcher
 launchSoundPath=sfx/play

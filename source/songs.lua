@@ -498,7 +498,7 @@ function updateSongSelect()
             fadeWhite -= 0.1
         else
             local bpm = currentSong.bpm
-            local bpmChanges = currentSong.bpmChange
+            local bpmChanges = currentSong.bpmChanges
             local beatOffset = currentSong.beatOffset
             local musicFile = ("songs/"..currentSong.folder..currentSong.name)
             if music:isPlaying() then
