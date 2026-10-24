@@ -5,17 +5,11 @@ import "notes/flipnote"
 import "notes/slidenote"
 
 -- Define constants
+
+-- Shorthands
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 local ease <const> = pd.easingFunctions
-
-local screenWidth <const> = 400
-local screenHeight <const> = 240
-local screenCenterX <const> = screenWidth / 2
-local screenCenterY <const> = screenHeight / 2
-
-local reduceFlashing <const> = pd.getReduceFlashing()
-
 local tableInsert <const> = table.insert
 local tableRemove <const> = table.remove
 local mathSin <const> = math.sin
@@ -27,6 +21,128 @@ local mathAbs <const> = math.abs
 local mathFloor <const> = math.floor
 local mathCeil <const> = math.ceil
 
+local screenWidth <const> = 400
+local screenHeight <const> = 240
+local screenCenterX <const> = screenWidth / 2
+local screenCenterY <const> = screenHeight / 2
+
+-- Accessibility
+local reduceFlashing <const> = pd.getReduceFlashing()
+
+-- Hit text constants
+local hitTextTime <const> = 15
+local hitText <const> = {
+    perfect = "Perfect!",
+    great = "Great",
+    good = "Good",
+    ok = "Ok",
+    miss = "Miss!"
+}
+
+-- Player cursor cache
+local playerRadius <const> = 8
+local function cachePlayerCursors()
+    local imgSize = playerRadius*2+2 -- +2 for the line weight
+    local imgCenter = imgSize*0.5
+    local img = gfx.image.new(imgSize, imgSize)
+    local cursorLine = gfx.kColorBlack
+    local cursorFill = gfx.kColorWhite
+    local bulge = 2
+    local imgtable = gfx.imagetable.new(2)
+
+    -- normal cursor state
+    gfx.pushContext(img)
+        gfx.setColor(cursorFill)
+        gfx.fillCircleAtPoint(imgCenter, imgCenter, playerRadius)
+        gfx.setColor(cursorLine)
+        gfx.setLineWidth(2)
+        gfx.drawCircleAtPoint(imgCenter, imgCenter, playerRadius)
+    gfx.popContext()
+    imgtable:setImage(1, img)
+
+
+    imgSize = (playerRadius+bulge)*2+2 -- +2 for the line weight
+    imgCenter = imgSize*0.5
+    local img2 = gfx.image.new(imgSize, imgSize)
+
+    -- pressed cursor state
+    gfx.pushContext(img2)
+        gfx.setColor(cursorFill)
+        gfx.fillCircleAtPoint(imgCenter, imgCenter, playerRadius+bulge)
+        gfx.setColor(cursorLine)
+        gfx.setLineWidth(2)
+        gfx.drawCircleAtPoint(imgCenter, imgCenter, playerRadius+bulge)
+    gfx.popContext()
+    imgtable:setImage(2, img2)
+
+    return imgtable
+end
+local cursor <const> = cachePlayerCursors()
+
+-- Orbit animation cache
+local pulseDepth <const> = 3
+local orbitRadius <const> = 110
+local function cacheOrbitImages()
+    local simBPS = 1 -- beats per second in the simulation
+    local simBeat = 0
+    local simPulse = 0
+    local frames = simBPS*pd.display.getRefreshRate()
+    local cache = gfx.imagetable.new(frames)
+    local lineThickness = 5
+    
+    for i=1,frames do
+        -- simulate the beat
+        simBeat = (i-1)*(1/frames)
+
+        -- simulate the pulsing with the beat.
+        if i == 1 then
+            simPulse = pulseDepth
+        else
+            simPulse = math.max(simPulse-1, 0)
+        end
+        
+        -- create the image
+        local orbitSize = orbitRadius-simPulse
+        local imgSize = orbitSize+math.ceil(lineThickness*0.5)
+        local img = gfx.image.new(imgSize, imgSize)
+
+        -- draw to the image
+        gfx.pushContext(img)
+            --draw the orbit
+            gfx.setColor(gfx.kColorWhite)
+            gfx.fillCircleAtPoint(0, imgSize, orbitSize)
+            gfx.setColor(gfx.kColorBlack)
+            gfx.setDitherPattern(0.75)
+            gfx.setLineWidth(lineThickness)
+            gfx.drawCircleAtPoint(0, imgSize, orbitSize)
+
+            --draw the orbit pulse
+            local pulseLength = 17
+            gfx.setColor(gfx.kColorBlack)
+            gfx.setDitherPattern(0.75+0.25*(simBeat%1))
+            gfx.setLineWidth(lineThickness*(1-simBeat%1))
+            gfx.drawCircleAtPoint(0, imgSize, orbitRadius-pulseDepth-pulseLength*(simBeat%1))
+        gfx.popContext()
+
+        -- add to the imagetable
+        cache:setImage(i, img)
+    end
+    return cache
+end
+local orbitAnim <const> = cacheOrbitImages()
+
+-- Background animation cache
+local bgImageTable <const> = gfx.imagetable.new("sprites/bg")
+local bgAnim <const> = gfx.animation.loop.new(10, bgImageTable)
+
+-- Note constants
+local missedNoteRadius <const> = 140 -- the radius where notes get deleted
+local hitForgiveness <const> = 25 -- the distance from the orbit radius from which you can still hit notes
+local maxNoteScore <const> = 100 --the max score you can get from a note
+local perfectDistance <const> = 12 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
+local noteCap <const> = 10 -- the max amount of notes that will be updated per frame
+
+-- Global symbols and fonts
 char = {}
 char.A = "Ⓐ"
 char.B = "Ⓑ"
@@ -41,38 +157,39 @@ char.menu = "⊙"
 char.cw = "↻"
 char.ccw = "↺"
 
-fonts = {}
-fonts.orbeatsSans = gfx.font.newFamily({
+fontFamilies = {}
+fontFamilies.orbeatsSans = gfx.font.newFamily({
     [gfx.font.kVariantNormal] = "fonts/Orbeats Sans"
 })
-fonts.orbeatsSmall = gfx.font.newFamily({
+fontFamilies.orbeatsSmall = gfx.font.newFamily({
     [gfx.font.kVariantNormal] = "fonts/Orbeats Small"
 })
-fonts.odinRounded = gfx.font.newFamily({
+fontFamilies.odinRounded = gfx.font.newFamily({
     [gfx.font.kVariantNormal] = "fonts/Odin Rounded PD"
 })
-fonts.carbonNumbers = gfx.font.newFamily({
+fontFamilies.carbonNumbers = gfx.font.newFamily({
     [gfx.font.kVariantNormal] = "fonts/Carbon Numbers"
 })
+
+fonts = {}
+fonts.orbeatsSans = gfx.font.new("fonts/Orbeats Sans")
+fonts.orbeatsSmall = gfx.font.new("fonts/Orbeats Small")
+fonts.odinRounded = gfx.font.new("fonts/Odin Rounded PD")
+fonts.carbonNumbers = gfx.font.new("fonts/Carbon Numbers")
+
+-- Combo text cache
+local comboText <const> = gfx.imageWithText("Combo:", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
+local comboTextWidth <const>, comboTextHeight <const> = comboText:getSize()
+
 
 -- Define variables
 -- System variables
 toMenu = false
 restart = false
-p = ParticleCircle()
-p:setColor(gfx.kColorBlack)
-p:setMode(Particles.modes.DECAY)
-p:setThickness(0, 2)
-p:setDecay(0.25)
-p:setSpeed(1, 4)
-p:setSize(3, 8)
-
-bgImageTable = gfx.imagetable.new("sprites/bg")
-bgAnim = gfx.animation.loop.new(10, bgImageTable)
+p = Particle()
 
 sfx = {}
 sfx.hit = {}
-
 local function getListOfHitSfx()
     local sfxFiles = pd.file.listFiles("/sfx/hit/")
     if sfxFiles == nil then sfxFiles = {} end
@@ -90,22 +207,18 @@ local function getListOfHitSfx()
         sfx.hit[i] = pd.sound.sampleplayer.new("sfx/hit/"..sfxFiles[i])
     end
 end
-
 getListOfHitSfx()
 
 -- Orbit variables
-local orbitRadius = 110
 local orbitCenterX = screenCenterX
 local orbitCenterY = screenCenterY
 
 local pulse = 0
-local pulseDepth = 3
 
 -- Player variables
 local playerX = orbitCenterX + orbitRadius
 local playerY = orbitCenterY
 local playerPos = crankPos
-local playerRadius = 8
 local playerFlipped = false
 local flipTrail = 0
 local flipPos = 0
@@ -153,16 +266,9 @@ local bpmChanges = {}
 -- Score display variables
 score = 0
 local hitTextTimer = 0
-local hitTextTime = 15
 local hitTextDisplay = ""
 local hitTextX = screenCenterX
 local hitTextY = screenCenterY
-local hitText = {}
-hitText.perfect = "Perfect!"
-hitText.great = "Great"
-hitText.good = "Good"
-hitText.ok = "Ok"
-hitText.miss = "Miss!"
 
 -- Combo variables
 local combo = 0
@@ -184,10 +290,7 @@ local startTime = pd.sound.getCurrentTime()
 -- Note variables   
 noteInstances = {}
 local notePool = {}
-local missedNoteRadius <const> = 300 -- the radius where notes get deleted
-local hitForgiveness <const> = 25 -- the distance from the orbit radius from which you can still hit notes
-local maxNoteScore <const> = 100 --the max score you can get from a note
-local perfectDistance <const> = 12 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
+local notesKilled = 0
 
 -- Effects variables
 local invertedScreen = false
@@ -218,6 +321,7 @@ end
 local function killNote(noteIndex)
     tableInsert(notePool, noteInstances[noteIndex])
     tableRemove(noteInstances, noteIndex)
+    notesKilled += 1
 end
 
 local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, spin, duration)
@@ -225,7 +329,7 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
     local newNote
     for i=#notePool,1,-1 do
         -- if so, move it from the pool
-        if notePool[i]:isa(noteType) then
+        if notePool[i].className == noteType then
             newNote = notePool[i]
             tableRemove(notePool, i)
             -- redefine the pool note's attributes to fit the new note
@@ -284,12 +388,18 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
                 note:finishHitting(fakeCurrentBeat)
                 local hitScore = mathFloor(maxNoteScore*(percentHit/2+0.5)/2)
                 score += hitScore
-                if percentHit < 0.65 then
-                    hitTextDisplay = hitText.ok.." "..hitScore
-                elseif percentHit < 0.75 then
-                    hitTextDisplay = hitText.good.." "..hitScore
+                local hitTextTable = {}
+                hitTextTable[2] = " "
+                hitTextTable[3] = hitScore
+                if hitScore < maxNoteScore*0.65 then
+                    hitTextTable[1] = hitText.ok
+                    hitTextDisplay = table.concat(hitTextTable)
+                elseif hitScore < maxNoteScore*0.75 then
+                    hitTextTable[1] = hitText.good
+                    hitTextDisplay = table.concat(hitTextTable)
                 else
-                    hitTextDisplay = hitText.great.." "..hitScore
+                    hitTextTable[1] = hitText.great
+                    hitTextDisplay = table.concat(hitTextTable)
                 end
             end
             hitTextTimer = hitTextTime
@@ -306,12 +416,18 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
             note:finishHitting(fakeCurrentBeat)
             local hitScore = mathFloor(maxNoteScore*(percentHit/2+0.5)/2)
             score += hitScore
-            if percentHit < 0.65 then
-                hitTextDisplay = hitText.ok.." "..hitScore
-            elseif percentHit < 0.75 then
-                hitTextDisplay = hitText.good.." "..hitScore
+            local hitTextTable = {}
+            hitTextTable[2] = " "
+            hitTextTable[3] = hitScore
+            if hitScore < maxNoteScore*0.65 then
+                hitTextTable[1] = hitText.ok
+                hitTextDisplay = table.concat(hitTextTable)
+            elseif hitScore < maxNoteScore*0.75 then
+                hitTextTable[1] = hitText.good
+                hitTextDisplay = table.concat(hitTextTable)
             else
-                hitTextDisplay = hitText.great.." "..hitScore
+                hitTextTable[1] = hitText.great
+                hitTextDisplay = table.concat(hitTextTable)
             end
         end
         hitTextTimer = hitTextTime
@@ -325,9 +441,12 @@ local function updateNotes()
     local hittingNotes = {} -- only for hold notes you're currently hitting
     local closestNoteBeat
     local deathQueue = {}
+    notesKilled = 0
 
     -- check if any notes should be killed, and if not, if they are the closest to the current beat
-    for i = #noteInstances, 1, -1 do
+    for i = 1, #noteInstances do
+        -- cap the notes updated
+        if i > noteCap then break end
         local note = noteInstances[i]
         -- update the current note with the current level speed and get it's current radius, old radius, and position
         local position
@@ -444,12 +563,18 @@ local function updateNotes()
                                 -- Probably don't mess with this equation
                                 local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
                                 score += hitScore
+                                local hitTextTable = {}
+                                hitTextTable[2] = " "
+                                hitTextTable[3] = hitScore
                                 if hitScore < maxNoteScore*0.65 then
-                                    hitTextDisplay = hitText.ok.." "..hitScore
+                                    hitTextTable[1] = hitText.ok
+                                    hitTextDisplay = table.concat(hitTextTable)
                                 elseif hitScore < maxNoteScore*0.75 then
-                                    hitTextDisplay = hitText.good.." "..hitScore
+                                    hitTextTable[1] = hitText.good
+                                    hitTextDisplay = table.concat(hitTextTable)
                                 else
-                                    hitTextDisplay = hitText.great.." "..hitScore
+                                    hitTextTable[1] = hitText.great
+                                    hitTextDisplay = table.concat(hitTextTable)
                                 end
                             end
 
@@ -466,12 +591,18 @@ local function updateNotes()
                                 -- Probably don't mess with this equation
                                 local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance)))/2)
                                 score += hitScore
-                                if hitScore < maxNoteScore*0.65/2 then
-                                    hitTextDisplay = hitText.ok.." "..hitScore
-                                elseif hitScore < maxNoteScore*0.75/2 then
-                                    hitTextDisplay = hitText.good.." "..hitScore
+                                local hitTextTable = {}
+                                hitTextTable[2] = " "
+                                hitTextTable[3] = hitScore
+                                if hitScore < maxNoteScore*0.65*0.5 then
+                                    hitTextTable[1] = hitText.ok
+                                    hitTextDisplay = table.concat(hitTextTable)
+                                elseif hitScore < maxNoteScore*0.75*0.5 then
+                                    hitTextTable[1] = hitText.good
+                                    hitTextDisplay = table.concat(hitTextTable)
                                 else
-                                    hitTextDisplay = hitText.great.." "..hitScore
+                                    hitTextTable[1] = hitText.great
+                                    hitTextDisplay = table.concat(hitTextTable)
                                 end
                             end
 
@@ -486,7 +617,7 @@ local function updateNotes()
                         if settings.particles then
                             p:moveTo(playerX, playerY)
                             p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                            p:add(10)
+                            p:add(5)
                         end
                         -- play sfx
                         if settings.toggleSfx then
@@ -525,7 +656,7 @@ local function updateNotes()
                         if settings.particles then
                             p:moveTo(playerX, playerY)
                             p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                            p:add(3)
+                            p:add(2)
                         end
                         -- play sfx
                         if settings.toggleSfx then
@@ -553,12 +684,18 @@ local function updateNotes()
                         else 
                             local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
                             score += hitScore
+                            local hitTextTable = {}
+                            hitTextTable[2] = " "
+                            hitTextTable[3] = hitScore
                             if hitScore < maxNoteScore*0.65 then
-                                hitTextDisplay = hitText.ok.." "..hitScore
+                                hitTextTable[1] = hitText.ok
+                                hitTextDisplay = table.concat(hitTextTable)
                             elseif hitScore < maxNoteScore*0.75 then
-                                hitTextDisplay = hitText.good.." "..hitScore
+                                hitTextTable[1] = hitText.good
+                                hitTextDisplay = table.concat(hitTextTable)
                             else
-                                hitTextDisplay = hitText.great.." "..hitScore
+                                hitTextTable[1] = hitText.great
+                                hitTextDisplay = table.concat(hitTextTable)
                             end
                         end
                         hitTextTimer = hitTextTime
@@ -575,7 +712,7 @@ local function updateNotes()
                         if settings.particles then
                             p:moveTo(playerX, playerY)
                             p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                            p:add(10)
+                            p:add(5)
                         end
                         -- play sfx
                         if settings.toggleSfx then
@@ -867,9 +1004,9 @@ function updateSong()
     musicTime = music:getOffset()
     -- update the current beat
     currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
-    if bPressed then
-        print(currentBeat)
-    end
+    -- if bPressed then
+    --     print(currentBeat)
+    -- end
 
     -- clamp health
     health = mathMin(100, mathMax(0, health))
@@ -975,7 +1112,9 @@ end
 
 
 function drawSong()
-    if missedNotes == 0 and combo >= #songTable.notes then
+    invertedScreen = invertedScreen and not reduceFlashing
+
+    if missedNotes == 0 and combo >= #songTable.notes and not invertedScreen or missedNotes > 0 and invertedScreen then
         gfx.setImageDrawMode(gfx.kDrawModeInverted)
         gfx.clear(gfx.kColorBlack)
     end
@@ -990,11 +1129,12 @@ function drawSong()
 
 
     --draw the point total
-    gfx.drawText(score, 2, 2, fonts.orbeatsSans)
+    gfx.drawText(score, 2, 2, fontFamilies.orbeatsSmall)
 
     --draw the combo counter
     if combo > 4 then
-        gfx.drawText("Combo:"..combo, 2, 215, fonts.orbeatsSans)
+        comboText:draw(2, 215)
+        gfx.drawText(combo, 2+comboTextWidth+1, 215, fontFamilies.orbeatsSans)
     end
 
     --draw the health bar
@@ -1006,31 +1146,43 @@ function drawSong()
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
     --draw the orbit
-    gfx.setColor(gfx.kColorWhite)
-	gfx.fillCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulse)
-    gfx.setColor(gfx.kColorBlack)
-	gfx.setDitherPattern(0.75)
-	gfx.setLineWidth(5)
-	gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulse)
-
-    --draw the orbit pulse
-    local pulseLength = 17
-    gfx.setColor(gfx.kColorBlack)
+    local orbitFrame
     if music:isPlaying() then
-        gfx.setDitherPattern(0.75+0.25*(currentBeat%1))
-        gfx.setLineWidth(5*(1-currentBeat%1))
-        gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(currentBeat%1))
+        orbitFrame = math.floor((currentBeat-math.floor(currentBeat)) * orbitAnim:getLength()) + 1
     else
-        gfx.setDitherPattern(0.75+0.25*(fakeCurrentBeat%1))
-        gfx.setLineWidth(5*(1-fakeCurrentBeat%1))
-        gfx.drawCircleAtPoint(orbitCenterX, orbitCenterY, orbitRadius-pulseDepth-pulseLength*(fakeCurrentBeat%1))
+        orbitFrame = math.floor((fakeCurrentBeat-math.floor(fakeCurrentBeat)) * orbitAnim:getLength()) + 1
     end
+    local frameSize = orbitAnim:getImage(orbitFrame):getSize() - 1 -- the 1 subtracted so the dithering lines up
+    local tempOrbitImg = gfx.image.new(frameSize*2, frameSize*2)
+    gfx.pushContext(tempOrbitImg)
+        orbitAnim:getImage(orbitFrame):draw(orbitRadius, orbitRadius-frameSize)                                 -- quad1
+        orbitAnim:getImage(orbitFrame):draw(orbitRadius, orbitRadius, gfx.kImageFlippedY)                         -- quad2
+        orbitAnim:getImage(orbitFrame):draw(orbitRadius-frameSize, orbitRadius, gfx.kImageFlippedXY)            -- quad3
+        orbitAnim:getImage(orbitFrame):draw(orbitRadius-frameSize, orbitRadius-frameSize, gfx.kImageFlippedX) -- quad4
+    gfx.popContext()
+    if invertedScreen then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+    tempOrbitImg:drawCentered(orbitCenterX, orbitCenterY)
 
+    local bgCol = gfx.kColorWhite
+    local fgCol = gfx.kColorBlack
+    if invertedScreen then
+        gfx.setColor(gfx.kColorWhite)
+        bgCol = gfx.kColorBlack
+        fgCol = gfx.kColorWhite
+    else
+        gfx.setColor(gfx.kColorBlack)
+    end
+    
 	--draw the notes
-	for i = #noteInstances, 1, -1 do
+	for i = 1, #noteInstances do
+        -- cap the visible notes
+        if i > noteCap-notesKilled then
+            break
+        end
 		-- get the current note
 		local note = noteInstances[i]
 		-- update the current note with the current level speed and get it's current radius, old radius, and position
+        gfx.setColor(fgCol)
         note:draw(orbitCenterX, orbitCenterY, orbitRadius)
     end
 
@@ -1053,45 +1205,39 @@ function drawSong()
     end 
 
     --draw and update the particles
-    gfx.setColor(gfx.kColorBlack) -- set the color to make pdParticles work
     if missedNotes == 0 and combo >= #songTable.notes then
-        p:setColor(gfx.kColorWhite)
-    else
-        p:setColor(gfx.kColorBlack)
+        if invertedScreen then
+            gfx.setImageDrawMode(gfx.kDrawModeCopy)
+        else
+            gfx.setImageDrawMode(gfx.kDrawModeInverted)
+        end
     end
     p:update()
 
+    if invertedScreen then gfx.setImageDrawMode(gfx.kDrawModeInverted) else gfx.setImageDrawMode(gfx.kDrawModeCopy) end
+
 	--draw the player
-    local downBulge = 0
+    local cursorImg = 1
     if downPressed or bPressed or rightPressed then
-        downBulge = 2
+        cursorImg = 2
     end
-    local cursorLine
-    local cursorFill
     if playerFlipped then
-        cursorLine = gfx.kColorWhite
-        cursorFill = gfx.kColorBlack
+        cursor:getImage(cursorImg):invertedImage():drawCentered(playerX, playerY)
     else
-        cursorLine = gfx.kColorBlack
-        cursorFill = gfx.kColorWhite
+        cursor:getImage(cursorImg):drawCentered(playerX, playerY)
     end
-	gfx.setColor(cursorFill)
-	gfx.fillCircleAtPoint(playerX, playerY, playerRadius+downBulge)
-	gfx.setColor(cursorLine)
-	gfx.setLineWidth(2)
-	gfx.drawCircleAtPoint(playerX, playerY, playerRadius+downBulge)
 
     --draw the hit text
-    local hitTextWidth, hitTextHeight = gfx.getTextSize(hitTextDisplay, fonts.orbeatsSmall)
+    local hitTextWidth, hitTextHeight = gfx.getTextSize(hitTextDisplay, fontFamilies.orbeatsSmall)
     if hitTextTimer > 0 then
         if hitTextTimer == hitTextTime then
-            gfx.setColor(gfx.kColorWhite)
+            gfx.setColor(bgCol)
             gfx.fillRoundRect(hitTextX-hitTextWidth/2-1, hitTextY-hitTextHeight/2-3, hitTextWidth+2, hitTextHeight+2, 2)
-            drawTextCentered(hitTextDisplay, hitTextX, hitTextY-2, fonts.orbeatsSmall)
+            drawTextCentered(hitTextDisplay, hitTextX, hitTextY-2, fontFamilies.orbeatsSmall)
         else
-            gfx.setColor(gfx.kColorWhite)
+            gfx.setColor(bgCol)
             gfx.fillRoundRect(hitTextX-hitTextWidth/2-1, hitTextY-hitTextHeight/2-1, hitTextWidth+2, hitTextHeight+2, 2)
-            drawTextCentered(hitTextDisplay, hitTextX, hitTextY, fonts.orbeatsSmall)
+            drawTextCentered(hitTextDisplay, hitTextX, hitTextY, fontFamilies.orbeatsSmall)
         end
         hitTextTimer -= 1
     end
@@ -1099,9 +1245,9 @@ function drawSong()
     -- draw text effects
     for i=#textInstances,1,-1 do
         if textInstances[i].font == nil then
-            drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts.orbeatsSmall)
+            drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fontFamilies.orbeatsSmall)
         else
-            drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fonts[textInstances[i].font])
+            drawTextCentered(textInstances[i].text, textInstances[i].x, textInstances[i].y, fontFamilies[textInstances[i].font])
         end
     end
 
@@ -1109,17 +1255,14 @@ function drawSong()
     if settings.drawSplash then
         if splashTimer > 0 then
             if splashTimer < splashTime - 12 or splashTimer % 4 == 0 or splashTimer-1 % 4 == 0 then
-                drawTextCentered(splashText, screenCenterX, screenCenterY, fonts.carbonNumbers)
+                drawTextCentered(splashText, screenCenterX, screenCenterY, fontFamilies.carbonNumbers)
             end
             splashTimer -= 1
         end
     end
 
-    --invert the screen if necessary
-    if invertedScreen and not reduceFlashing then
-        gfx.setColor(gfx.kColorXOR)
-        gfx.fillRect(0, 0, screenWidth, screenHeight)
-    end
+
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
     -- draw the fade out or in if fading out or in
     if fadeOut ~= 1 then

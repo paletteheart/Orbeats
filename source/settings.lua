@@ -235,13 +235,13 @@ function drawSettings()
     gfx.drawCircleAtPoint(arcX, arcY, planetRadius)
 
     -- draw the list of settings
-    drawList(settingsText, selectionRounded, 3, 3+textXTimer.value, 200, 240, 3, fonts.orbeatsSans, true, true)
+    drawList(settingsText, selectionRounded, 3, 3+textXTimer.value, 200, 240, 3, fontFamilies.orbeatsSans, true, true)
 
     -- draw the game version number
-    local versionWidth, versionHeight = gfx.getTextSize(pd.metadata.version, fonts.orbeatsSmall)
+    local versionWidth, versionHeight = gfx.getTextSize(pd.metadata.version, fontFamilies.orbeatsSmall)
     local versionPadding = 2
     gfx.setImageDrawMode(gfx.kDrawModeInverted)
-    gfx.drawText(pd.metadata.version, versionPadding, screenHeight-versionHeight-versionPadding, fonts.orbeatsSmall)
+    gfx.drawText(pd.metadata.version, versionPadding, screenHeight-versionHeight-versionPadding, fontFamilies.orbeatsSmall)
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
     -- draw the input prompts
@@ -251,32 +251,32 @@ function drawSettings()
     inputX = inputXTimer.value
     -- draw the right prompts
     -- draw the scroll prompt
-    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.scroll, fonts.orbeatsSans)
+    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.scroll, fontFamilies.orbeatsSans)
     inputXScaled = screenWidth-inputX*(inputTextWidth+padding*2)
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRoundRect(inputXScaled, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
     gfx.setColor(gfx.kColorBlack)
     gfx.setLineWidth(2)
     gfx.drawRoundRect(inputXScaled, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-    gfx.drawText(inputText.scroll, inputXScaled+padding, inputY+padding, fonts.orbeatsSans)
+    gfx.drawText(inputText.scroll, inputXScaled+padding, inputY+padding, fontFamilies.orbeatsSans)
     -- draw the select prompt
-    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.select, fonts.orbeatsSans)
+    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.select, fontFamilies.orbeatsSans)
     inputXScaled = screenWidth-inputX*(inputTextWidth+padding*2)
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRoundRect(inputXScaled, inputTextHeight+padding*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
     gfx.setColor(gfx.kColorBlack)
     gfx.setLineWidth(2)
     gfx.drawRoundRect(inputXScaled, inputTextHeight+padding*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-    gfx.drawText(inputText.select, inputXScaled+padding, inputY+inputTextHeight+padding*3, fonts.orbeatsSans)
+    gfx.drawText(inputText.select, inputXScaled+padding, inputY+inputTextHeight+padding*3, fontFamilies.orbeatsSans)
     -- draw the save prompt
-    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.save, fonts.orbeatsSans)
+    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.save, fontFamilies.orbeatsSans)
     inputXScaled = screenWidth-inputX*(inputTextWidth+padding*2)
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRoundRect(inputXScaled, (inputTextHeight+padding*2)*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
     gfx.setColor(gfx.kColorBlack)
     gfx.setLineWidth(2)
     gfx.drawRoundRect(inputXScaled, (inputTextHeight+padding*2)*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-    gfx.drawText(inputText.save, inputXScaled+padding, inputY+inputTextHeight*2+padding*5, fonts.orbeatsSans)
+    gfx.drawText(inputText.save, inputXScaled+padding, inputY+inputTextHeight*2+padding*5, fontFamilies.orbeatsSans)
 
     -- draw the fade out
     if fadeOut ~= 1 then

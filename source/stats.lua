@@ -261,7 +261,7 @@ function drawStatsPage()
         local textY = (padding+textHeight)*(i-scroll)
         local textX = padding
 
-        gfx.drawText(statsText[i], textX, textY, fonts.orbeatsSans)
+        gfx.drawText(statsText[i], textX, textY, fontFamilies.orbeatsSans)
     end
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
@@ -272,14 +272,14 @@ function drawStatsPage()
     local padding = 3
     local roundedness = 3
     local inputY = 3
-    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.back, fonts.orbeatsSans)
+    inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.back, fontFamilies.orbeatsSans)
     inputX = screenWidth-(inputTextWidth+padding*2)
     gfx.setColor(gfx.kColorWhite)
     gfx.fillRoundRect(inputX, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
     gfx.setColor(gfx.kColorBlack)
     gfx.setLineWidth(2)
     gfx.drawRoundRect(inputX, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-    gfx.drawText(inputText.back, inputX+padding, inputY+padding, fonts.orbeatsSans)
+    gfx.drawText(inputText.back, inputX+padding, inputY+padding, fontFamilies.orbeatsSans)
 
     -- draw the fade in/out
     if fadeOut ~= 1 then

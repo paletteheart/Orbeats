@@ -32,7 +32,7 @@ local pulseTimer = 0
 local titleHideX = -300
 local titleCurrentX = titleHideX
 local titleXTimer = tmr.new(0, titleHideX, titleHideX)
-local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fonts.odinRounded)
+local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fontFamilies.odinRounded)
 local titleX <const> = screenCenterX - (titleWidth/2)
 local titleY <const> = screenCenterY - (titleHeight/2)
 local drawTitle = false
@@ -229,11 +229,11 @@ function drawTitleScreen()
     if drawInput then
         inputCurrentY = inputYTimer.value
         local inputText = "Press "..char.up.."/"..char.A.." to start"
-        local textWidth, textHeight = gfx.getTextSize(inputText, fonts.orbeatsSans)
+        local textWidth, textHeight = gfx.getTextSize(inputText, fontFamilies.orbeatsSans)
         local inputX = screenCenterX-(textWidth/2)-3
         gfx.setColor(gfx.kColorWhite)
         gfx.fillRoundRect(inputX, inputCurrentY, textWidth+6, 30, 3)
-        gfx.drawText(inputText, inputX+3, inputCurrentY+5, fonts.orbeatsSans)
+        gfx.drawText(inputText, inputX+3, inputCurrentY+5, fontFamilies.orbeatsSans)
     end
 
     -- draw the fade out if fading out

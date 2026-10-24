@@ -5,7 +5,10 @@ import "CoreLibs/animation"
 import "CoreLibs/timer"
 import "CoreLibs/easing"
 
-import "pdParticles"
+playdate.display.setRefreshRate(50) -- up here so image caches render right
+
+-- import "pdParticles"
+import "particles"
 
 import "songs"
 import "game"
@@ -28,8 +31,6 @@ local menu <const> = pd.getSystemMenu()
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 
-pd.display.setRefreshRate(50)
-
 -- pd.datastore.delete("settings")
 
 local sortOptions <const> = {
@@ -37,7 +38,6 @@ local sortOptions <const> = {
 	"name",
 	"bpm"
 }
-sortBy = settings.songSorting
 
 -- Define variables
 -- Menu Item Variables
@@ -115,10 +115,20 @@ local function draw()
 	end
 
 	if settings.drawFps then
-		pd.drawFPS(screenWidth-15, screenHeight-12)
+		if gameState == "song" then
+			pd.drawFPS(screenWidth-15, 0)
+		else
+			pd.drawFPS(screenWidth-15, screenHeight-12)
+		end
 	end
 
 end
+
+-- for i=0,145 do
+-- 	drawArc(200, 120, i, 0, 90)
+-- end
+-- drawArc(200, 120, 50, 0, 90)
+
 
 pd.resetElapsedTime()
 

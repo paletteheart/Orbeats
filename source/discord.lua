@@ -18,7 +18,7 @@ local codeCurrentY = codeHideY
 local codeYTimer = tmr.new(0, codeHideY, codeHideY)
 
 local text = "Join us in the\nOrbeats Discord!\n\nhttps://discord.gg/\nDMwDxVx8gq"
-local textWidth, textHeight = gfx.getTextSize(text, fonts.orbeatsSans)
+local textWidth, textHeight = gfx.getTextSize(text, fontFamilies.orbeatsSans)
 local textX <const> = screenWidth - codeX
 local textHideY <const> = screenHeight + textHeight/2
 local padding <const> = 5
@@ -92,7 +92,7 @@ function drawDiscordInvite()
     gfx.fillRoundRect(textX-(textWidth/2)-padding, textCurrentY-(textHeight/2)-padding+textFloating, textWidth+padding*2, textHeight+padding*2, padding)
     gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
     textCurrentY = textYTimer.value
-    drawTextCentered(text, textX, textCurrentY+textFloating, fonts.orbeatsSans)
+    drawTextCentered(text, textX, textCurrentY+textFloating, fontFamilies.orbeatsSans)
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
     -- draw the fade out

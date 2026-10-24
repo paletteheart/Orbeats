@@ -264,19 +264,19 @@ function drawMainMenu()
         getImage(itemArtFilePath):draw(itemX, itemY)
 
         -- draw menu item names
-        local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSans)
+        local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fontFamilies.orbeatsSans)
         local textX = screenCenterX + (wheelRadius-64) * math.cos(math.rad(itemPos-90)) - textWidth/2
         local textY = wheelY + (wheelRadius-64) * math.sin(math.rad(itemPos-90)) - textHeight/2
         local padding = 3
         if textWidth > 100 then
-            local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fonts.orbeatsSmall)
+            local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fontFamilies.orbeatsSmall)
             gfx.setColor(gfx.kColorWhite)
             gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 2)
-            gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSmall)
+            gfx.drawText(menuItemNames[i], textX, textY, fontFamilies.orbeatsSmall)
         else
             gfx.setColor(gfx.kColorWhite)
             gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 2)
-            gfx.drawText(menuItemNames[i], textX, textY, fonts.orbeatsSans)
+            gfx.drawText(menuItemNames[i], textX, textY, fontFamilies.orbeatsSans)
         end
     end
 
@@ -294,44 +294,44 @@ function drawMainMenu()
         local inputY = 3
         -- draw the left prompts
         -- draw the back prompt
-        local inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.back, fonts.orbeatsSans)
+        local inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.back, fontFamilies.orbeatsSans)
         local inputXScaled = (inputX-1)*(inputTextWidth+padding*2)
         gfx.setColor(gfx.kColorWhite)
         gfx.fillRoundRect(inputXScaled, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
         gfx.drawRoundRect(inputXScaled, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-        gfx.drawText(inputText.back, inputXScaled+padding, inputY+padding, fonts.orbeatsSans)
+        gfx.drawText(inputText.back, inputXScaled+padding, inputY+padding, fontFamilies.orbeatsSans)
         -- draw the left direction prompt
-        inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.left, fonts.orbeatsSans)
+        inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.left, fontFamilies.orbeatsSans)
         inputXScaled = (inputX-1)*(inputTextWidth+padding*2)
         gfx.setColor(gfx.kColorWhite)
         gfx.fillRoundRect(inputXScaled, inputTextHeight+padding*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
         gfx.drawRoundRect(inputXScaled, inputTextHeight+padding*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-        gfx.drawText(inputText.left, inputXScaled+padding, inputY+inputTextHeight+padding*3, fonts.orbeatsSans)
+        gfx.drawText(inputText.left, inputXScaled+padding, inputY+inputTextHeight+padding*3, fontFamilies.orbeatsSans)
 
 
         -- draw the right prompts
         -- draw the confirm prompt
-        inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.confirm, fonts.orbeatsSans)
+        inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.confirm, fontFamilies.orbeatsSans)
         inputXScaled = screenWidth-inputX*(inputTextWidth+padding*2)
         gfx.setColor(gfx.kColorWhite)
         gfx.fillRoundRect(inputXScaled, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
         gfx.drawRoundRect(inputXScaled, inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-        gfx.drawText(inputText.confirm, inputXScaled+padding, inputY+padding, fonts.orbeatsSans)
+        gfx.drawText(inputText.confirm, inputXScaled+padding, inputY+padding, fontFamilies.orbeatsSans)
         -- draw the right direction prompt
-        inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.right, fonts.orbeatsSans)
+        inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.right, fontFamilies.orbeatsSans)
         inputXScaled = screenWidth-inputX*(inputTextWidth+padding*2)
         gfx.setColor(gfx.kColorWhite)
         gfx.fillRoundRect(inputXScaled, inputTextHeight+padding*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
         gfx.drawRoundRect(inputXScaled, inputTextHeight+padding*2+inputY, inputTextWidth+padding*2, inputTextHeight+padding*2, roundedness)
-        gfx.drawText(inputText.right, inputXScaled+padding, inputY+inputTextHeight+padding*3, fonts.orbeatsSans)
+        gfx.drawText(inputText.right, inputXScaled+padding, inputY+inputTextHeight+padding*3, fontFamilies.orbeatsSans)
     end
 
     -- draw fade out

@@ -45,7 +45,7 @@ local bgmTimer
 local tickerTimer = tmr.new(0, 0, 0)
 tickerTimer.repeats = true
 local tickerText = "To Menu:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
-local tickerTextWidth = gfx.getTextSize(tickerText, fonts.orbeatsSans)
+local tickerTextWidth = gfx.getTextSize(tickerText, fontFamilies.orbeatsSans)
 
 local sheenTimer = tmr.new(0, 600, 600)
 sheenTimer.repeats = true
@@ -267,9 +267,9 @@ function drawEndScreen()
     -- draw completed text
     completedCurrentY = completedYTimer.value
     if failed then
-        gfx.drawText("Song Failed.", 5, completedCurrentY, fonts.odinRounded)
+        gfx.drawText("Song Failed.", 5, completedCurrentY, fontFamilies.odinRounded)
     else
-        gfx.drawText("Song Completed!", 5, completedCurrentY, fonts.odinRounded)
+        gfx.drawText("Song Completed!", 5, completedCurrentY, fontFamilies.odinRounded)
     end
 
     -- draw stats bubbles
@@ -279,22 +279,22 @@ function drawEndScreen()
     gfx.fillRoundRect(statsCurrentX, statsY, 165, 155, 3)
     -- draw stats
     gfx.setColor(gfx.kColorBlack)
-    gfx.drawText("Perfect Hits: "..perfectHits, statsCurrentX+5, statsY+5, fonts.orbeatsSans)
-    gfx.drawText("Hits: "..hitNotes, statsCurrentX+5, statsY+30, fonts.orbeatsSans)
-    gfx.drawText("Misses: "..missedNotes, statsCurrentX+5, statsY+55, fonts.orbeatsSans)
+    gfx.drawText("Perfect Hits: "..perfectHits, statsCurrentX+5, statsY+5, fontFamilies.orbeatsSans)
+    gfx.drawText("Hits: "..hitNotes, statsCurrentX+5, statsY+30, fontFamilies.orbeatsSans)
+    gfx.drawText("Misses: "..missedNotes, statsCurrentX+5, statsY+55, fontFamilies.orbeatsSans)
 
-    gfx.drawText("Combo: "..largestCombo, statsCurrentX+5, statsY+80, fonts.orbeatsSans)
+    gfx.drawText("Combo: "..largestCombo, statsCurrentX+5, statsY+80, fontFamilies.orbeatsSans)
     if songHiCombo < largestCombo then
-        gfx.drawText("New Best Combo!", statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
+        gfx.drawText("New Best Combo!", statsCurrentX+5, statsY+100, fontFamilies.orbeatsSmall)
     else
-        gfx.drawText("Best Combo: "..songHiCombo, statsCurrentX+5, statsY+100, fonts.orbeatsSmall)
+        gfx.drawText("Best Combo: "..songHiCombo, statsCurrentX+5, statsY+100, fontFamilies.orbeatsSmall)
     end
 
-    gfx.drawText("Score: "..score, statsCurrentX+5, statsY+120, fonts.orbeatsSans)
+    gfx.drawText("Score: "..score, statsCurrentX+5, statsY+120, fontFamilies.orbeatsSans)
     if songHiScore < score then
-        gfx.drawText("New Best Score!", statsCurrentX+5, statsY+140, fonts.orbeatsSmall)
+        gfx.drawText("New Best Score!", statsCurrentX+5, statsY+140, fontFamilies.orbeatsSmall)
     else
-        gfx.drawText("Best Score: "..songHiScore, statsCurrentX+5, statsY+140, fonts.orbeatsSmall)
+        gfx.drawText("Best Score: "..songHiScore, statsCurrentX+5, statsY+140, fontFamilies.orbeatsSmall)
     end
 
     -- draw rating
@@ -330,9 +330,9 @@ function drawEndScreen()
     local tickerX1 = tickerTimer.value
     local tickerX2 = tickerTimer.value-tickerTextWidth
     local tickerX3 = tickerTimer.value+tickerTextWidth
-    gfx.drawText(tickerText, tickerX1, continueCurrentY+5, fonts.orbeatsSans)
-    gfx.drawText(tickerText, tickerX2, continueCurrentY+5, fonts.orbeatsSans)
-    gfx.drawText(tickerText, tickerX3, continueCurrentY+5, fonts.orbeatsSans)
+    gfx.drawText(tickerText, tickerX1, continueCurrentY+5, fontFamilies.orbeatsSans)
+    gfx.drawText(tickerText, tickerX2, continueCurrentY+5, fontFamilies.orbeatsSans)
+    gfx.drawText(tickerText, tickerX3, continueCurrentY+5, fontFamilies.orbeatsSans)
 
     -- draw fade out if fading out
     if fadeOutWhite ~= 1 then
