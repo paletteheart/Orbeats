@@ -4,6 +4,9 @@ import "note"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
+local exp <const> = math.exp
+
+local missedNoteRadius <const> = 140
 local initialRadius <const> = 5
 
 class('FlipNote').extends(Note)
@@ -16,7 +19,7 @@ function FlipNote:update(currentBeat, orbitRadius)
     -- this formula creates an exponential graph connecting two points (spawnBeat,initialRadius and hitBeat,orbitRadius) in the vector space of beats and radii,
     -- with how quickly the graph increases in radius determined by self.spd
     -- self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.hitBeat)-math.exp(self.spd*self.spawnBeat)))*(math.exp(self.spd*currentBeat)-math.exp(self.spd*self.spawnBeat))+initialRadius
-    self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*beatsSinceSpawn)-1)+initialRadius
+    self.radius = ((orbitRadius-initialRadius)/(exp(self.spd*self.lifeLength)-1))*(exp(self.spd*beatsSinceSpawn)-1)+initialRadius
 
     self.endRadius = self.radius
 
@@ -46,12 +49,19 @@ function FlipNote:draw(x, y, rad)
     local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
-    gfx.setColor(gfx.kColorBlack)
+    -- gfx.setColor(gfx.kColorBlack) -- handled in game.lua
 	gfx.setLineWidth(5*(self.radius/rad))
-    gfx.drawArc(x, y, self.radius, noteStartAngle, noteEndAngle)
+    -- dither via stencil if beyond the orbit
+    if self.radius > rad then
+        local distance = self.radius - rad
+        local maxDist = missedNoteRadius - rad
+        gfx.setStencilPattern(1-distance/maxDist)
+    end
+    local lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
+
     --draw lines
-    local lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90))
-    local lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90))
+    if lineStartX1 == nil then lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90)) end
+    if lineStartY1 == nil then lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90)) end
     local lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
     local lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
     local lineEndX = x - self.radius * math.cos(math.rad(self.currentPos-90))
@@ -59,4 +69,6 @@ function FlipNote:draw(x, y, rad)
 	gfx.setLineWidth(self.radius/rad)
     gfx.drawLine(lineStartX1, lineStartY1, lineEndX, lineEndY)
     gfx.drawLine(lineStartX2, lineStartY2, lineEndX, lineEndY)
+    if self.radius > rad then gfx.clearStencil() end -- reset stencil
+
 end

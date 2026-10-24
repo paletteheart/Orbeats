@@ -2,8 +2,14 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
+local exp <const> = math.exp
+local max <const> = math.max
+local min <const> = math.min
+
 local initialRadius <const> = 5
-local missedNoteRadius <const> = 300
+local LODRadius <const> = 40
+local LODWidth <const> = 20
+local missedNoteRadius <const> = 140
 
 class('Note').extends(Object)
 
@@ -33,15 +39,14 @@ function Note:update(currentBeat, orbitRadius)
     -- self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.hitBeat)-math.exp(self.spd*self.spawnBeat)))*(math.exp(self.spd*currentBeat)-math.exp(self.spd*self.spawnBeat))+initialRadius
     if not self.hitting then
         if self.finishBeat == nil then
-            self.radius = math.min(math.max(0, ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*beatsSinceSpawn)-1)+initialRadius), missedNoteRadius)
+            self.radius = min(max(0, ((orbitRadius-initialRadius)/(exp(self.spd*self.lifeLength)-1))*(exp(self.spd*beatsSinceSpawn)-1)+initialRadius), missedNoteRadius)
         else
-            self.radius = math.min(math.max(0, ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*(beatsSinceSpawn-(self.finishBeat-self.hitBeat)))-1)+initialRadius), missedNoteRadius)
-            -- print(beatsSinceSpawn-(self.finishBeat-self.hitBeat))
+            self.radius = min(max(0, ((orbitRadius-initialRadius)/(exp(self.spd*self.lifeLength)-1))*(exp(self.spd*(beatsSinceSpawn-(self.finishBeat-self.hitBeat)))-1)+initialRadius), missedNoteRadius)
         end
     end
 
     if self.duration > 0 then
-        self.endRadius = math.max(0, ((orbitRadius-initialRadius)/(math.exp(self.spd*self.lifeLength)-1))*(math.exp(self.spd*(beatsSinceSpawn-self.duration))-1)+initialRadius)
+        self.endRadius = max(0, ((orbitRadius-initialRadius)/(exp(self.spd*self.lifeLength)-1))*(exp(self.spd*(beatsSinceSpawn-self.duration))-1)+initialRadius)
     else
         self.endRadius = self.radius
     end
@@ -67,29 +72,37 @@ function Note:update(currentBeat, orbitRadius)
     return oldRadius, self.radius, self.currentPos, self.endRadius, self.hitting, self.duration + self.hitBeat, self.hitBeat, self.spd, "note"
 end
 
+
 function Note:draw(x, y, rad)
     local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
-    gfx.setColor(gfx.kColorBlack)
+    -- gfx.setColor(gfx.kColorBlack) -- now handled in game.lua
 	gfx.setLineWidth(5*(self.radius/rad))
-    gfx.drawArc(x, y, self.radius, noteStartAngle, noteEndAngle)
+    -- dither via stencil if beyond the orbit
+    if self.radius > rad then
+        local distance = self.radius - rad
+        local maxDist = missedNoteRadius - rad
+        gfx.setStencilPattern(1-distance/maxDist)
+    end
+    local lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
 
     --draw duration
     if self.duration > 0 then
         gfx.setLineWidth(self.endRadius/rad)
-        gfx.drawArc(x, y, self.endRadius, noteStartAngle, noteEndAngle)
-        local lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90))
-        local lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90))
+        if lineStartX1 == nil then lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90)) end
+        if lineStartY1 == nil then lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90)) end
         local lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
         local lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
         local lineEndX1 = x - self.endRadius * math.cos(math.rad(noteStartAngle+90))
         local lineEndY1 = y - self.endRadius * math.sin(math.rad(noteStartAngle+90))
         local lineEndX2 = x - self.endRadius * math.cos(math.rad(noteEndAngle+90))
         local lineEndY2 = y - self.endRadius * math.sin(math.rad(noteEndAngle+90))
+        drawNoteArc(x, y, self.endRadius, noteStartAngle, noteEndAngle)
         gfx.drawLine(lineStartX1, lineStartY1, lineEndX1, lineEndY1)
         gfx.drawLine(lineStartX2, lineStartY2, lineEndX2, lineEndY2)
     end
+    if self.radius > rad then gfx.clearStencil() end -- reset stencil
 end
 
 function Note:getNoteAngles()
@@ -107,4 +120,36 @@ end
 function Note:finishHitting(currentBeat)
     self.hitting = false
     self.finishBeat = currentBeat
+end
+
+
+function drawNoteArc(x, y, r, startAngle, endAngle)
+    local width  = endAngle-startAngle
+    if r <= LODRadius or width <= LODWidth or endAngle == nil then
+        local px = x + r * math.cos(math.rad(startAngle-90))
+        local py = y + r * math.sin(math.rad(startAngle-90))
+        drawLineArc(x, y, px, py, width)
+        return px, py
+    else
+        gfx.drawArc(x, y, r, startAngle, endAngle)
+        return nil, nil
+    end
+end
+
+function drawLineArc(x, y, px, py, length)
+    local x1, y1 = px, py
+    local dx, dy = x1 - x, y1 - y
+    local theta = math.rad(length)
+    local steps = max(math.floor(length/22.5), 1)
+    local ctheta = math.cos(theta/steps)
+    local stheta = math.sin(theta/steps)
+    for i=steps,1,-1 do
+        local x2 = ctheta*dx - stheta*dy
+        local y2 = stheta*dx + ctheta*dy
+        gfx.drawLine(x1, y1, x2+x, y2+y)
+        dx = x2
+        dy = y2
+        x1 = x2+x
+        y1 = y2+y
+    end
 end
