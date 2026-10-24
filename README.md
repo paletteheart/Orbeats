@@ -24,7 +24,7 @@ If you want to play user-created levels, you’ll need to manually put them on y
 - *"Miscellaneous Jingle" by mieki256 licensed CC0: [https://opengameart.org/content/miscellaneous-jingle](https://opengameart.org/content/miscellaneous-jingle)*
 - *"Impact" by qubodup licensed CC0: [https://opengameart.org/content/impact](https://opengameart.org/content/impact)*
 #### libraries:  
-- *"pdParticle" by PossiblyAxolotl: [https://github.com/PossiblyAxolotl/pdParticles](https://github.com/PossiblyAxolotl/pdParticles)*
+- *"pdParticle" by PossiblyAxolotl: [https://codeberg.org/PossiblyAxolotl/pdParticles](https://codeberg.org/PossiblyAxolotl/pdParticles)*
 #### music:  
 - *"Cosmos" by Dark Fantasy Studio*  
 - *"Aurora" by Kim Lightyear licenced CC BY 3.0: [https://opengameart.org/content/aurora](https://opengameart.org/content/aurora)*
