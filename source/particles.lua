@@ -122,23 +122,23 @@ function Particle:update()
     for part = math.min(maxParticles, #self.particles), 1, -1 do
 
         local circ = self.particles[part]
-        if circ == nil then break end
-        -- draw the cached particle image
-        partCache[circ.thickness]:getImage(math.floor(circ.size/decay)):drawCentered(circ.x, circ.y)
-
-        circ.x += math.sin(math.rad(circ.dir)) * circ.speed
-        circ.y -= math.cos(math.rad(circ.dir)) * circ.speed
 
         -- cull particles that are out of bounds (off-screen)
         local oobHorz = circ.x >= screenWidth+circ.size or circ.x <= -circ.size
         local oobVert = circ.y >= screenHeight+circ.size or circ.y <= -circ.size
         if oobHorz or oobVert then
             table.remove(self.particles,part)
-        end
-        
-        circ.speed += circ.acceleration / 100
+        else
+            -- draw the cached particle image
+            partCache[circ.thickness]:getImage(math.floor(circ.size/decay)):drawCentered(circ.x, circ.y)
 
-        self.particles[part] = circ
+            circ.x += math.sin(math.rad(circ.dir)) * circ.speed
+            circ.y -= math.cos(math.rad(circ.dir)) * circ.speed
+            
+            circ.speed += circ.acceleration / 100
+
+            self.particles[part] = circ
+        end
     end
 
     -- cull excess particles
