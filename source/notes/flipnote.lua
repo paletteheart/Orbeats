@@ -5,6 +5,8 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 
 local exp <const> = math.exp
+local max <const> = math.max
+local min <const> = math.min
 
 local missedNoteRadius <const> = 140
 local initialRadius <const> = 5
@@ -19,7 +21,7 @@ function FlipNote:update(currentBeat, orbitRadius)
     -- this formula creates an exponential graph connecting two points (spawnBeat,initialRadius and hitBeat,orbitRadius) in the vector space of beats and radii,
     -- with how quickly the graph increases in radius determined by self.spd
     -- self.radius = ((orbitRadius-initialRadius)/(math.exp(self.spd*self.hitBeat)-math.exp(self.spd*self.spawnBeat)))*(math.exp(self.spd*currentBeat)-math.exp(self.spd*self.spawnBeat))+initialRadius
-    self.radius = ((orbitRadius-initialRadius)/(exp(self.spd*self.lifeLength)-1))*(exp(self.spd*beatsSinceSpawn)-1)+initialRadius
+    self.radius = min(max(initialRadius, ((orbitRadius-initialRadius)/(exp(self.spd*self.lifeLength)-1))*(exp(self.spd*beatsSinceSpawn)-1)+initialRadius), missedNoteRadius)
 
     self.endRadius = self.radius
 
@@ -46,6 +48,8 @@ function FlipNote:update(currentBeat, orbitRadius)
 end
 
 function FlipNote:draw(x, y, rad)
+    if self.radius == initialRadius then return end
+
     local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note

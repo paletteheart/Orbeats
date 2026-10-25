@@ -3,6 +3,7 @@
 import "notes/note"
 import "notes/flipnote"
 import "notes/slidenote"
+import "notes/releasenote"
 
 -- Define constants
 
@@ -185,7 +186,7 @@ local hitText <const> = {
 -- System variables
 toMenu = false
 restart = false
-tutorial = false
+tutorial = true
 p = Particle()
 
 sfx = {}
@@ -223,7 +224,7 @@ local playerFlipped = false
 local flipTrail = 0
 local flipPos = 0
 local health = 100
-local noteDamage = 0
+local noteDamage = 20
 failed = false
 
 -- input variables
@@ -243,6 +244,8 @@ leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
 rightHeld = pd.buttonIsPressed(pd.kButtonRight)
 aHeld = pd.buttonIsPressed(pd.kButtonA)
 bHeld = pd.buttonIsPressed(pd.kButtonB)
+
+buttonReleased = false
 
 -- Song variables
 local songTable = {}
@@ -356,6 +359,8 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
             newNote = FlipNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
         elseif noteType == "SlideNote" then
             newNote = SlideNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
+        elseif noteType == "ReleaseNote" then
+            newNote = ReleaseNote(spawnBeat, hitBeat, speed, width, position, spin, duration)
         else
             newNote = Note(spawnBeat, hitBeat, speed, width, position, spin, duration)
         end
@@ -634,6 +639,50 @@ local function updateNotes()
                 -- check if the player position is within the note
                 if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
                     if upPressed or aPressed or leftPressed then
+                        -- note is hit
+                        --figure out how many points you get
+                        local noteDistance = mathAbs(orbitRadius-newRadius)
+                        -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
+                        -- you can be, which scores half max points.
+                        if noteDistance <= perfectDistance then
+                            score += maxNoteScore
+                            hitTextDisplay = hitText.perfect
+                            perfectHits += 1
+                        else 
+                            local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
+                            score += hitScore
+                            updateHitTextDisplay(hitScore)
+                        end
+                        hitTextTimer = hitTextTime
+                        hitTextX = orbitCenterX + 20 * mathCos(mathRad(position-90))
+                        hitTextY = orbitCenterY + 20 * mathSin(mathRad(position-90))
+                        --remove note
+                        killNote(closestNotes[i])
+                        -- up the hit note score
+                        hitNotes += 1
+                        incrementCombo()
+                        -- up your health
+                        health += noteDamage/2
+                        -- create particles
+                        if settings.particles then
+                            p:moveTo(playerX, playerY)
+                            p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
+                            p:add(5)
+                        end
+                        -- play sfx
+                        if settings.toggleSfx then
+                            sfx.hit[settings.sfx]:play()
+                        end
+                    end
+                end
+            end
+        elseif noteType == "releasenote" then
+            -- check if the note is close enough to be hit
+            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
+                local noteStartAngle, noteEndAngle = note:getNoteAngles()
+                -- check if the player position is within the note
+                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
+                    if buttonReleased then
                         -- note is hit
                         --figure out how many points you get
                         local noteDistance = mathAbs(orbitRadius-newRadius)
@@ -955,7 +1004,7 @@ function updateSong()
 
     -- clamp health
     health = mathMin(100, mathMax(0, health))
-    if health == 0 then
+    if health == 0 and not tutorial then
         failed = true
     end
 
@@ -1043,6 +1092,7 @@ function updateSong()
     if songEnded then
         if tutorial then
             -- restart the 'song'
+            music:stop()
             setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             fadeIn = 1 -- disables the fade-in
         else
@@ -1065,34 +1115,36 @@ end
 function drawSong()
     invertedScreen = invertedScreen and not reduceFlashing
 
-    if missedNotes == 0 and combo >= #songTable.notes and not invertedScreen or (missedNotes > 0 or combo < #songTable.notes) and invertedScreen then
+    if (missedNotes == 0 and combo >= #songTable.notes and not invertedScreen or (missedNotes > 0 or combo < #songTable.notes) and invertedScreen) and not tutorial then
         gfx.setImageDrawMode(gfx.kDrawModeInverted)
         gfx.clear(gfx.kColorBlack)
     end
     
     --draw background
-    if settings.drawBg then
-        local bgW, bgH = bgAnim:image():getSize()
-        local bgX = orbitCenterX-(bgW/2)
-        local bgY = orbitCenterY-(bgH/2)
-        bgAnim:draw(bgX, bgY)
+    if not tutorial then
+        if settings.drawBg then
+            local bgW, bgH = bgAnim:image():getSize()
+            local bgX = orbitCenterX-(bgW/2)
+            local bgY = orbitCenterY-(bgH/2)
+            bgAnim:draw(bgX, bgY)
+        end
+
+
+        --draw the point total
+        gfx.drawText(score, 2, 2, fontFamilies.orbeatsSmall)
+
+        --draw the combo counter
+        if combo > 4 then
+            comboText:draw(2, 215)
+            gfx.drawText(combo, 2+comboTextWidth+1, 215, fontFamilies.orbeatsSans)
+        end
+
+        --draw the health bar
+        gfx.setColor(gfx.kColorBlack)
+        gfx.setPattern({0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA})
+        gfx.setLineWidth(5)
+        gfx.drawLine(0, screenHeight-3, screenWidth*(health/100), screenHeight-3)
     end
-
-
-    --draw the point total
-    gfx.drawText(score, 2, 2, fontFamilies.orbeatsSmall)
-
-    --draw the combo counter
-    if combo > 4 then
-        comboText:draw(2, 215)
-        gfx.drawText(combo, 2+comboTextWidth+1, 215, fontFamilies.orbeatsSans)
-    end
-
-    --draw the health bar
-    gfx.setColor(gfx.kColorBlack)
-    gfx.setPattern({0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA})
-    gfx.setLineWidth(5)
-    gfx.drawLine(0, screenHeight-3, screenWidth*(health/100), screenHeight-3)
 
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
@@ -1157,7 +1209,7 @@ function drawSong()
     end 
 
     --draw and update the particles
-    if missedNotes == 0 and combo >= #songTable.notes then
+    if missedNotes == 0 and combo >= #songTable.notes and not tutorial then
         if invertedScreen then
             gfx.setImageDrawMode(gfx.kDrawModeCopy)
             print("parts no misses inverted")
@@ -1218,7 +1270,7 @@ function drawSong()
     end
 
     -- draw the combo splash
-    if settings.drawSplash then
+    if settings.drawSplash and not tutorial then
         if splashTimer > 0 then
             if splashTimer < splashTime - 12 or splashTimer % 4 == 0 or splashTimer-1 % 4 == 0 then
                 drawTextCentered(splashText, screenCenterX, screenCenterY, fontFamilies.carbonNumbers)
@@ -1324,6 +1376,13 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     rightHeld = pd.buttonIsPressed(pd.kButtonRight)
     aHeld = pd.buttonIsPressed(pd.kButtonA)
     bHeld = pd.buttonIsPressed(pd.kButtonB)
+
+    buttonReleased = pd.buttonJustReleased(pd.kButtonUp) or
+                     pd.buttonJustReleased(pd.kButtonDown) or
+                     pd.buttonJustReleased(pd.kButtonLeft) or
+                     pd.buttonJustReleased(pd.kButtonRight) or
+                     pd.buttonJustReleased(pd.kButtonA) or
+                     pd.buttonJustReleased(pd.kButtonB)
 end
 
 function drawTextCentered(text, x, y, font)

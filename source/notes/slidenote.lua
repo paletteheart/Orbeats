@@ -17,6 +17,8 @@ function SlideNote:update(currentBeat, orbitRadius)
 end
 
 function SlideNote:draw(x, y, rad)
+    if self.radius == initialRadius then return end
+
     local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
