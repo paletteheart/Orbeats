@@ -129,7 +129,7 @@ local bgAnim <const> = gfx.animation.loop.new(10, bgImageTable)
 local missedNoteRadius <const> = 140 -- the radius where notes get deleted
 local hitForgiveness <const> = 25 -- the distance from the orbit radius from which you can still hit notes
 local maxNoteScore <const> = 100 --the max score you can get from a note
-local perfectDistance <const> = 12 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
+local perfectDistance <const> = 2 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
 local noteCap <const> = 10 -- the max amount of notes that will be updated per frame
 
 -- Global symbols and fonts
@@ -185,6 +185,7 @@ local hitText <const> = {
 -- System variables
 toMenu = false
 restart = false
+tutorial = false
 p = Particle()
 
 sfx = {}
@@ -1040,15 +1041,21 @@ function updateSong()
     end
     -- check if the song is over and are going to the song end screen
     if songEnded then
-        if fadeOut > 0 then
-            fadeOut -= 0.1
-            if music:isPlaying() then
-                music:setVolume(music:getVolume()-0.1)
-            end
+        if tutorial then
+            -- restart the 'song'
+            setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
+            fadeIn = 1 -- disables the fade-in
         else
-            music:stop()
-            
-            return "songEndScreen"
+            if fadeOut > 0 then
+                fadeOut -= 0.1
+                if music:isPlaying() then
+                    music:setVolume(music:getVolume()-0.1)
+                end
+            else
+                music:stop()
+                
+                return "songEndScreen"
+            end
         end
     end
     return "song"
@@ -1058,7 +1065,7 @@ end
 function drawSong()
     invertedScreen = invertedScreen and not reduceFlashing
 
-    if missedNotes == 0 and combo >= #songTable.notes and not invertedScreen or missedNotes > 0 and invertedScreen then
+    if missedNotes == 0 and combo >= #songTable.notes and not invertedScreen or (missedNotes > 0 or combo < #songTable.notes) and invertedScreen then
         gfx.setImageDrawMode(gfx.kDrawModeInverted)
         gfx.clear(gfx.kColorBlack)
     end
@@ -1153,8 +1160,10 @@ function drawSong()
     if missedNotes == 0 and combo >= #songTable.notes then
         if invertedScreen then
             gfx.setImageDrawMode(gfx.kDrawModeCopy)
+            print("parts no misses inverted")
         else
             gfx.setImageDrawMode(gfx.kDrawModeInverted)
+            print("parts no misses")
         end
     end
     p:update()
