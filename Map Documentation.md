@@ -14,7 +14,7 @@ And the level should then be within your game!
 Create a new song, you'll need to create a folder for it's files (what will be referred to as the song's folder). I highly recommend that the song's folder's name be formatted like "song_title.artist.your_handle" to keep songs from sharing the same folder name. Inside that, you'll need:
  1. **songData.json** - A .json file containing data about the song that is the same between all maps. Info on creating this below.
  2. **albumArt.pdi**\* - A PlayDate image file, generated from a 64x64 .png using only black, white, and fully transparent pixels. Currently the only way to make these is to use the SDK to compile a project containing the .png, and taking the resulting .pdi file from the compiled .pdx folder.
- 3. **[song name].pda** - The PlayDate audio file of the song, generated from a .wav file. You can convert a .wav file to .pda [here](https://ejb.github.io/wav-pda-converter/), or using the SDK. It's highly recommended that the wav file be 22k Hz and signed 16 bit PCM and ran through [ADPCM-XQ](https://github.com/dbry/adpcm-xq/releases) to keep the file size low. It's recommended the song file has a short amount of silence after if you're going to map the whole song. **The name of the file must match the name of the song as defined in songData.json.**
+ 3. **[song name].pda** - The PlayDate audio file of the song, generated from a .wav file. You can convert a .wav file to .pda [here](https://ejb.github.io/wav-pda-converter/), or using the SDK. It's highly recommended that the wav file be 22k Hz and signed 16 bit PCM and then ran through [ADPCM-XQ](https://github.com/dbry/adpcm-xq/releases) to keep the file size low. It's recommended the song file has a short amount of silence after if you're going to map the whole song. **The name of the file must match the name of the song as defined in songData.json.**
  4. **[difficulty map].json** - One of the maps for the song. A single song can have any amount of difficulty maps, as long as they're all uniquely named. **For a map to be playable, it must have it's name in the list of difficulties within songData.json.** Info on creating these below.
  5. **[difficulty map].pdi**\* - One of the map's 48x48 icons. **It's name must match the name of a difficulty map.**
 
@@ -29,6 +29,9 @@ songData.json files follow this specific format:
 	"difficulties":[
 		""
 	],
+	"confirmText":{
+		"": ""
+	},
 	"bpm":0,
 	"bpmChanges":[
 		{
@@ -46,13 +49,16 @@ Any attribute followed by a 0 takes a number as input, and any attribute followe
  - **name** - The name of the song. **Should be the same as the name of the song's folder, as well as .pda file in the song's folder.**
  - **artist** - The song's artist.
  - **difficulties** - A list of the difficulty maps within the song's folder. **Each entry in the list should be the name of one of the difficulty maps within the song's folder without .json at the end. It is highly recommended that you order these from easiest to hardest.**
+ - **confirmText**\* - A list of changes to the text shown to confirm you'd like to start a map. Each element should be a valid difficulty name and the text to be shown on the confirm screen.
+   *All difficulties' confirm text defaults to "Let's Go!"*
  - **bpm** - The bpm of the song.
- - **bpmChanges**\* - A list of objects defining when to change the bpm of the song, and what to change it to. **Does not change the speed of the audio, just the beats per minute.** *The beat count will not change after a bpm change, just the speed of the beats; i.e. if you change bpm at beat 50, it will remain beat 50, but the subsequent beats will be at a different speed.*
-	 - Each bpm change object is defined by a set of attributes:
-		 - **beat** - The beat at which the bpm will change.
-		 - **bpm** - The bpm to change to.
+ - **bpmChanges**\* - A list of objects defining when to change the bpm of the song, and what to change it to. **Does not change the speed of the audio, just the beats per minute.**
+   *The beat count will not change after a bpm change, just the speed of the beats; i.e. if you change bpm at beat 50, it will remain beat 50, but the subsequent beats will be at a different speed.*
+   Each bpm change object is defined by a set of attributes:
+	- **beat** - The beat at which the bpm will change.
+	- **bpm** - The bpm to change to.
  - **beatOffset** - How much to offset beats when playing the song, in beats. Used for keeping the beats of the map aligned with the beat of the music. As a use example, if the song is half a beat early from the mappings, you can set this to 0.5 to fix this.
- - **preview** - When in the music file to start the preview when on the song select menu, in seconds. **Must have at least ten seconds of audio after.**
+ - **preview** - When in the music file to start the preview when on the song select menu, in seconds. **Must have at least ten seconds of audio after the specified second.**
 
 \* \- Optional. Can be left out of a song folder without causing errors.
 ### Creating a custom difficulty map
