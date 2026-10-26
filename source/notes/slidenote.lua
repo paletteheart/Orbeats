@@ -22,9 +22,8 @@ function SlideNote:draw(x, y, rad)
     local noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
-    -- gfx.setColor(gfx.kColorBlack)
+    local col = gfx.getColor()
     gfx.setPattern(notePatterns[settings.notePattern])
-    -- gfx.setDitherPattern(0.5)
 	gfx.setLineWidth(5*(self.radius/rad))
     -- dither via stencil if beyond the orbit
     if self.radius > rad then
@@ -36,7 +35,7 @@ function SlideNote:draw(x, y, rad)
 
     -- draw duration
     if self.duration > 0 then
-        -- gfx.setColor(gfx.kColorBlack) -- handled in game.lua
+        gfx.setColor(col)
         gfx.setLineWidth(self.endRadius/rad)
         if lineStartX1 == nil then lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90)) end
         if lineStartY1 == nil then lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90)) end
