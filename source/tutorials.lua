@@ -124,7 +124,7 @@ function updateTutorialSelect()
     if leftPressed then
         menuSelection = round(menuSelection)+0.51
     end
-    menuSelection += crankChange/90
+    menuSelection -= crankChange/90
     -- loop selection
     if menuSelection > #menuItems+0.5 then
         menuSelection -= #menuItems
@@ -234,29 +234,29 @@ function drawTutorialSelect()
     gfx.setPattern(wheelDither)
     -- gfx.setColor(gfx.kColorWhite)
     -- gfx.setDitherPattern(0.25)
+    local yScale = 0.7
     local ringSize
     ringSize = 30
     gfx.setLineWidth(6)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize)*2)
+    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
     ringSize = 20
     gfx.setLineWidth(2)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize)*2)
+    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
     ringSize = 10
     gfx.setLineWidth(10)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize)*2)
+    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
     ringSize = -10
     gfx.setLineWidth(14)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize)*2)
+    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
     ringSize = -25
     gfx.setLineWidth(5)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize)*2)
+    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
 
     -- draw floating icon
     local iconFloat = math.sin(floating)*5
     local iconAngle = -40
     local iconX = screenWidth + (wheelXRadius*1.6) * math.cos(math.rad(iconAngle-90)) - iconWidth/2
     local iconY = wheelY + (wheelYRadius*1.6) * math.sin(math.rad(iconAngle-90)) - iconHeight/2
-    print(iconX..", "..iconY)
     tutorialIcon:draw(iconX, iconY+iconFloat)
 
     -- draw menu item icons
