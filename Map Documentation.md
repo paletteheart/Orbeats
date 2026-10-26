@@ -4,7 +4,7 @@
 If you already have a song and it's difficulty maps created and ready to play in game, just follow these steps to add it into your game:
  1. Connect your PlayDate to a computer. If you're playing using the SDK's simulator, skip to step 3.
  2. Go to your PlayDate's settings. Scroll down to and select "System", and then scroll down and select "Reboot to Data Disk".
- 3. On your computer, navigate to the PlayDate's (or Simulator's) "Data" folder, then to "com.paletteheart.orbeats", and then to "songs". If there is no 'songs' folder at the specified directory, you can just create one.
+ 3. On your computer, navigate to the PlayDate's (or Simulator's) "Data" folder, then to "com.paletteheart.orbeats", and then to "songs". If there is no 'songs' folder at the specified directory, create one.
  4. Copy the custom song's folder into "songs".
  5. Eject your PlayDate.
 
@@ -110,36 +110,45 @@ A custom map for a song is stored as a .json file, following this overall struct
 Any attribute followed by a 0 takes a number as input, and any attribute followed by "" takes a string.
  - **notes** - List of note objects.
 	 - Each note is defined by a set of attributes:
-		 - **type**\* - The type of the note. Can be either "Note", "HoldNote", or "FlipNote". "Note" will make it a normal note, hit by pressing down/B while in the right place. "HoldNote" will make it a note that is hit if you're holding up/A/down/B and are in the right place. "FlipNote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place. *Defaults to “Note”.*
+		 - **type**\* - The type of the note. Can be either "Note", "SlideNote", "FlipNote", or "ReleaseNote.
+			 - "Note" will make it a normal note, hit by pressing down/B while in the right place.
+			 - "SlideNote" will make it a note that is hit if you press or are holding any button while in the right place.
+			 - "FlipNote" will make it a note that you hit by pressing up/A and flipping to the other side while in the right place.
+			 - "ReleaseNote" will make it a note that you hit by releasing any held button while in the right place.
+		   *Defaults to “Note”.*
 		 - **spawnBeat** - The beat of the song when this note will be spawned in. **Notes are expected to be in order by their spawnBeat, earlier notes coming first. Putting notes out of order will cause them to play incorrectly.**
 		 - **hitBeat** - The beat of the song when this note will reach the orbit radius and can be hit by the cursor. Notes may share a hitBeat.
 		 - **speed**\* - How quickly the note approaches the orbit radius. *Defaults to 1.*
-		 - **width**\* - How wide the note is in degrees. *Defaults to 45.*
+		 - **width**\* - How wide the note is in degrees.
+		   *Defaults to 45.*
 		 - **position** - A number from 0 to 360 determining where the middle of the note will be, in degrees, when it reaches the orbit radius.
-		 - **spin**\* - The number of degrees the note will spin around before reaching the orbit. Negative for counter clockwise. *Defaults to 0.*
-		 - **duration**\* - The length the note will need to be held to score full points on it. **This attribute only applies if the type is “Note” or “HoldNote”.** If set to 0, the note won’t need to be held at all. *Defaults to 0.*
+		 - **spin**\* - The number of degrees the note will spin around before reaching the orbit. Negative for counter clockwise. If applied to a note with duration, it will continue spinning at the same speed while being hit.
+		   *Defaults to 0.*
+		 - **duration**\* - The length the note will need to be held to score full points on it. If set to 0, the note won’t need to be held at all. **This attribute is ignored if the type is “FlipNote” or “ReleaseNote”.**
+		   *Defaults to 0.*
  - **effects**\* - An object containing lists of all the visual effects.
 	 - **toggleInvert**\* - A list of beats when the screen will invert. **Beats are expected to be ordered from earliest to latest.**
 	 - **moveOrbitX**\* - A list of objects defining when, where, and how the orbit will move along the x axis.
 		 - Each x movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined x value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
-			 - **x** - The x value the center of the orbit will move to. Set to 200 (screen center) by default.
+			 - **x** - The x value the orbit will move to.
 			 - **animation**\* - The animation the orbit will take to reach the x value. Can be any easing function from the PlayDate library, "ease-in", "ease-out", or "none". *Defaults to "none".*
 			 - **power**\* - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out, or will passed as the fifth argument for any other easing function.
 	 - **moveOrbitY**\* - A list of objects defining when, where, and how the orbit will move along the y axis.
 		 - Each y movement object is defined by a set of attributes:
 			 - **beat** - The beat when a note will reach this object's defined y value. **Movement objects are expected to be in beat order, with earlier movements before later ones.**
-			 - **y** - The x value the center of the orbit will move to. Set to 120 (screen center) by default.
+			 - **y** - The y value the orbit will move to.
 			 - **animation**\* - The animation the orbit will take to reach the x value. Can be any easing function from the PlayDate library, "ease-in", "ease-out", or "none". *Defaults to "none".*
 			 - **power**\* - If the animation is set to be "ease-in" or "ease-out", this will define how quickly it'll ease in or out, or will passed as the fifth argument for any other easing function.
-	 - **text**\* - A list of objects defining when, where, and what text will show on the screen. *Text will be drawn centered horizontally and vertically to the given x and y.*
+	 - **text**\* - A list of objects defining when, where, and what text will show on the screen. **Text effects are very slow to render and will likely lower the framerate. They should be used sparingly, if at all.**
+	   *Text will be drawn centered horizontally and vertically to the given x and y.*
 		 - Each text object is defined by a set of attributes:
 			 - **startBeat** - The beat at which this object's text will be shown.
 			 - **endBeat** - The beat at which this object's text will be removed.
 			 - **text** - A string of text that will be shown.
 			 - **x** - The x value where the center of the text will be.
 			 - **y** - The y value where the center of the text will be.
-			 - **font**\* - The font that will be used. Can be set to "orbeatsSans", "odinRounded", or "orbeatsSmall". *Defaults to "orbeatsSmall".*
- - **songEnd** - The beat when the map will end.
+			 - **font**\* - The font that will be used. Can be set to "orbeatsSans", "odinRounded", "orbeatsSmall", or "carbonNumbers". *Defaults to "orbeatsSmall".*
+ - **songEnd** - The beat when the map will end. **If placed after the audio file ends, it will never be reached, and the music will loop endlessly without any notes.**
 
 \* \- Optional. Can be left out of a map file without causing errors.
