@@ -238,12 +238,18 @@ rightPressed = pd.buttonJustPressed(pd.kButtonRight)
 aPressed = pd.buttonJustPressed(pd.kButtonA)
 bPressed = pd.buttonJustPressed(pd.kButtonB)
 
+hitPressed = downPressed or bPressed or rightPressed
+flipPressed = upPressed or aPressed or leftPressed
+buttonPressed = downPressed or bPressed or upPressed or aPressed or leftPressed or rightPressed
+
 upHeld = pd.buttonIsPressed(pd.kButtonUp)
 downHeld = pd.buttonIsPressed(pd.kButtonDown)
 leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
 rightHeld = pd.buttonIsPressed(pd.kButtonRight)
 aHeld = pd.buttonIsPressed(pd.kButtonA)
 bHeld = pd.buttonIsPressed(pd.kButtonB)
+
+buttonHeld = downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld
 
 buttonReleased = false
 
@@ -339,6 +345,85 @@ local function killNote(noteIndex)
     notesKilled += 1
 end
 
+local function checkNoteHit(note, noteInstance, position, startAngle, endAngle, newRadius, endRadius, trigger, alwaysPerfect)
+    -- check if the player position is within the note
+    if (playerPos > startAngle and playerPos < endAngle) or (playerPos+360 > startAngle and playerPos+360 < endAngle) or (playerPos-360 > startAngle and playerPos-360 < endAngle) then
+        if trigger then
+            --note is hit
+            hitTextTimer = hitTextTime
+            hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
+            hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+
+            --remove note if a short note, begin hitting if a long note
+            if alwaysPerfect ~= nil and alwaysPerfect then
+                -- if alwaysPerfect, then skip calculating score
+                if endRadius == newRadius then
+                    score += maxNoteScore
+                    killNote(note)
+                    hitTextDisplay = hitText.perfect
+                    perfectHits += 1
+                else
+                    score += mathFloor(maxNoteScore/2)
+                    noteInstance:beginHitting(orbitRadius)
+                    hitTextDisplay = hitText.perfect
+                end
+            else  
+                --figure out how many points you get
+                local noteDistance = mathAbs(orbitRadius-newRadius)
+
+                if endRadius == newRadius then
+                    -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
+                    -- you can be, which scores half max points.
+                    if noteDistance <= perfectDistance then
+                        score += maxNoteScore
+                        hitTextDisplay = hitText.perfect
+                        perfectHits += 1
+                    else
+                        -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
+                        -- Probably don't mess with this equation
+                        local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
+                        score += hitScore
+                        updateHitTextDisplay(hitScore)
+                    end
+
+                    killNote(note)
+                else
+                    -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
+                    -- you can be, which scores half max points.
+                    if noteDistance <= perfectDistance then
+                        score += mathFloor(maxNoteScore/2)
+                        hitTextDisplay = hitText.perfect
+                        perfectHits += 1
+                    else
+                        -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
+                        -- Probably don't mess with this equation
+                        local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance)))/2)
+                        score += hitScore
+                        updateHitTextDisplay(hitScore)
+                    end
+
+                    noteInstance:beginHitting(orbitRadius)
+                end
+            end
+            -- up the hit note score and combo counter
+            hitNotes += 1
+            incrementCombo()
+            -- up your health
+            health += noteDamage/2
+            -- create particles
+            if settings.particles then
+                p:moveTo(playerX, playerY)
+                p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
+                p:add(5)
+            end
+            -- play sfx
+            if settings.toggleSfx then
+                sfx.hit[settings.sfx]:play()
+            end
+        end
+    end
+end
+
 local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, spin, duration)
     -- test if a note of this type is already in the pool
     local newNote
@@ -380,7 +465,7 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
     end
 
     if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-        if downHeld or bHeld or rightHeld or upHeld or leftHeld or aHeld then
+        if buttonHeld then
             -- continue hitting note
             if settings.particles then
                 p:moveTo(playerX, playerY)
@@ -390,6 +475,7 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
             if endRadius >= orbitRadius then
                 killNote(noteInstance)
                 score += mathFloor(maxNoteScore/2)
+                perfectHits += 1
                 hitTextDisplay = hitText.perfect
                 hitTextTimer = hitTextTime
                 hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
@@ -400,6 +486,7 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
             if (endRadius >= orbitRadius-hitForgiveness) then
                 killNote(noteInstance)
                 score += mathFloor(maxNoteScore/2)
+                perfectHits += 1
                 hitTextDisplay = hitText.perfect
             else
                 note:finishHitting(fakeCurrentBeat)
@@ -416,6 +503,7 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
         if (endRadius >= orbitRadius-hitForgiveness) then
             killNote(noteInstance)
             score += mathFloor(maxNoteScore/2)
+            perfectHits += 1
             hitTextDisplay = hitText.perfect
         else
             note:finishHitting(fakeCurrentBeat)
@@ -478,7 +566,7 @@ local function updateNotes()
                 closestNoteBeat = fakeCurrentBeat-hitBeat
             end
         else
-            oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = note:update(currentBeat, orbitRadius)
+            null, null, position, endRadius, hitting, null, hitBeat, null, null = note:update(currentBeat, orbitRadius)
             -- check if the note should be removed. if not, get the distance from the current beat, and check if it's closer than all other notes
             if endRadius >= missedNoteRadius then
                 tableInsert(deathQueue, i)
@@ -519,6 +607,7 @@ local function updateNotes()
         local position
         local endRadius
         local noteType
+        local noteStartAngle, noteEndAngle = note:getNoteAngles()
         -- if the music isn't playing, fake the beat
         if fakeCurrentBeat < 0 then
             oldRadius, newRadius, position, endRadius, null, null, null, null, noteType = note:update(fakeCurrentBeat, orbitRadius)
@@ -526,198 +615,31 @@ local function updateNotes()
             oldRadius, newRadius, position, endRadius, null, null, null, null, noteType = note:update(currentBeat, orbitRadius)
         end
 
+        local hitDistThreshold = (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius)
+        local holdDistThreshold = (oldRadius < orbitRadius+hitForgiveness or newRadius <= orbitRadius+hitForgiveness) and newRadius >= orbitRadius
+
         -- Check if note can be hit or is being hit
-        if noteType == "note" then
-            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
-                local noteStartAngle, noteEndAngle = note:getNoteAngles()
-                -- check if the player position is within the note
-                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if downPressed or bPressed or rightPressed then
-                        --figure out how many points you get
-                        local noteDistance = mathAbs(orbitRadius-newRadius)
-
-                        --note is hit
-                        hitTextTimer = hitTextTime
-                        hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-                        hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
-
-                        --remove note if a short note, begin hitting if a long note
-                        if endRadius == newRadius then
-                            -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
-                            -- you can be, which scores half max points.
-                            if noteDistance <= perfectDistance then
-                                score += maxNoteScore
-                                hitTextDisplay = hitText.perfect
-                                perfectHits += 1
-                            else
-                                -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
-                                -- Probably don't mess with this equation
-                                local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
-                                score += hitScore
-                                updateHitTextDisplay(hitScore)
-                            end
-
-                            killNote(closestNotes[i])
-                        else
-                            -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
-                            -- you can be, which scores half max points.
-                            if noteDistance <= perfectDistance then
-                                score += mathFloor(maxNoteScore/2)
-                                hitTextDisplay = hitText.perfect
-                                perfectHits += 1
-                            else
-                                -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
-                                -- Probably don't mess with this equation
-                                local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance)))/2)
-                                score += hitScore
-                                updateHitTextDisplay(hitScore)
-                            end
-
-                            note:beginHitting(orbitRadius)
-                        end
-                        -- up the hit note score and combo counter
-                        hitNotes += 1
-                        incrementCombo()
-                        -- up your health
-                        health += noteDamage/2
-                        -- create particles
-                        if settings.particles then
-                            p:moveTo(playerX, playerY)
-                            p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                            p:add(5)
-                        end
-                        -- play sfx
-                        if settings.toggleSfx then
-                            sfx.hit[settings.sfx]:play()
-                        end
-                    end
+        if noteType == "slidenote" then
+            -- do default distance thresholding and scoring if a button was just pressed,
+            -- otherwise score it like it's always perfect from the hold distance threshold
+            if buttonPressed then
+                if hitDistThreshold then
+                    checkNoteHit(closestNotes[i], note, position, noteStartAngle, noteEndAngle, newRadius, endRadius, buttonPressed)
+                end
+            else
+                if holdDistThreshold then
+                    checkNoteHit(closestNotes[i], note, position, noteStartAngle, noteEndAngle, newRadius, endRadius, buttonHeld, true)
                 end
             end
-            
-        elseif noteType == "slidenote" then
-            if (oldRadius < orbitRadius+hitForgiveness or newRadius <= orbitRadius+hitForgiveness) and newRadius >= orbitRadius then
-                local noteStartAngle, noteEndAngle = note:getNoteAngles()
-                -- check if the player position is within the note
-                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld then
-                        --note is hit
-                        hitTextDisplay = hitText.perfect
-                        perfectHits += 1
-                        hitTextTimer = hitTextTime
-                        hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-                        hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
-                        --remove note if a short note, begin hitting if a long note
-                        if endRadius == newRadius then
-                            score += maxNoteScore
-                            killNote(closestNotes[i])
-                        else
-                            score += mathFloor(maxNoteScore/2)
-                            note:beginHitting(orbitRadius)
-                        end
-                        -- up the hit note score
-                        hitNotes += 1
-                        incrementCombo()
-                        -- up your health
-                        health += noteDamage/2
-                        -- create particles
-                        if settings.particles then
-                            p:moveTo(playerX, playerY)
-                            p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                            p:add(2)
-                        end
-                        -- play sfx
-                        if settings.toggleSfx then
-                            sfx.hit[settings.sfx]:play()
-                        end
-                    end
-                end
-            end
-        elseif noteType == "flipnote" then
-            -- check if the note is close enough to be hit
-            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
-                local noteStartAngle, noteEndAngle = note:getNoteAngles()
-                -- check if the player position is within the note
-                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if upPressed or aPressed or leftPressed then
-                        -- note is hit
-                        --figure out how many points you get
-                        local noteDistance = mathAbs(orbitRadius-newRadius)
-                        -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
-                        -- you can be, which scores half max points.
-                        if noteDistance <= perfectDistance then
-                            score += maxNoteScore
-                            hitTextDisplay = hitText.perfect
-                            perfectHits += 1
-                        else 
-                            local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
-                            score += hitScore
-                            updateHitTextDisplay(hitScore)
-                        end
-                        hitTextTimer = hitTextTime
-                        hitTextX = orbitCenterX + 20 * mathCos(mathRad(position-90))
-                        hitTextY = orbitCenterY + 20 * mathSin(mathRad(position-90))
-                        --remove note
-                        killNote(closestNotes[i])
-                        -- up the hit note score
-                        hitNotes += 1
-                        incrementCombo()
-                        -- up your health
-                        health += noteDamage/2
-                        -- create particles
-                        if settings.particles then
-                            p:moveTo(playerX, playerY)
-                            p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                            p:add(5)
-                        end
-                        -- play sfx
-                        if settings.toggleSfx then
-                            sfx.hit[settings.sfx]:play()
-                        end
-                    end
-                end
-            end
-        elseif noteType == "releasenote" then
-            -- check if the note is close enough to be hit
-            if (newRadius >= orbitRadius-hitForgiveness and newRadius < orbitRadius) or ((oldRadius < orbitRadius or newRadius <= orbitRadius+hitForgiveness) and  newRadius >= orbitRadius) then
-                local noteStartAngle, noteEndAngle = note:getNoteAngles()
-                -- check if the player position is within the note
-                if (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle) then
-                    if buttonReleased then
-                        -- note is hit
-                        --figure out how many points you get
-                        local noteDistance = mathAbs(orbitRadius-newRadius)
-                        -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
-                        -- you can be, which scores half max points.
-                        if noteDistance <= perfectDistance then
-                            score += maxNoteScore
-                            hitTextDisplay = hitText.perfect
-                            perfectHits += 1
-                        else 
-                            local hitScore = mathFloor(maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance))))
-                            score += hitScore
-                            updateHitTextDisplay(hitScore)
-                        end
-                        hitTextTimer = hitTextTime
-                        hitTextX = orbitCenterX + 20 * mathCos(mathRad(position-90))
-                        hitTextY = orbitCenterY + 20 * mathSin(mathRad(position-90))
-                        --remove note
-                        killNote(closestNotes[i])
-                        -- up the hit note score
-                        hitNotes += 1
-                        incrementCombo()
-                        -- up your health
-                        health += noteDamage/2
-                        -- create particles
-                        if settings.particles then
-                            p:moveTo(playerX, playerY)
-                            p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                            p:add(5)
-                        end
-                        -- play sfx
-                        if settings.toggleSfx then
-                            sfx.hit[settings.sfx]:play()
-                        end
-                    end
+        else
+            -- if not a slide note, score normally
+            if hitDistThreshold then
+                if noteType == "note" then
+                    checkNoteHit(closestNotes[i], note, position, noteStartAngle, noteEndAngle, newRadius, endRadius, hitPressed)
+                elseif noteType == "flipnote" then
+                    checkNoteHit(closestNotes[i], note, position, noteStartAngle, noteEndAngle, newRadius, endRadius, flipPressed)
+                elseif noteType == "releasenote" then
+                    checkNoteHit(closestNotes[i], note, position, noteStartAngle, noteEndAngle, newRadius, endRadius, buttonReleased)
                 end
             end
         end
@@ -1377,12 +1299,18 @@ function updateInputs() -- used to check if buttons were pressed during a dead f
     aPressed = pd.buttonJustPressed(pd.kButtonA)
     bPressed = pd.buttonJustPressed(pd.kButtonB)
 
+    hitPressed = downPressed or bPressed or rightPressed
+    flipPressed = upPressed or aPressed or leftPressed
+    buttonPressed = downPressed or bPressed or upPressed or aPressed or leftPressed or rightPressed
+
     upHeld = pd.buttonIsPressed(pd.kButtonUp)
     downHeld = pd.buttonIsPressed(pd.kButtonDown)
     leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
     rightHeld = pd.buttonIsPressed(pd.kButtonRight)
     aHeld = pd.buttonIsPressed(pd.kButtonA)
     bHeld = pd.buttonIsPressed(pd.kButtonB)
+
+    buttonHeld = downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld
 
     buttonReleased = pd.buttonJustReleased(pd.kButtonUp) or
                      pd.buttonJustReleased(pd.kButtonDown) or
