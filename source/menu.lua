@@ -12,7 +12,7 @@ local screenCenterX <const> = screenWidth / 2
 local wheelDither <const> = {0xAA, 0x0, 0x80, 0x0, 0x80, 0x0, 0x80, 0x0}
 
 local menuItems <const> = {
-    "tutorial",
+    "tutorialSelect",
     "songSelect",
     "settings",
     "stats",
@@ -30,8 +30,6 @@ local menuItemNames <const> = {
 
 -- Define vars
 local init = false
-
-local tutorialStarting = false
 
 local menuSelection = 2
 if not settings.tutorialPlayed then
@@ -115,11 +113,7 @@ function updateMainMenu()
             wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, screenHeight, ease.outBack)
             sfx.mid:play()
         else
-            if menuItems[menuSelectionRounded] == "tutorial" then
-                tutorialStarting = true
-            else
-                leavingMenu = true
-            end
+            leavingMenu = true
             wheelRadiusTimer = replaceTimer(wheelRadiusTimer, animationTime, wheelRadius, 300, ease.outCubic)
             sfx.play:play()
         end
@@ -165,37 +159,7 @@ function updateMainMenu()
         end
     end
 
-    -- check for leaving the menu
-    if tutorialStarting then
-        -- get the map file path
-        local songTablePath = "tutorial/Tutorial.json"
-        -- check if the map exists, do nothing if not
-        if not pd.file.exists(songTablePath) then
-            songStarting = false
-        else
-            -- fade out and then load map
-            if fadeWhite > 0 then
-                fadeWhite -= 0.1
-            else
-                local tutorialData = json.decodeFile(pd.file.open("tutorial/songData.json"))
-                local bpm = tutorialData.bpm
-                local bpmChanges = tutorialData.bpmChanges
-                local beatOffset = tutorialData.beatOffset
-                if music:isPlaying() then
-                    music:stop()
-                end
-                menuBgm:stop()
-                local tutorialMusicFile = ("tutorial/Tutorial")
-                setUpSong(bpm, bpmChanges, beatOffset, tutorialMusicFile, songTablePath)
-                tutorialStarting = false
-                settings.tutorialPlayed = true
-                pd.datastore.write(settings, "settings")
-                resetSongSelectAnim()
-                init = false
-                return "song"
-            end
-        end
-    elseif toTitle then
+    if toTitle then
         -- go back to the title screen
         if fadeBlack > 0 then
             fadeBlack -= 0.1
@@ -239,10 +203,6 @@ function drawMainMenu()
     -- draw wheel
     wheelY = wheelYTimer.value
     wheelRadius = wheelRadiusTimer.value
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillCircleAtPoint(screenCenterX, wheelY, wheelRadius)
-    gfx.setColor(gfx.kColorBlack)
-    -- gfx.setDitherPattern(1/3, gfx.image.kDitherTypeDiagonalLine)
     gfx.setPattern(wheelDither)
     gfx.fillCircleAtPoint(screenCenterX, wheelY, wheelRadius)
     gfx.setColor(gfx.kColorWhite)

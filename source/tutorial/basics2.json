@@ -1,0 +1,69 @@
+{
+    "notes": [
+        {
+            "type": "FlipNote",
+            "spawnBeat": 0,
+            "hitBeat": 4,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 8,
+            "hitBeat": 12,
+            "speed": 0.5,
+            "width": 90,
+            "position": 90,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 16,
+            "hitBeat": 20,
+            "speed": 0.5,
+            "width": 60,
+            "position": 180,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 24,
+            "hitBeat": 28,
+            "speed": 0.5,
+            "width": 30,
+            "position": 270,
+            "spin": 0
+        }
+    ],
+    "effects": {
+        "text": [
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Flip notes are\nhit by moving\nyour cursor over\nthem and pressing\nⒶ/←/↑ when\nthey reach the  \norbit. ",
+                "x": 59,
+                "y": 38,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Press ⊙ to exit.",
+                "x": 346,
+                "y": 9,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Pressing Ⓐ/←/↑\nflips the cursor\nto the opposite\nside of the orbit.",
+                "x": 344,
+                "y": 211,
+                "font": "orbeatsSmall"
+            }
+        ]
+    },
+    "songEnd": 36
+}

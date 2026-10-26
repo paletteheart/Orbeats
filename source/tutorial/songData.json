@@ -1,10 +1,8 @@
 {
     "name":"Tutorial",
-    "artist":"Palette",
-    "difficulties":[
-        "Tutorial"
-    ],
-    "bpm":160,
+    "artist":"palette",
+    "difficulties":[],
+    "bpm":80,
     "beatOffset":0,
     "preview":0
 }

@@ -1,7 +1,7 @@
 
 -- Define constants
-local pd = playdate
-local gfx = pd.graphics
+local pd <const> = playdate
+local gfx <const> = pd.graphics
 local tmr <const> = pd.timer
 local ease <const> = pd.easingFunctions
 
@@ -10,14 +10,14 @@ local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
-local qrCode = gfx.image.new("sprites/discordCode")
-local codeWidth, codeHeight = qrCode:getSize()
+local qrCode <const> = gfx.image.new("sprites/discordCode")
+local codeWidth <const>, codeHeight <const> = qrCode:getSize()
 local codeX <const> = codeWidth/2 + (screenHeight-codeHeight)/2
 local codeHideY <const> = -codeHeight
 local codeCurrentY = codeHideY
 local codeYTimer = tmr.new(0, codeHideY, codeHideY)
 
-local text = "Join us in the\nOrbeats Discord!\n\nhttps://discord.gg/\nDMwDxVx8gq"
+local text <const> = "Join us in the\nOrbeats Discord!\n\nhttps://discord.gg/\nDMwDxVx8gq"
 local textWidth, textHeight = gfx.getTextSize(text, fontFamilies.orbeatsSans)
 local textX <const> = screenWidth - codeX
 local textHideY <const> = screenHeight + textHeight/2
@@ -51,7 +51,9 @@ function updateDiscordInvite()
         init = false
     end
 
+    -- update floating elements' animations
     floating += 0.05
+    if floating == 1 then floating = 0 end
 
     if aPressed or bPressed or upPressed or downPressed or leftPressed or rightPressed then
         sfx.low:play()

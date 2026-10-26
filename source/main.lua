@@ -15,6 +15,7 @@ import "game"
 import "endScreen"
 import "title"
 import "menu"
+import "tutorials"
 import "stats"
 import "settings"
 import "reset"
@@ -88,6 +89,9 @@ local function draw()
 	elseif gameState == "songSelect" then
 		gfx.clear(gfx.kColorBlack)
 		drawSongSelect()
+	elseif gameState == "tutorialSelect" then
+		gfx.clear(gfx.kColorBlack)
+		drawTutorialSelect()
 	elseif gameState == "menu" then
 		gfx.clear(gfx.kColorBlack)
 		drawMainMenu()
@@ -115,7 +119,7 @@ local function draw()
 	end
 
 	if settings.drawFps then
-		if gameState == "song" then
+		if gameState == "song" and not tutorial then
 			pd.drawFPS(screenWidth-15, 0)
 		else
 			pd.drawFPS(screenWidth-15, screenHeight-12)
@@ -161,6 +165,8 @@ function pd.update()
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
 		addSortByMenuItem()
+	elseif gameState == "tutorialSelect" then
+		gameState = updateTutorialSelect()
 	elseif gameState == "menu" then
 		gameState = updateMainMenu()
 	elseif gameState == "settings" then

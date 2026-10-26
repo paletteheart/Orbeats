@@ -1,0 +1,215 @@
+{
+    "notes": [
+        {
+            "type": "Note",
+            "spawnBeat": -4,
+            "hitBeat": 0,
+            "speed": 0.5,
+            "width": 135,
+            "position": 0,
+            "spin": 0,
+            "duration": 4
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": -3,
+            "hitBeat": 1,
+            "speed": 0.5,
+            "width": 60,
+            "position": 60,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": -2,
+            "hitBeat": 2,
+            "speed": 0.5,
+            "width": 60,
+            "position": 300,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": -1,
+            "hitBeat": 3,
+            "speed": 0.5,
+            "width": 60,
+            "position": 60,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 0,
+            "hitBeat": 4,
+            "speed": 0.5,
+            "width": 60,
+            "position": 300,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 4,
+            "hitBeat": 8,
+            "speed": 0.5,
+            "width": 60,
+            "position": 300,
+            "spin": -125,
+            "duration": 4
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 5,
+            "hitBeat": 9,
+            "speed": 0.5,
+            "width": 30,
+            "position": 330,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 6,
+            "hitBeat": 10,
+            "speed": 0.5,
+            "width": 30,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 7,
+            "hitBeat": 11,
+            "speed": 0.5,
+            "width": 30,
+            "position": 30,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 8,
+            "hitBeat": 12,
+            "speed": 0.5,
+            "width": 30,
+            "position": 60,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 12,
+            "hitBeat": 16,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 13,
+            "hitBeat": 17,
+            "speed": 0.5,
+            "width": 60,
+            "position": 180,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 14,
+            "hitBeat": 18,
+            "speed": 0.5,
+            "width": 60,
+            "position": 180,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 15,
+            "hitBeat": 19,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 16,
+            "hitBeat": 20,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 20,
+            "hitBeat": 24,
+            "speed": 0.5,
+            "width": 45,
+            "position": 180,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 21,
+            "hitBeat": 25,
+            "speed": 0.5,
+            "width": 45,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 22,
+            "hitBeat": 26,
+            "speed": 0.5,
+            "width": 45,
+            "position": 30,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 23,
+            "hitBeat": 27,
+            "speed": 0.5,
+            "width": 45,
+            "position": 210,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 24,
+            "hitBeat": 28,
+            "speed": 0.5,
+            "width": 45,
+            "position": 240,
+            "spin": 0
+        }
+    ],
+    "effects": {
+        "text": [
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Slide notes can\nbe hit while also\nhitting a hold\nnote.",
+                "x": 58,
+                "y": 33,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Slide notes can\nbe ghost flip\nnotes, as they\ncan be hit by\nflipping.",
+                "x": 347,
+                "y": 205,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Press ⊙ to exit.",
+                "x": 346,
+                "y": 9,
+                "font": "orbeatsSmall"
+            }
+        ]
+    },
+    "songEnd": 36
+}

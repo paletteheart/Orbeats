@@ -1,0 +1,125 @@
+{
+    "notes": [
+        {
+            "type": "Note",
+            "spawnBeat": -4,
+            "hitBeat": 0,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0,
+            "duration": 4
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 0,
+            "hitBeat": 4,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 4,
+            "hitBeat": 8,
+            "speed": 0.5,
+            "width": 60,
+            "position": 337.5,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 6,
+            "hitBeat": 10,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 8,
+            "hitBeat": 12,
+            "speed": 0.5,
+            "width": 60,
+            "position": 22.5,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 12,
+            "hitBeat": 16,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 13,
+            "hitBeat": 17,
+            "speed": 0.5,
+            "width": 60,
+            "position": 180,
+            "spin": 0,
+            "duration": 3
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 16,
+            "hitBeat": 20,
+            "speed": 0.5,
+            "width": 60,
+            "position": 180,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 20,
+            "hitBeat": 24,
+            "speed": 0.5,
+            "width": 60,
+            "position": 180,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 24,
+            "hitBeat": 28,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        }
+    ],
+    "effects": {
+        "text": [
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Hold notes are\nhit by moving\nyour cursor\nover them while\nholding Ⓑ/→/↓,\nor any button  \nif from a \nslide note. ",
+                "x": 53,
+                "y": 53,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "  Release notes\nare hit by\nmoving your\ncursor over them\nand releasing\nany button.",
+                "x": 340,
+                "y": 202,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Press ⊙ to exit.",
+                "x": 346,
+                "y": 9,
+                "font": "orbeatsSmall"
+            }
+        ]
+    },
+    "songEnd": 36
+}

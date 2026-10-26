@@ -186,7 +186,7 @@ local hitText <const> = {
 -- System variables
 toMenu = false
 restart = false
-tutorial = true
+tutorial = false
 p = Particle()
 
 sfx = {}
@@ -1085,7 +1085,13 @@ function updateSong()
         else
             music:stop()
             toMenu = false
-            return "songSelect"
+            -- if playing a tutorial, go back to the tutorials
+            if tutorial then
+                tutorial = false
+                return "tutorialSelect"
+            else
+                return "songSelect"
+            end
         end
     end
     -- check if the song is over and are going to the song end screen
@@ -1095,6 +1101,7 @@ function updateSong()
             music:stop()
             setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             fadeIn = 1 -- disables the fade-in
+            updateSong()
         else
             if fadeOut > 0 then
                 fadeOut -= 0.1

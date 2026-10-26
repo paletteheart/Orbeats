@@ -1,0 +1,85 @@
+{
+    "notes": [
+        {
+            "type": "Note",
+            "spawnBeat": 0,
+            "hitBeat": 4,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 8,
+            "hitBeat": 12,
+            "speed": 0.5,
+            "width": 90,
+            "position": 90,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 16,
+            "hitBeat": 20,
+            "speed": 0.5,
+            "width": 60,
+            "position": 180,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 24,
+            "hitBeat": 28,
+            "speed": 0.5,
+            "width": 30,
+            "position": 270,
+            "spin": 0
+        }
+    ],
+    "effects": {
+        "text": [
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Notes approach\nfrom the center\nof the orbit.",
+                "x": 54,
+                "y": 17,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Notes are hit  \nby moving \nyour cursor\nover them and\npressing Ⓑ/→/↓\nwhen they reach\nthe orbit.",
+                "x": 57,
+                "y": 196,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Press ⊙ to exit.",
+                "x": 346,
+                "y": 9,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Turn the crank\nto move your\ncursor around\nthe orbit.",
+                "x": 345,
+                "y": 210,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Notes can be\nany size or\nspeed.",
+                "x": 51,
+                "y": 67,
+                "font": "orbeatsSmall"
+            }
+        ]
+    },
+    "songEnd": 36
+}
