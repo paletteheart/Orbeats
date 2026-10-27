@@ -130,7 +130,7 @@ local bgAnim <const> = gfx.animation.loop.new(10, bgImageTable)
 local missedNoteRadius <const> = 140 -- the radius where notes get deleted
 local hitForgiveness <const> = 25 -- the distance from the orbit radius from which you can still hit notes
 local maxNoteScore <const> = 100 --the max score you can get from a note
-local perfectDistance <const> = 2 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
+local perfectDistance <const> = 12 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
 local noteCap <const> = 10 -- the max amount of notes that will be updated per frame
 
 -- Global symbols and fonts
@@ -1141,10 +1141,8 @@ function drawSong()
     if missedNotes == 0 and combo >= #songTable.notes and not tutorial then
         if invertedScreen then
             gfx.setImageDrawMode(gfx.kDrawModeCopy)
-            print("parts no misses inverted")
         else
             gfx.setImageDrawMode(gfx.kDrawModeInverted)
-            print("parts no misses")
         end
     end
     p:update()
