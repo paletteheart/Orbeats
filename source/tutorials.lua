@@ -87,7 +87,7 @@ function updateTutorialSelect()
     end
 
     -- update floating elements' animations
-    floating += 0.05
+    floating += 0.025
     if floating == 1 then floating = 0 end
     
     -- check inputs
@@ -253,10 +253,12 @@ function drawTutorialSelect()
     gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
 
     -- draw floating icon
-    local iconFloat = math.sin(floating)*5
+    local iconFloat = math.sin(floating)*8
     local iconAngle = -40
     local iconX = screenWidth + (wheelXRadius*1.6) * math.cos(math.rad(iconAngle-90)) - iconWidth/2
     local iconY = wheelY + (wheelYRadius*1.6) * math.sin(math.rad(iconAngle-90)) - iconHeight/2
+    -- round the movement to 2s so the dither doesn't flicker
+    iconX, iconY = math.floor(iconX*0.5)*2, math.floor(iconY*0.5)*2
     tutorialIcon:draw(iconX, iconY+iconFloat)
 
     -- draw menu item icons

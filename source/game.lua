@@ -335,6 +335,12 @@ local function updateHitTextDisplay(hitScore)
     end
 end
 
+local function updateHitTextPos(position)
+    if not settings.centerHitText then return end -- escape if not centering the text
+    hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
+    hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+end
+
 local function songOver()
     
 end
@@ -351,8 +357,7 @@ local function checkNoteHit(note, noteInstance, position, startAngle, endAngle, 
         if trigger then
             --note is hit
             hitTextTimer = hitTextTime
-            hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-            hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+            updateHitTextPos(position)
 
             --remove note if a short note, begin hitting if a long note
             if alwaysPerfect ~= nil and alwaysPerfect then
@@ -478,8 +483,7 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
                 perfectHits += 1
                 hitTextDisplay = hitText.perfect
                 hitTextTimer = hitTextTime
-                hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-                hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+                updateHitTextPos(position)
             end
         else
             -- check if you're within the window of forgiveness
@@ -495,8 +499,7 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
                 updateHitTextDisplay(hitScore)
             end
             hitTextTimer = hitTextTime
-            hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-            hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+            updateHitTextPos(position)
         end
     else
         -- check if you're within the window of forgiveness
@@ -512,8 +515,7 @@ local function updateLongNote(note, endRadius, endBeat, hitBeat, position, noteI
             updateHitTextDisplay(hitScore)
         end
         hitTextTimer = hitTextTime
-        hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-        hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+        updateHitTextPos(position)
     end
 end
 
@@ -545,8 +547,7 @@ local function updateNotes()
                 combo = 0
                 hitTextDisplay = hitText.miss
                 hitTextTimer = hitTextTime
-                hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-                hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+                updateHitTextPos(position)
                 -- lower health
                 health -= noteDamage
             elseif hitting then -- check if you're already hitting it
@@ -575,8 +576,7 @@ local function updateNotes()
                 combo = 0
                 hitTextDisplay = hitText.miss
                 hitTextTimer = hitTextTime
-                hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-                hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+                updateHitTextPos(position)
                 -- lower health
                 health -= noteDamage
             elseif hitting then -- check if you're already hitting it
@@ -912,6 +912,48 @@ local function updateEffects()
     end
 end
 
+
+local function drawHitText(x, y)
+    local hitTextWidth, hitTextHeight = hitTextDisplay:getSize()
+    local totalHitWidth
+    local showScore = hitTextDisplay ~= hitText.perfect and hitTextDisplay ~= hitText.miss
+    if hitTextTimer > 0 then
+        local offsetY = 0
+        if hitTextTimer == hitTextTime then
+            offsetY = -2
+        end
+
+        if settings.centerHitText then
+            local hitScoreWidth, hsh = gfx.getTextSize(hitScoreDisplay, fontFamilies.orbeatsSmall)
+            if showScore then
+                totalHitWidth = hitTextWidth+hitScoreWidth+1
+            else
+                totalHitWidth = hitTextWidth
+            end
+
+            gfx.setColor(bgCol)
+            gfx.fillRoundRect(x-totalHitWidth/2-1, y-hitTextHeight/2-1+offsetY, totalHitWidth+2, hitTextHeight+2, 2)
+
+            if showScore then
+                hitTextDisplay:drawCentered(x-(hitScoreWidth*0.5), y+offsetY)
+                drawTextCentered(hitScoreDisplay, x+(hitTextWidth*0.5)+1, y+offsetY, fontFamilies.orbeatsSmall)
+            else
+                hitTextDisplay:drawCentered(x, y+offsetY)
+            end
+        else
+            if showScore then
+                hitTextDisplay:draw(x, y+offsetY)
+                gfx.drawText(hitScoreDisplay, x+hitTextWidth+1, y+offsetY, fontFamilies.orbeatsSmall)
+            else
+                hitTextDisplay:draw(x, y+offsetY)
+            end
+        end
+
+        hitTextTimer -= 1
+    end
+end
+
+
 -- global functions
 
 function updateSong()
@@ -1061,6 +1103,8 @@ function drawSong()
 
         --draw the point total
         gfx.drawText(score, 2, 2, fontFamilies.orbeatsSmall)
+        -- if hit text isn't centered, draw here
+        if not settings.centerHitText then drawHitText(2, 13) end
 
         --draw the combo counter
         if combo > 4 then
@@ -1161,31 +1205,8 @@ function drawSong()
         cursor:getImage(cursorImg):drawCentered(playerX, playerY)
     end
 
-    --draw the hit text
-    local hitTextWidth, hitTextHeight = hitTextDisplay:getSize()
-    local hitScoreWidth, hsh = gfx.getTextSize(hitScoreDisplay, fontFamilies.orbeatsSmall)
-    local totalHitWidth
-    local showScore = hitTextDisplay ~= hitText.perfect and hitTextDisplay ~= hitText.miss
-    if showScore then
-        totalHitWidth = hitTextWidth+hitScoreWidth+1
-    else
-        totalHitWidth = hitTextWidth
-    end
-    if hitTextTimer > 0 then
-        local offsetY = 0
-        if hitTextTimer == hitTextTime then
-            offsetY = -2
-        end
-        gfx.setColor(bgCol)
-        gfx.fillRoundRect(hitTextX-totalHitWidth/2-1, hitTextY-hitTextHeight/2-1+offsetY, totalHitWidth+2, hitTextHeight+2, 2)
-        if showScore then
-            hitTextDisplay:drawCentered(hitTextX-(hitScoreWidth*0.5), hitTextY+offsetY)
-            drawTextCentered(hitScoreDisplay, hitTextX+(hitTextWidth*0.5)+1, hitTextY+offsetY, fontFamilies.orbeatsSmall)
-        else
-            hitTextDisplay:drawCentered(hitTextX, hitTextY+offsetY)
-        end
-        hitTextTimer -= 1
-    end
+    --draw the centered hit text if enabled
+    if settings.centerHitText then drawHitText(hitTextX, hitTextY) end
 
     -- draw text effects
     for i=#textInstances,1,-1 do

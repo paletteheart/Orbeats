@@ -10,29 +10,44 @@ local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
+local settingDefaults <const> = {
+    tutorialPlayed = false,
+    songSorting = 1,
+    toggleSfx = true,
+    sfx = 2,
+    particles = true,
+    notePattern = 1,
+    drawBg = true,
+    drawFps = false,
+    drawSplash = true,
+    centerHitText = true
+}
+
 -- define variables
 settings = pd.datastore.read("settings")
 if settings == nil then
     settings = {
-        tutorialPlayed = false,
-        songSorting = 1,
-        toggleSfx = true,
-        sfx = 2,
-        particles = true,
-        notePattern = 1,
-        drawBg = true,
-        drawFps = false,
-        drawSplash = true
+        tutorialPlayed = settingDefaults.tutorialPlayed,
+        songSorting = settingDefaults.songSorting,
+        toggleSfx = settingDefaults.toggleSfx,
+        sfx = settingDefaults.sfx,
+        particles = settingDefaults.particles,
+        notePattern = settingDefaults.notePattern,
+        drawBg = settingDefaults.drawBg,
+        drawFps = settingDefaults.drawFps,
+        drawSplash = settingDefaults.drawSplash,
+        centerHitText = settingDefaults.centerHitText
     }
 end
-if settings.tutorialPlayed == nil then settings.tutorialPlayed = false end
-if settings.toggleSfx == nil then settings.toggleSfx = 1 end
-if settings.sfx == nil or type(settings.sfx) == "boolean" then settings.sfx = 2 end
-if settings.particles == nil then settings.particles = true end
-if settings.notePattern == nil then settings.notePattern = 1 end
-if settings.drawBg == nil then settings.drawBg = true end
-if settings.drawFps == nil then settings.drawFps = false end
-if settings.drawSplash == nil then settings.drawSplash = true end
+if settings.tutorialPlayed == nil then settings.tutorialPlayed = settingDefaults.tutorialPlayed end
+if settings.toggleSfx == nil then settings.toggleSfx = settingDefaults.toggleSfx end
+if settings.sfx == nil then settings.sfx = settingDefaults.sfx end
+if settings.particles == nil then settings.particles = settingDefaults.particles end
+if settings.notePattern == nil then settings.notePattern = settingDefaults.notePattern end
+if settings.drawBg == nil then settings.drawBg = settingDefaults.drawBg end
+if settings.drawFps == nil then settings.drawFps = settingDefaults.drawFps end
+if settings.drawSplash == nil then settings.drawSplash = settingDefaults.drawSplash end
+if settings.centerHitText == nil then settings.centerHitText = settingDefaults.centerHitText end
 pd.datastore.write(settings, "settings")
 
 settingsText = {}
@@ -45,6 +60,7 @@ settingsOrder = {
     "notePattern",
     "drawBg",
     "drawSplash",
+    "centerHitText",
     "drawFps",
     "resetSave"
 }
@@ -58,7 +74,8 @@ settingsLabels = {
     resetSave = "Reset Save Data",
     on = "ON",
     off = "OFF",
-    drawSplash = "Combo Splash: "
+    drawSplash = "Combo Splash: ",
+    centerHitText = "Center Hit Info: "
 }
 
 notePatterns = {
