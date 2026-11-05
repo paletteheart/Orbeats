@@ -140,9 +140,9 @@ local albumArtCenter <const> = albumArtSize/2
 local difficultyArtSize <const> = 48
 local difficultyArtCenter <const> = difficultyArtSize/2
 
-local tickerTextPlay <const> = gfx.imageWithText("Play:"..char.up.."/"..char.A.." --- Back:"..char.down.."/"..char.B.." --- ", 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
-local tickerTextConfirm <const> = gfx.imageWithText("Confirm:"..char.up.."/"..char.A.." --- Back:"..char.down.."/"..char.B.." --- ", 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
-local tickerTextBack <const> = gfx.imageWithText("Back:"..char.down.."/"..char.B.." --- Back:"..char.down.."/"..char.B.." --- ", 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
+local tickerTextPlay <const> = gfx.imageWithText("Play:"..char.up.."/"..char.A.." "..char.div.." Back:"..char.down.."/"..char.B.." "..char.div.." ", 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
+local tickerTextConfirm <const> = gfx.imageWithText("Confirm:"..char.up.."/"..char.A.." "..char.div.." Back:"..char.down.."/"..char.B.." "..char.div.." ", 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
+local tickerTextBack <const> = gfx.imageWithText("Back:"..char.down.."/"..char.B.." "..char.div.." Back:"..char.down.."/"..char.B.." "..char.div.." ", 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
 
 local leftControls <const> = gfx.imageWithText(char.left.."/"..char.ccw, 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
 local rightControls <const> = gfx.imageWithText(char.right.."/"..char.cw, 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
@@ -315,7 +315,7 @@ function resetSongSelectAnim()
     init = false
     sheenTimer = replaceTimer(sheenTimer, 0, 600, 600)
     menuYTimer = replaceTimer(menuYTimer, 0, menuYPresets.reveal, menuYPresets.reveal)
-    controlsTimer = replaceTimer(controlsTimer, 0, 0, 0)
+    controlsTimer = replaceTimer(controlsTimer, 0, 0.0, 0.0)
     selecting = "song"
     mapSelectionOffset = -1000
     songDataX = -200
@@ -357,11 +357,10 @@ function updateSongSelect()
         -- only draw controls if they're not fully hidden
         if controlsTimer.value == 0 and not startHideAnimation then
             drawInputPrompts = false
-        end
+        else drawInputPrompts = true end
         -- update animations if inputs given
         if leftHeld or rightHeld or upHeld or downHeld or aHeld or bHeld or math.abs(crankChange) > 0.5 then
             inputTimer = replaceTimer(inputTimer, 4000, function()
-                drawInputPrompts = true
                 controlsTimer = replaceTimer(controlsTimer, animationTime, controlsTimer.value, 1.0, ease.outCubic)
                 startHideAnimation = true
             end)
@@ -561,7 +560,7 @@ function updateSongSelect()
     
 
     if toMenu then
-        -- go back to the title screen
+        -- go back to the main menu
         if fadeBlack > 0 then
             fadeBlack -= 0.1
         else

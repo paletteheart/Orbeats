@@ -147,6 +147,7 @@ char.dir = "✛"
 char.menu = "⊙"
 char.cw = "↻"
 char.ccw = "↺"
+char.div = "∘--∘"
 
 fontFamilies = {}
 fontFamilies.orbeatsSans = gfx.font.newFamily({
@@ -398,7 +399,6 @@ local function checkNoteHit(note, noteInstance, position, startAngle, endAngle, 
                     if noteDistance <= perfectDistance then
                         score += mathFloor(maxNoteScore/2)
                         hitTextDisplay = hitText.perfect
-                        perfectHits += 1
                     else
                         -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
                         -- Probably don't mess with this equation
@@ -1206,7 +1206,7 @@ function drawSong()
     end
 
     --draw the centered hit text if enabled
-    if settings.centerHitText then drawHitText(hitTextX, hitTextY) end
+    if settings.centerHitText or tutorial then drawHitText(hitTextX, hitTextY) end
 
     -- draw text effects
     for i=#textInstances,1,-1 do
