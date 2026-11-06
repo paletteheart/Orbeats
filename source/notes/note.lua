@@ -24,9 +24,10 @@ function Note:init(spawnBeat, hitBeat, spd, width, pos, spin, dur)
     self.currentPos = self.hitPos + self.spin -- the current position of the note
     self.radius = initialRadius
     if dur ~= nil and dur >= 0 then self.duration = dur else self.duration = 0 end
+    self.startRadius = nil -- used for figuring out the points of a hold note
     self.endRadius = initialRadius -- only used if the note has a duration to it
-    self.hitting = false -- only used to tell if your hitting a long note
-    self.finishBeat = nil -- only used for drawing if you stop hitting a long note mid-note
+    self.hitting = false -- only used to tell if your hitting a hold note
+    self.finishBeat = nil -- used for drawing if you stop hitting a hold note mid-note
 end
 
 function Note:update(currentBeat, orbitRadius)
@@ -69,7 +70,7 @@ function Note:update(currentBeat, orbitRadius)
         self.currentPos += 360
     end
 
-    return oldRadius, self.radius, self.currentPos, self.endRadius, self.hitting, self.duration + self.hitBeat, self.hitBeat, self.spd, "note"
+    return oldRadius, "note"
 end
 
 
@@ -114,8 +115,9 @@ function Note:getNoteAngles()
     return startAngle, endAngle
 end
 
-function Note:beginHitting(orbitRadius)
+function Note:beginHitting(orbitRadius, isPerfect)
     self.hitting = true
+    if isPerfect ~= nil and isPerfect then self.startRadius = orbitRadius else self.startRadius = self.radius end
     self.radius = orbitRadius
 end
 

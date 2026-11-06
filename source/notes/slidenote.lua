@@ -10,10 +10,10 @@ local missedNoteRadius <const> = 140
 class("SlideNote").extends(Note)
 
 function SlideNote:update(currentBeat, orbitRadius)
-    local oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType = SlideNote.super.update(self, currentBeat, orbitRadius)
+    local oldRadius, noteType = SlideNote.super.update(self, currentBeat, orbitRadius)
     noteType = "slidenote"
 
-    return oldRadius, newRadius, position, endRadius, hitting, endBeat, hitBeat, speed, noteType
+    return oldRadius, noteType
 end
 
 function SlideNote:draw(x, y, rad)
