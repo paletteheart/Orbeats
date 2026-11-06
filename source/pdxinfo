@@ -1,8 +1,10 @@
 name=Orbeats
 author=PaletteHeart
 description=A circular crank-based rhythm game.
-bundleID=com.paletteheart.orbeats
+bundleID=hue.paletteheart.orbeats
 version=0.8.9
 buildNumber=310
 imagePath=launcher
 launchSoundPath=sfx/play
+pdxversion=30101
+buildtime=847291711
