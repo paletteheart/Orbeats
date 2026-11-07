@@ -73,6 +73,7 @@ addSortByMenuItem() --pause
 
 local gameState = "title"
 local oldGameState = gameState
+-- local drawFunction
 
 local function draw()
 
@@ -159,9 +160,11 @@ function pd.update()
 		gameState = updateSong()
 		addSongSelectMenuItem()
 		addRestartMenuItem()
+		-- drawFunction = drawSong
 	elseif gameState == "songEndScreen" then
 		gameState = updateEndScreen()
 		addSongSelectMenuItem()
+		-- drawFunction = drawSong
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
 		addSortByMenuItem()

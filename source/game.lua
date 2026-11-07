@@ -80,6 +80,7 @@ local function cacheOrbitImages()
     local frames = simBPS*pd.display.getRefreshRate()
     local cache = gfx.imagetable.new(frames)
     local lineThickness = 5
+    local pulseLength = 17
     
     for i=1,frames do
         -- simulate the beat
@@ -94,25 +95,25 @@ local function cacheOrbitImages()
         
         -- create the image
         local orbitSize = orbitRadius-simPulse
-        local imgSize = orbitSize+math.ceil(lineThickness*0.5)
+        local imgSize = orbitSize*2+lineThickness
+        local imgCenter = imgSize*0.5
         local img = gfx.image.new(imgSize, imgSize)
 
         -- draw to the image
         gfx.pushContext(img)
             --draw the orbit
             gfx.setColor(gfx.kColorWhite)
-            gfx.fillCircleAtPoint(0, imgSize, orbitSize)
+            gfx.fillCircleAtPoint(imgCenter, imgCenter, orbitSize)
             gfx.setColor(gfx.kColorBlack)
             gfx.setDitherPattern(0.75)
             gfx.setLineWidth(lineThickness)
-            gfx.drawCircleAtPoint(0, imgSize, orbitSize)
+            gfx.drawCircleAtPoint(imgCenter, imgCenter, orbitSize)
 
             --draw the orbit pulse
-            local pulseLength = 17
             gfx.setColor(gfx.kColorBlack)
             gfx.setDitherPattern(0.75+0.25*(simBeat%1))
             gfx.setLineWidth(lineThickness*(1-simBeat%1))
-            gfx.drawCircleAtPoint(0, imgSize, orbitRadius-pulseDepth-pulseLength*(simBeat%1))
+            gfx.drawCircleAtPoint(imgCenter, imgCenter, orbitRadius-pulseDepth-pulseLength*(simBeat%1))
         gfx.popContext()
 
         -- add to the imagetable
@@ -226,7 +227,7 @@ local playerFlipped = false
 local flipTrail = 0
 local flipPos = 0
 local health = 100
-local noteDamage = 20
+local noteDamage = 0
 failed = false
 
 -- input variables
@@ -432,7 +433,7 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
             hitNotes += 1
             incrementCombo()
             -- up your health
-            health += noteDamage/2
+            health += noteDamage * 0.5
             -- create particles
             if settings.particles then
                 p:moveTo(playerX, playerY)
@@ -926,7 +927,7 @@ local function drawHitText(x, y, bgCol)
             end
 
             gfx.setColor(bgCol)
-            gfx.fillRoundRect(x-totalHitWidth/2-1, y-hitTextHeight/2-1+offsetY, totalHitWidth+2, hitTextHeight+2, 2)
+            gfx.fillRoundRect(x-totalHitWidth*0.5-1, y-hitTextHeight*0.5-1+offsetY, totalHitWidth+2, hitTextHeight+2, 2)
 
             if showHitScore then
                 hitTextDisplay:drawCentered(x-(hitScoreWidth*0.5), y+offsetY)
@@ -1091,8 +1092,8 @@ function drawSong()
     if not tutorial then
         if settings.drawBg then
             local bgW, bgH = bgAnim:image():getSize()
-            local bgX = orbitCenterX-(bgW/2)
-            local bgY = orbitCenterY-(bgH/2)
+            local bgX = orbitCenterX-(bgW * 0.5)
+            local bgY = orbitCenterY-(bgH * 0.5)
             bgAnim:draw(bgX, bgY)
         end
 
@@ -1112,7 +1113,7 @@ function drawSong()
         gfx.setColor(gfx.kColorBlack)
         gfx.setPattern({0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA})
         gfx.setLineWidth(5)
-        gfx.drawLine(0, screenHeight-3, screenWidth*(health/100), screenHeight-3)
+        gfx.drawLine(0, screenHeight-3, screenWidth*(health*0.01), screenHeight-3)
     end
 
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
@@ -1125,15 +1126,12 @@ function drawSong()
         orbitFrame = math.floor((fakeCurrentBeat-math.floor(fakeCurrentBeat)) * orbitAnim:getLength()) + 1
     end
     local frameSize = orbitAnim:getImage(orbitFrame):getSize() - 1 -- the 1 subtracted so the dithering lines up
-    local tempOrbitImg = gfx.image.new(frameSize*2, frameSize*2)
-    gfx.pushContext(tempOrbitImg)
-        orbitAnim:getImage(orbitFrame):draw(orbitRadius, orbitRadius-frameSize)                                 -- quad1
-        orbitAnim:getImage(orbitFrame):draw(orbitRadius, orbitRadius, gfx.kImageFlippedY)                         -- quad2
-        orbitAnim:getImage(orbitFrame):draw(orbitRadius-frameSize, orbitRadius, gfx.kImageFlippedXY)            -- quad3
-        orbitAnim:getImage(orbitFrame):draw(orbitRadius-frameSize, orbitRadius-frameSize, gfx.kImageFlippedX) -- quad4
-    gfx.popContext()
+    -- local tempOrbitImg = gfx.image.new(frameSize*2, frameSize*2)
     if invertedScreen then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
-    tempOrbitImg:drawCentered(orbitCenterX, orbitCenterY)
+    -- gfx.pushContext(tempOrbitImg)
+    orbitAnim:getImage(orbitFrame):drawCentered(orbitCenterX, orbitCenterY)                                 -- quad1
+    -- gfx.popContext()Z
+    -- tempOrbitImg:drawCentered(orbitCenterX, orbitCenterY)
 
     local bgCol = gfx.kColorWhite
     local fgCol = gfx.kColorBlack
@@ -1339,5 +1337,5 @@ function drawTextCentered(text, x, y, font)
     -- draws text centered both horizontally and vertically to the point given
     local textWidth, textHeight = gfx.getTextSize(text, font)
     gfx.setFontFamily(font)
-    gfx.drawTextAligned(text, x, y-textHeight/2, kTextAlignment.center)
+    gfx.drawTextAligned(text, x, y-textHeight*0.5, kTextAlignment.center)
 end

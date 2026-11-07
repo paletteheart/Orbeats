@@ -25,17 +25,28 @@ local function getListOfSongs()
     end
 
     local songList = {}
+    local mapExists = {}
+    local audioFileExists = {}
     for i=#songFolders,1,-1 do
         local songData = json.decodeFile(pd.file.open("songs/"..songFolders[i].."songData.json"))
         songData.folder =  songFolders[i]
         print(songFolders[i])
         table.insert(songList, songData)
+
+        -- cache what maps exist
+        for j=#songData.difficulties,1,-1 do
+            local mapPath = "songs/"..songFolders[i]..songData.difficulties[j]..".json"
+            mapExists[mapPath] = pd.file.exists(mapPath)
+        end
+        -- cache if the song file exists
+        local audioPath = "songs/"..songFolders[i]..songData.name..".pda"
+        audioFileExists[audioPath] = pd.file.exists(audioPath)
     end
 
-    return songList
+    return songList, mapExists, audioFileExists
 end
 
-local songList <const> = getListOfSongs()
+local songList <const>, mapExists <const>, audioFileExists <const> = getListOfSongs()
 
 local function sortSongListByName()
     local sortedList = {}
@@ -441,7 +452,7 @@ function updateSongSelect()
         if (upPressed or aPressed) and not songStarting then
             if selecting == "play" then
                 -- check if the map exists, do nothing if not
-                if pd.file.exists(songTablePath) then
+                if mapExists[songTablePath] then
                     songStarting = true
                     sfx.play:play()
                 end
@@ -492,10 +503,12 @@ function updateSongSelect()
     if hasSongs then
         local fileTable = {"songs/", currentSong.folder, currentSong.name}
         local musicFile = table.concat(fileTable)
+        local audioPathTable = {musicFile, ".pda"}
+        local audioPath = table.concat(audioPathTable)
         if songSelectionRounded == oldSongSelection then
             oldSongSelectionTime += 1
             if oldSongSelectionTime > 15 then
-                if pd.file.exists(musicFile..".pda") then
+                if audioFileExists[audioPath] then
                     -- make the song fade in
                     if not playedPreview then
                         music = pd.sound.fileplayer.new()
@@ -597,12 +610,9 @@ function drawSongSelect()
     end
 
     -- check if there are any songs to display
-    local mapExists = false
+    local pathTable = {"songs/", currentSong.folder, mapList[mapSelectionRounded], ".json"}
+    local songPath = table.concat(pathTable)
     if hasSongs then
-        local pathTable = {"songs/", currentSong.folder, mapList[mapSelectionRounded], ".json"}
-        local songPath = table.concat(pathTable)
-        mapExists = pd.file.exists(songPath)
-
         -- draw the difficulty satellites
         if selecting == "map" or (selecting == "play" and menuY < menuYPresets.play) or (selecting == "song" and menuY > menuYPresets.songs) then
             
@@ -737,7 +747,7 @@ function drawSongSelect()
         local textH = 33
         playY = menuY-menuYPresets.play + screenCenterY - textH*0.5
         if playY > -textH then
-            if mapExists then
+            if mapExists[songPath] then
                 if currentSong.confirmText ~= nil then
                     local confirmText = currentSong.confirmText[mapList[mapSelectionRounded]]
                     if confirmText ~= nil then
@@ -801,7 +811,7 @@ function drawSongSelect()
         end
     
         -- draw the up/down controls bar
-        if not mapExists and selecting == "play" then
+        if not mapExists[songPath] and selecting == "play" then
             tickerText = tickerTextBack
             tickerTextWidth = tickerText:getSize()
         end
