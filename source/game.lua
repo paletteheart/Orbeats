@@ -339,7 +339,6 @@ end
 
 local function updateHitTextDisplay(hitScore)
     hitScoreDisplay = hitScore
-    print(hitScore)
     if hitScore < maxNoteScore*0.5 then
         -- up the missed note score and break combo
         combo = 0
