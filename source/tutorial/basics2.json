@@ -50,17 +50,9 @@
             {
                 "startBeat": -5,
                 "endBeat": 37,
-                "text": "Press ⊙ to exit.",
-                "x": 346,
-                "y": 9,
-                "font": "orbeatsSmall"
-            },
-            {
-                "startBeat": -5,
-                "endBeat": 37,
                 "text": "Pressing Ⓐ/←/↑\nflips the cursor\nto the opposite\nside of the orbit.",
                 "x": 344,
-                "y": 211,
+                "y": 218,
                 "font": "orbeatsSmall"
             }
         ]

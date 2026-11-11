@@ -17,18 +17,41 @@ local menuItems <const> = {
     "basics2",
     "basics3",
     "basics4",
-    "advanced"
+    -- "basics5",
+    "advanced",
+    -- "advanced2"
 }
 local menuItemNames <const> = {
     "Basic Controls & Notes",
     "Flipping & Flip Notes",
     "Slide Notes",
     "Hold & Release Notes",
-    "Advanced Note Patterns"
+    -- "Combos and Health",
+    "Advanced Note Patterns",
+    -- "Advanced Note Patterns 2"
 }
 
 local tutorialIcon <const> = gfx.image.new("sprites/tutorialSelect.pdi")
 local iconWidth <const>, iconHeight <const> = tutorialIcon:getSize()
+local menuTextString <const> = "Read the explanations,\nthen attempt.\nRetry as many times\nas you need."
+local function cacheMenuText()
+    local textW, textH = gfx.getTextSize(menuTextString, fontFamilies.orbeatsSans)
+    local padding = 2
+    local imageW, imageH = textW+padding*2, textH+padding*2
+    local img = gfx.image.new(imageW, imageH)
+
+    gfx.pushContext(img)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.fillRoundRect(0, 0, imageW, imageH, 3)
+        gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
+        fonts.orbeatsSans:drawTextAligned(menuTextString, textW*0.5+padding, padding, kTextAlignment.center)
+        gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    gfx.popContext()
+
+    return img
+end
+local menuText <const> = cacheMenuText()
+
 -- local rotatedPointer <const> = pointerSprite:rotatedImage(-90)
 
 -- Define vars
@@ -254,12 +277,14 @@ function drawTutorialSelect()
 
     -- draw floating icon
     local iconFloat = math.sin(floating)*8
-    local iconAngle = -40
-    local iconX = screenWidth + (wheelXRadius*1.6) * math.cos(math.rad(iconAngle-90)) - iconWidth/2
-    local iconY = wheelY + (wheelYRadius*1.6) * math.sin(math.rad(iconAngle-90)) - iconHeight/2
+    local iconAngle = -42
+    local iconX = screenWidth + (wheelXRadius*1.7) * math.cos(math.rad(iconAngle-90)) - iconWidth/2
+    local iconY = wheelY + (wheelYRadius*1.7) * math.sin(math.rad(iconAngle-90)) - iconHeight/2
     -- round the movement to 2s so the dither doesn't flicker
     iconX, iconY = math.floor(iconX*0.5)*2, math.floor(iconY*0.5)*2
     tutorialIcon:draw(iconX, iconY+iconFloat)
+    -- draw the menu text
+    menuText:draw(iconX+80, iconY-15)
 
     -- draw menu item icons
     gfx.setLineWidth(1)
@@ -290,7 +315,7 @@ function drawTutorialSelect()
     if drawInputPrompts then
         local padding = 3
         local roundedness = 3
-        local inputY = 3
+        local inputY = 190
         -- draw the left prompts
         -- draw the back prompt
         local inputTextWidth, inputTextHeight = gfx.getTextSize(inputText.back, fontFamilies.orbeatsSans)

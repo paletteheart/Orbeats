@@ -42,41 +42,33 @@
             {
                 "startBeat": -5,
                 "endBeat": 37,
-                "text": "Notes approach\nfrom the center\nof the orbit.",
+                "text": "Notes approach\nfrom the center\nof the orbit.\n\nNotes can be\nany size or\nspeed.",
                 "x": 54,
-                "y": 17,
+                "y": 37,
                 "font": "orbeatsSmall"
             },
             {
                 "startBeat": -5,
                 "endBeat": 37,
                 "text": "Notes are hit  \nby moving \nyour cursor\nover them and\npressing Ⓑ/→/↓\nwhen they reach\nthe orbit.",
-                "x": 57,
-                "y": 196,
-                "font": "orbeatsSmall"
-            },
-            {
-                "startBeat": -5,
-                "endBeat": 37,
-                "text": "Press ⊙ to exit.",
-                "x": 346,
-                "y": 9,
+                "x": 55,
+                "y": 203,
                 "font": "orbeatsSmall"
             },
             {
                 "startBeat": -5,
                 "endBeat": 37,
                 "text": "Turn the crank\nto move your\ncursor around\nthe orbit.",
-                "x": 345,
-                "y": 210,
+                "x": 349,
+                "y": 218,
                 "font": "orbeatsSmall"
             },
             {
                 "startBeat": -5,
                 "endBeat": 37,
-                "text": "Notes can be\nany size or\nspeed.",
-                "x": 51,
-                "y": 67,
+                "text": "When you hit them,\n notes score\n   from 50 to 100\n   points based\n   on your\n   timing.",
+                "x": 339,
+                "y": 58,
                 "font": "orbeatsSmall"
             }
         ]

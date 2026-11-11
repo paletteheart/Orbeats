@@ -1,8 +1,9 @@
 name=Orbeats
 author=PaletteHeart
-description=A annular crank-based rhythm game.
+description=An annular crank-based rhythm game.
 bundleID=hue.paletteheart.orbeats
-version=0.9.0
-buildNumber=340
+version=0.9.2
+buildNumber=350
 imagePath=launcher
 launchSoundPath=sfx/play
+contentWarning=Some music in this game has explicit language.

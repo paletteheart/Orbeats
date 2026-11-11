@@ -189,24 +189,16 @@
                 "startBeat": -5,
                 "endBeat": 37,
                 "text": "Slide notes can\nbe hit while also\nhitting a hold\nnote.",
-                "x": 58,
-                "y": 33,
+                "x": 56,
+                "y": 22,
                 "font": "orbeatsSmall"
             },
             {
                 "startBeat": -5,
                 "endBeat": 37,
                 "text": "Slide notes can\nbe ghost flip\nnotes, as they\ncan be hit by\nflipping.",
-                "x": 347,
-                "y": 205,
-                "font": "orbeatsSmall"
-            },
-            {
-                "startBeat": -5,
-                "endBeat": 37,
-                "text": "Press ⊙ to exit.",
-                "x": 346,
-                "y": 9,
+                "x": 349,
+                "y": 213,
                 "font": "orbeatsSmall"
             }
         ]

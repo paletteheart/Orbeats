@@ -99,24 +99,24 @@
                 "startBeat": -5,
                 "endBeat": 37,
                 "text": "Hold notes are\nhit by moving\nyour cursor\nover them while\nholding Ⓑ/→/↓,\nor any button  \nif from a \nslide note. ",
-                "x": 53,
-                "y": 53,
+                "x": 54,
+                "y": 42,
                 "font": "orbeatsSmall"
             },
             {
                 "startBeat": -5,
                 "endBeat": 37,
-                "text": "  Release notes\nare hit by\nmoving your\ncursor over them\nand releasing\nany button.",
-                "x": 340,
-                "y": 202,
+                "text": "Release notes \nare hit by \nmoving your\ncursor over them\nand releasing\nany button.",
+                "x": 59,
+                "y": 208,
                 "font": "orbeatsSmall"
             },
             {
                 "startBeat": -5,
                 "endBeat": 37,
-                "text": "Press ⊙ to exit.",
-                "x": 346,
-                "y": 9,
+                "text": "Hold notes\nscore from\n0 to 100 based\non your timing\nand how much of\ntheir length you\nhold through.",
+                "x": 341,
+                "y": 203,
                 "font": "orbeatsSmall"
             }
         ]
