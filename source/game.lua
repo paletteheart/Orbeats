@@ -182,8 +182,13 @@ local hitText <const> = {
     good = gfx.imageWithText("Good", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall),
     ok = gfx.imageWithText("Ok", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall),
     miss = gfx.imageWithText("Miss", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall),
-    punc = gfx.imageWithText("!", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall)
+    punc = gfx.imageWithText("!", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall),
+    catch = gfx.imageWithText("Catch", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall)
 }
+
+-- Tutorial exit text cache
+local exitText <const> = gfx.imageWithText("Press ⊙ to exit.", 100, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall)
+local exitTextW <const> = exitText:getSize()
 
 -- Define variables
 -- System variables
@@ -227,7 +232,7 @@ local playerFlipped = false
 local flipTrail = 0
 local flipPos = 0
 local health = 100
-local noteDamage = 0
+local noteDamage = 20
 failed = false
 
 -- input variables
@@ -351,15 +356,11 @@ local function updateHitTextDisplay(hitScore)
         hitTextDisplay = hitText.ok
     elseif hitScore < maxNoteScore*0.75 then
         hitTextDisplay = hitText.good
+    elseif hitScore == maxNoteScore then
+        hitTextDisplay = hitText.perfect
     else
         hitTextDisplay = hitText.great
     end
-end
-
-local function killNote(noteIndex)
-    tableInsert(notePool, noteInstances[noteIndex])
-    tableRemove(noteInstances, noteIndex)
-    notesKilled += 1
 end
 
 local function getHitScore(noteDistance)
@@ -367,6 +368,46 @@ local function getHitScore(noteDistance)
         return maxNoteScore
     end
     return mathFloor((maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance)))))
+end
+
+local function killNote(noteIndex)
+    -- add the score if killing a hold note
+    if noteInstances[noteIndex].duration ~= 0 and noteInstances[noteIndex].startRadius ~= nil then
+        -- check if the initial timing was perfect
+        local hitScore
+        local endBeat = noteInstances[noteIndex].hitBeat + noteInstances[noteIndex].duration
+        local percentHit = 1-mathMax((endBeat-noteInstances[noteIndex].finishBeat), 0)/noteInstances[noteIndex].duration
+        if noteInstances[noteIndex].startRadius == orbitRadius then
+            -- check if the end is within perfect distance
+            if noteInstances[noteIndex].endRadius >= orbitRadius-perfectDistance then
+                hitScore = maxNoteScore
+                score += maxNoteScore
+                perfectHits += 1
+                showHitScore = false
+            else
+                hitScore = mathFloor(maxNoteScore*percentHit)
+                score += hitScore
+                hitScoreDisplay = hitScore
+                showHitScore = true
+            end
+        else
+            -- check if the end is within the perfect distance
+            if noteInstances[noteIndex].endRadius >= orbitRadius-perfectDistance then
+                hitScore = mathFloor(getHitScore(mathAbs(orbitRadius-noteInstances[noteIndex].startRadius)))
+            else
+                hitScore = mathFloor(getHitScore(mathAbs(orbitRadius-noteInstances[noteIndex].startRadius))*percentHit)
+            end
+            score += hitScore
+            hitScoreDisplay = hitScore
+            showHitScore = true
+        end
+        hitNotes += 1
+        hitTextTimer = hitTextTime
+        updateHitTextDisplay(hitScore)
+    end
+    tableInsert(notePool, noteInstances[noteIndex])
+    tableRemove(noteInstances, noteIndex)
+    notesKilled += 1
 end
 
 local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
@@ -416,22 +457,27 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
                     killNote(noteIndex)
                 else
                     -- no points are scored when you first hit a long note, the points are added when you finish hitting it
-                    if noteDistance <= perfectDistance then
-                        hitTextDisplay = hitText.perfect
-                        showHitScore = false
-                        note:beginHitting(orbitRadius, true)
+                    -- check if you're resuming/'catching' the note
+                    if note.startRadius == nil then
+                        if noteDistance <= perfectDistance then
+                            hitTextDisplay = hitText.perfect
+                            showHitScore = false
+                            note:beginHitting(orbitRadius, true)
+                        else
+                            local hitScore = getHitScore(noteDistance)
+                            updateHitTextDisplay(hitScore)
+                            showHitScore = false
+                            note:beginHitting(orbitRadius, false)
+                        end
                     else
-                        local hitScore = getHitScore(noteDistance)
-                        updateHitTextDisplay(hitScore)
+                        -- if it's a catch, resume hitting and undo the 
+                        hitTextDisplay = hitText.catch
                         showHitScore = false
-                        note:beginHitting(orbitRadius, false)
+                        note:resumeHitting(orbitRadius)
                     end
 
                 end
             end
-            -- up the hit note score and combo counter
-            hitNotes += 1
-            incrementCombo()
             -- up your health
             health += noteDamage * 0.5
             -- create particles
@@ -440,9 +486,15 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
                 p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
                 p:add(5)
             end
-            -- play sfx
-            if settings.toggleSfx then
-                sfx.hit[settings.sfx]:play()
+            
+            if note.startRadius == nil then
+                -- up the hit note score and combo counter
+                hitNotes += 1
+                incrementCombo()
+                -- play sfx
+                if settings.toggleSfx then
+                    sfx.hit[settings.sfx]:play()
+                end
             end
         end
     end
@@ -481,13 +533,12 @@ end
 
 local function updateLongNote(note, noteIndex)
     local noteStartAngle, noteEndAngle = note:getNoteAngles()
-    local noteDistance = mathAbs(orbitRadius-note.startRadius)
     local endBeat = note.hitBeat + note.duration
-    local percentHit
+    local workingBeat
     if isBeforeSong() then
-        percentHit = 1-mathMax((endBeat-fakeCurrentBeat), 0)/note.duration
+        workingBeat = fakeCurrentBeat
     else
-        percentHit = 1-mathMax((endBeat-currentBeat), 0)/note.duration
+        workingBeat = currentBeat
     end
     local isCursorWithinNote = (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle)
 
@@ -501,59 +552,21 @@ local function updateLongNote(note, noteIndex)
         -- check if the end has passed the orbit
         if note.endRadius >= orbitRadius then
             updateHitTextPos(note.hitPos)
-            -- check if the initial timing was perfect
-            if note.startRadius == orbitRadius then
-                score += maxNoteScore
-                perfectHits += 1
-                showHitScore = false
-            else
-                local hitScore = mathFloor(getHitScore(noteDistance)*percentHit)
-                score += hitScore
-                hitScoreDisplay = hitScore
-                showHitScore = true
-            end
+            note:finishHitting(endBeat)
             killNote(noteIndex)
-            hitTextDisplay = hitText.perfect
-            hitTextTimer = hitTextTime
         end
     else
-        hitTextTimer = hitTextTime
-        showHitScore = true
         updateHitTextPos(note.hitPos)
         -- check if you're within the window of forgiveness
         if (note.endRadius >= orbitRadius-hitForgiveness) then
-            -- check if the initial timing was perfect
-            if note.startRadius == orbitRadius then
-                -- check if the end is within perfect distance
-                if note.endRadius >= orbitRadius-perfectDistance then
-                    score += maxNoteScore
-                    perfectHits += 1
-                    showHitScore = false
-                else
-                    local hitScore = mathFloor(maxNoteScore*percentHit)
-                    score += hitScore
-                    hitScoreDisplay = hitScore
-                    showHitScore = true
-                end
+            if note.endRadius >= orbitRadius-perfectDistance then
+                note:finishHitting(endBeat)
             else
-                local hitScore
-                -- check if the end is within the perfect distance
-                if note.endRadius >= orbitRadius-perfectDistance then
-                    hitScore = mathFloor(getHitScore(noteDistance))
-                else
-                    hitScore = mathFloor(getHitScore(noteDistance)*percentHit)
-                end
-                score += hitScore
-                hitScoreDisplay = hitScore
-                showHitScore = true
+                note:finishHitting(workingBeat)
             end
             killNote(noteIndex)
-            hitTextDisplay = hitText.perfect
         else
-            if isBeforeSong() then note:finishHitting(fakeCurrentBeat) else note:finishHitting(currentBeat) end
-            local hitScore = mathFloor(getHitScore(noteDistance)*percentHit)
-            score += hitScore
-            updateHitTextDisplay(hitScore)
+            note:finishHitting(workingBeat)
         end
     end
 end
@@ -1114,6 +1127,12 @@ function drawSong()
         gfx.setPattern({0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA})
         gfx.setLineWidth(5)
         gfx.drawLine(0, screenHeight-3, screenWidth*(health*0.01), screenHeight-3)
+
+    end
+
+    -- draw the tutorial exit text
+    if tutorial then
+        exitText:draw(screenWidth-exitTextW-3, 3)
     end
 
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
@@ -1125,13 +1144,8 @@ function drawSong()
     else
         orbitFrame = math.floor((fakeCurrentBeat-math.floor(fakeCurrentBeat)) * orbitAnim:getLength()) + 1
     end
-    local frameSize = orbitAnim:getImage(orbitFrame):getSize() - 1 -- the 1 subtracted so the dithering lines up
-    -- local tempOrbitImg = gfx.image.new(frameSize*2, frameSize*2)
     if invertedScreen then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
-    -- gfx.pushContext(tempOrbitImg)
-    orbitAnim:getImage(orbitFrame):drawCentered(orbitCenterX, orbitCenterY)                                 -- quad1
-    -- gfx.popContext()Z
-    -- tempOrbitImg:drawCentered(orbitCenterX, orbitCenterY)
+    orbitAnim:getImage(orbitFrame):drawCentered(orbitCenterX, orbitCenterY)
 
     local bgCol = gfx.kColorWhite
     local fgCol = gfx.kColorBlack
