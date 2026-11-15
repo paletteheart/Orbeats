@@ -1,0 +1,164 @@
+{
+    "notes": [
+        {
+            "type": "Note",
+            "spawnBeat": -4,
+            "hitBeat": 0,
+            "speed": 0.5,
+            "width": 90,
+            "position": 0,
+            "spin": 0,
+            "duration": 4
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": -2,
+            "hitBeat": 2,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 0,
+            "hitBeat": 4,
+            "speed": 0.5,
+            "width": 90,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 4,
+            "hitBeat": 8,
+            "speed": 0.5,
+            "width": 60,
+            "position": 300,
+            "spin": -125,
+            "duration": 4
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 5,
+            "hitBeat": 9,
+            "speed": 0.5,
+            "width": 30,
+            "position": 330,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 6,
+            "hitBeat": 10,
+            "speed": 0.5,
+            "width": 30,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 7,
+            "hitBeat": 11,
+            "speed": 0.5,
+            "width": 30,
+            "position": 30,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 8,
+            "hitBeat": 12,
+            "speed": 0.5,
+            "width": 30,
+            "position": 60,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 12,
+            "hitBeat": 16,
+            "speed": 0.5,
+            "width": 90,
+            "position": 0,
+            "spin": 0,
+            "duration": 4
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 14,
+            "hitBeat": 18,
+            "speed": 0.5,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 20,
+            "hitBeat": 24,
+            "speed": 0.5,
+            "width": 60,
+            "position": 300,
+            "spin": -125,
+            "duration": 4
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 21,
+            "hitBeat": 25,
+            "speed": 0.5,
+            "width": 30,
+            "position": 330,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 22,
+            "hitBeat": 26,
+            "speed": 0.5,
+            "width": 30,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 23,
+            "hitBeat": 27,
+            "speed": 0.5,
+            "width": 30,
+            "position": 30,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 24,
+            "hitBeat": 28,
+            "speed": 0.5,
+            "width": 30,
+            "position": 60,
+            "spin": 0
+        }
+    ],
+    "effects": {
+        "text": [
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Hold notes can be\n'caught' after\nletting go of the\nbutton without\nlosing any\npoints.",
+                "x": 60,
+                "y": 32,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "      Release the\n       button slightly \n     before the notes\n   or on the release\n  notes, then quickly\n press Ⓑ/→/↓ to\ncatch the hold note.",
+                "x": 330,
+                "y": 203,
+                "font": "orbeatsSmall"
+            }
+        ]
+    },
+    "songEnd": 36
+}

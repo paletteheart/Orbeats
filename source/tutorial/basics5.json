@@ -1,0 +1,193 @@
+{
+    "notes": [
+        {
+            "type": "Note",
+            "spawnBeat": -5,
+            "hitBeat": 0,
+            "speed": 0.75,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": -4,
+            "hitBeat": 1,
+            "speed": 0.75,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": -3,
+            "hitBeat": 2,
+            "speed": 0.75,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": -2,
+            "hitBeat": 3,
+            "speed": 0.75,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": -1,
+            "hitBeat": 4,
+            "speed": 0.75,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 3,
+            "hitBeat": 8,
+            "speed": 0.75,
+            "width": 60,
+            "position": 0,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 5,
+            "hitBeat": 10,
+            "speed": 0.75,
+            "width": 60,
+            "position": 45,
+            "spin": 0
+        },
+        {
+            "type": "Note",
+            "spawnBeat": 7,
+            "hitBeat": 12,
+            "speed": 0.75,
+            "width": 60,
+            "position": 90,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 11,
+            "hitBeat": 16,
+            "speed": 0.75,
+            "width": 60,
+            "position": 90,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 12,
+            "hitBeat": 17,
+            "speed": 0.75,
+            "width": 60,
+            "position": 270,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 13,
+            "hitBeat": 18,
+            "speed": 0.75,
+            "width": 60,
+            "position": 270,
+            "spin": 0
+        },
+        {
+            "type": "ReleaseNote",
+            "spawnBeat": 14,
+            "hitBeat": 19,
+            "speed": 0.75,
+            "width": 60,
+            "position": 90,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 15,
+            "hitBeat": 20,
+            "speed": 0.75,
+            "width": 60,
+            "position": 90,
+            "spin": 0
+        },
+        {
+            "type": "FlipNote",
+            "spawnBeat": 19,
+            "hitBeat": 24,
+            "speed": 0.75,
+            "width": 60,
+            "position": 270,
+            "spin": 0
+        },
+        {
+            "type": "SlideNote",
+            "spawnBeat": 20,
+            "hitBeat": 25,
+            "speed": 0.75,
+            "width": 60,
+            "position": 90,
+            "spin": 0,
+            "duration": 3
+        }
+    ],
+    "effects": {
+        "text": [
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Hitting 5 or more\nnotes in a row is a\ncombo.",
+                "x": 64,
+                "y": 17,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Make it halfway\nthrough a map  \nwith no misses  \nand the    \nbackground    \nwill invert    \n(not in this    \ntutorial).    ",
+                "x": 54,
+                "y": 83,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Finish a map\nwith no misses\nto get a\nfull combo!",
+                "x": 51,
+                "y": 189,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "The bar at the\nbottom of the\nscreen is your\nhealth.",
+                "x": 351,
+                "y": 65,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "If it runs out,\nyou have failed\nthe map.",
+                "x": 343,
+                "y": 209,
+                "font": "orbeatsSmall"
+            },
+            {
+                "startBeat": -5,
+                "endBeat": 37,
+                "text": "Missing a\nnote lowers\nit, and\nhitting a\nnote raises\nit.",
+                "x": 356,
+                "y": 142,
+                "font": "orbeatsSmall"
+            }
+        ]
+    },
+    "songEnd": 36
+}

@@ -17,19 +17,20 @@ local menuItems <const> = {
     "basics2",
     "basics3",
     "basics4",
-    -- "basics5",
+    "basics5",
     "advanced",
-    -- "advanced2"
+    "advanced2",
 }
 local menuItemNames <const> = {
     "Basic Controls & Notes",
     "Flipping & Flip Notes",
     "Slide Notes",
     "Hold & Release Notes",
-    -- "Combos and Health",
+    "Combos and Health",
     "Advanced Note Patterns",
-    -- "Advanced Note Patterns 2"
+    "Advanced Note Patterns 2",
 }
+local comboTutorialName <const> = "Combos and Health" -- used to determine which tutorial has the combo text and health bar enabled
 
 local tutorialIcon <const> = gfx.image.new("sprites/tutorialSelect.pdi")
 local iconWidth <const>, iconHeight <const> = tutorialIcon:getSize()
@@ -209,6 +210,7 @@ function updateTutorialSelect()
                 resetSongSelectAnim()
                 init = false
                 tutorial = true
+                if menuItemNames[menuSelectionRounded] == comboTutorialName then comboTutorial = true end
                 return "song"
             end
         end

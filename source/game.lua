@@ -195,6 +195,7 @@ local exitTextW <const> = exitText:getSize()
 toMenu = false
 restart = false
 tutorial = false
+comboTutorial = false
 p = Particle()
 
 sfx = {}
@@ -339,7 +340,7 @@ local function incrementCombo()
 end
 
 local function updateHitTextPos(position)
-    if not settings.centerHitText then return end -- escape if not centering the text
+    if not settings.centerHitText and not tutorial then return end -- escape if not centering the text
     hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
     hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
 end
@@ -943,7 +944,7 @@ local function drawHitText(x, y, bgCol)
             offsetY = -2
         end
 
-        if settings.centerHitText then
+        if settings.centerHitText or tutorial then
             local hitScoreWidth = gfx.getTextSize(hitScoreDisplay, fontFamilies.orbeatsSmall)
             local hitPuncWidth
             if showHitScore then
@@ -992,7 +993,7 @@ function updateSong()
 
     -- clamp health
     health = mathMin(100, mathMax(0, health))
-    if health == 0 and not tutorial then
+    if health == 0 and (not tutorial or comboTutorial) then
         failed = true
     end
 
@@ -1076,6 +1077,7 @@ function updateSong()
             -- if playing a tutorial, go back to the tutorials
             if tutorial then
                 tutorial = false
+                comboTutorial = false
                 return "tutorialSelect"
             else
                 return "songSelect"
@@ -1130,6 +1132,9 @@ function drawSong()
         -- if hit text isn't centered, draw here
         if not settings.centerHitText then drawHitText(2, 13) end
 
+    end
+
+    if not tutorial or comboTutorial then
         --draw the combo counter
         if combo > 4 then
             comboText:draw(2, 215)
@@ -1141,7 +1146,6 @@ function drawSong()
         gfx.setPattern({0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA})
         gfx.setLineWidth(5)
         gfx.drawLine(0, screenHeight-3, screenWidth*(health*0.01), screenHeight-3)
-
     end
 
     -- draw the tutorial exit text
