@@ -310,6 +310,7 @@ local startTime = pd.sound.getCurrentTime()
 noteInstances = {}
 local notePool = {}
 local notesKilled = 0
+local lastNoteChecked = -8 -- used for determining if any notes would be skipped in the hit checks
 
 -- Effects variables
 local invertedScreen = false
@@ -411,6 +412,8 @@ local function killNote(noteIndex)
 end
 
 local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
+    print(note.hitBeat)
+    lastNoteChecked = mathMax(note.hitBeat, lastNoteChecked)
     local startAngle, endAngle = note:getNoteAngles()
     -- check if the player position is within the note
     if (playerPos > startAngle and playerPos < endAngle) or (playerPos+360 > startAngle and playerPos+360 < endAngle) or (playerPos-360 > startAngle and playerPos-360 < endAngle) then
@@ -487,7 +490,7 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
                 p:add(5)
             end
             
-            if note.startRadius == nil then
+            if note.finishBeat == nil then
                 -- up the hit note score and combo counter
                 hitNotes += 1
                 incrementCombo()
@@ -574,6 +577,7 @@ end
 local function updateNotes()
     local closestNotes = {}
     local hittingNotes = {} -- only for hold notes you're currently hitting
+    local catchableNotes = {} -- only for hold notes that could potentially be caught
     local closestNoteBeat
     local deathQueue = {}
     notesKilled = 0
@@ -611,6 +615,8 @@ local function updateNotes()
             end
         elseif note.hitting then -- check if you're already hitting it
             tableInsert(hittingNotes, i)
+        elseif note.finishBeat ~= nil then -- check if it's a hold note that's been dropped
+            tableInsert(catchableNotes, i)
         elseif closestNoteBeat == nil then -- check if no other notes have been checked yet
             closestNotes = {i}
             closestNoteBeat = workingBeat-note.hitBeat
@@ -619,10 +625,10 @@ local function updateNotes()
                 closestNotes = {i}
                 closestNoteBeat = workingBeat-note.hitBeat
             elseif workingBeat-note.hitBeat == closestNoteBeat then
-            tableInsert(closestNotes, i)
+                tableInsert(closestNotes, i)
             end
         elseif mathAbs(workingBeat-note.hitBeat) < mathAbs(closestNoteBeat) then -- check if this note is a shorter distance from the orbit
-            closestNotes = {i}
+            if mathAbs(closestNoteBeat)+workingBeat > lastNoteChecked then tableInsert(closestNotes, i) else closestNotes = {i} end -- don't reset the list of notes to check if they would be skipped
             closestNoteBeat = workingBeat-note.hitBeat
         end
     end
@@ -671,6 +677,14 @@ local function updateNotes()
         note:update(workingBeat, orbitRadius)
 
         updateLongNote(note, hittingNotes[i])
+    end
+
+    -- update the hold notes you could potentially catch
+    for i = #catchableNotes, 1, -1 do
+        local note = noteInstances[catchableNotes[i]]
+        note:update(workingBeat, orbitRadius)
+
+        checkNoteHit(catchableNotes[i], note, hitPressed)
     end
 
     -- kill everything in the death queue
@@ -1310,6 +1324,7 @@ function setUpSong(bpm, bpmChange, newBeatOffset, musicFilePath, tablePath)
     oldOrbitCenterY = orbitCenterY
     lastMovementBeatX = lastBeat
     lastMovementBeatY = lastMovementBeatX
+    lastNoteChecked = -8
 end
 
 
