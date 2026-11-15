@@ -406,6 +406,7 @@ local function killNote(noteIndex)
         hitNotes += 1
         hitTextTimer = hitTextTime
         updateHitTextDisplay(hitScore)
+        if hitScore >= 50 then incrementCombo() end
     end
     tableInsert(notePool, noteInstances[noteIndex])
     tableRemove(noteInstances, noteIndex)
