@@ -65,7 +65,7 @@ function ReleaseNote:draw(x, y, rad)
     drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
 
     --draw tris
-    local steps = max(math.floor(self.width/45)-1, 1)
+    local steps = max(math.ceil(self.width/45)-1, 1)
     local offsetAngle = noteStartAngle-min(45, (self.width/steps)/2)
 
     local xa1 = x + (self.radius*0.8) * math.cos(math.rad(offsetAngle-90))
