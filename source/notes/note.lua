@@ -30,9 +30,10 @@ function Note:init(spawnBeat, hitBeat, spd, width, pos, spin, dur)
     self.finishBeat = nil -- used for drawing if you stop hitting a hold note mid-note
 end
 
+local oldRadius
+local beatsSinceSpawn
 function Note:update(currentBeat, orbitRadius)
-    local oldRadius = self.radius
-    local beatsSinceSpawn
+    oldRadius = self.radius
     beatsSinceSpawn = currentBeat-self.spawnBeat
 
     -- this formula creates an exponential graph connecting two points (spawnBeat,initialRadius and hitBeat,orbitRadius) in the vector space of beats and radii,
@@ -73,11 +74,15 @@ function Note:update(currentBeat, orbitRadius)
     return oldRadius, "note"
 end
 
-
-function Note:draw(x, y, rad)
+local noteStartAngle, noteEndAngle
+local lineStartX1, lineStartY1
+local lineStartX2, lineStartY2
+local lineEndX1, lineEndY1
+local lineEndX2, lineEndY2
+function Note:draw(x, y, rad) -- rad is the orbit radius
     if self.radius == initialRadius then return end
 
-    local noteStartAngle, noteEndAngle = self:getNoteAngles()
+    noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
     -- gfx.setColor(gfx.kColorBlack) -- now handled in game.lua
@@ -88,19 +93,19 @@ function Note:draw(x, y, rad)
         local maxDist = missedNoteRadius - rad
         gfx.setStencilPattern(1-distance/maxDist)
     end
-    local lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
+    lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
 
     --draw duration
     if self.duration > 0 then
         gfx.setLineWidth(self.endRadius/rad)
         if lineStartX1 == nil then lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90)) end
         if lineStartY1 == nil then lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90)) end
-        local lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
-        local lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
-        local lineEndX1 = x - self.endRadius * math.cos(math.rad(noteStartAngle+90))
-        local lineEndY1 = y - self.endRadius * math.sin(math.rad(noteStartAngle+90))
-        local lineEndX2 = x - self.endRadius * math.cos(math.rad(noteEndAngle+90))
-        local lineEndY2 = y - self.endRadius * math.sin(math.rad(noteEndAngle+90))
+        lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
+        lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
+        lineEndX1 = x - self.endRadius * math.cos(math.rad(noteStartAngle+90))
+        lineEndY1 = y - self.endRadius * math.sin(math.rad(noteStartAngle+90))
+        lineEndX2 = x - self.endRadius * math.cos(math.rad(noteEndAngle+90))
+        lineEndY2 = y - self.endRadius * math.sin(math.rad(noteEndAngle+90))
         drawNoteArc(x, y, self.endRadius, noteStartAngle, noteEndAngle)
         gfx.drawLine(lineStartX1, lineStartY1, lineEndX1, lineEndY1)
         gfx.drawLine(lineStartX2, lineStartY2, lineEndX2, lineEndY2)
@@ -109,15 +114,17 @@ function Note:draw(x, y, rad)
 end
 
 function Note:getNoteAngles()
-    local startAngle = self.currentPos - (self.width/2)
-    local endAngle = self.currentPos + (self.width/2)
-
-    return startAngle, endAngle
+    return self.currentPos - (self.width/2), self.currentPos + (self.width/2)
 end
 
 function Note:beginHitting(orbitRadius, isPerfect)
     self.hitting = true
     if isPerfect ~= nil and isPerfect then self.startRadius = orbitRadius else self.startRadius = self.radius end
+    self.radius = orbitRadius
+end
+
+function Note:resumeHitting(orbitRadius)
+    self.hitting = true
     self.radius = orbitRadius
 end
 
@@ -138,18 +145,31 @@ function drawNoteArc(x, y, r, startAngle, endAngle)
         gfx.drawArc(x, y, r, startAngle, endAngle)
         return nil, nil
     end
+    -- local px = x + r * math.cos(math.rad(startAngle-90))
+    -- local py = y + r * math.sin(math.rad(startAngle-90))
+    -- drawZapTest(x, y, px, py, width, r)
+    -- return px, py
 end
 
+local x1, y1
+local dx, dy
+local theta
+local steps, steppedTheta
+local ctheta, stheta
+local x2 ,y2
+local stepSize <const> = 22.5 -- in degrees
+local iStepSize <const> = 1/stepSize
 function drawLineArc(x, y, px, py, length)
-    local x1, y1 = px, py
-    local dx, dy = x1 - x, y1 - y
-    local theta = math.rad(length)
-    local steps = max(math.floor(length/22.5), 1)
-    local ctheta = math.cos(theta/steps)
-    local stheta = math.sin(theta/steps)
+    x1, y1 = px, py
+    dx, dy = x1 - x, y1 - y
+    theta = math.rad(length)
+    steps = max(math.floor(length*iStepSize), 1)
+    steppedTheta = theta/steps
+    ctheta = math.cos(steppedTheta)
+    stheta = math.sin(steppedTheta)
     for i=steps,1,-1 do
-        local x2 = ctheta*dx - stheta*dy
-        local y2 = stheta*dx + ctheta*dy
+        x2 = ctheta*dx - stheta*dy
+        y2 = stheta*dx + ctheta*dy
         gfx.drawLine(x1, y1, x2+x, y2+y)
         dx = x2
         dy = y2
@@ -157,3 +177,46 @@ function drawLineArc(x, y, px, py, length)
         y1 = y2+y
     end
 end
+
+-- local rand <const> = math.random
+-- math.randomseed(pd.getSecondsSinceEpoch())
+-- local offset <const> = {m = -6, n = 6}
+-- local iHalfMissedR <const> = 1/(missedNoteRadius*0.5)
+-- local rScale
+-- local xr, yr
+-- local xs, ys
+-- local x1r, y1r
+
+-- function drawZapTest(x, y, px, py, length, r)
+--     rScale = r*iHalfMissedR
+--     theta = math.rad(length)
+--     steps = max(math.floor(length*iStepSize), 2)
+--     steppedTheta = theta/steps
+--     ctheta = math.cos(steppedTheta)
+--     stheta = math.sin(steppedTheta)
+    
+--     for arcs=1,2 do
+--         x1, y1 = px, py
+--         dx, dy = x1 - x, y1 - y
+--         for i=steps,1,-1 do
+--             x2 = ctheta*dx - stheta*dy
+--             y2 = stheta*dx + ctheta*dy
+--             xr, yr = rand(offset.m, offset.n)*rScale, rand(offset.m, offset.n)*rScale
+--             xs, ys = x2+x+xr, y2+y+yr
+--             if i == steps then
+--                 gfx.drawLine(x1, y1, xs, ys)
+--             elseif i == 1 then
+--                 gfx.drawLine(x1r, y1r, x2+x, y2+y)
+--             else
+--                 gfx.drawLine(x1r, y1r, xs, ys)
+--             end
+--             dx = x2
+--             dy = y2
+--             x1 = x2+x
+--             y1 = y2+y
+--             x1r = xs
+--             y1r = ys
+--         end
+--     end
+
+-- end
