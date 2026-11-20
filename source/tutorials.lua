@@ -53,7 +53,7 @@ local function cacheMenuText()
 end
 local menuText <const> = cacheMenuText()
 
--- local rotatedPointer <const> = pointerSprite:rotatedImage(-90)
+-- local rotatedPointer <const> = pointerImage:rotatedImage(-90)
 
 -- Define vars
 local init = false
@@ -306,7 +306,7 @@ function drawTutorialSelect()
         gfx.drawText(menuItemNames[i], textX, textY, fontFamilies.orbeatsSans)
         -- draw the pointer on the current selection
         if i == menuSelectionRounded then
-            pointerSprite:draw(textX, textY-17-padding*2)
+            pointerImage:draw(textX, textY-17-padding*2)
         end
     end
 

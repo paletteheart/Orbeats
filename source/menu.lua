@@ -164,7 +164,6 @@ function updateMainMenu()
         if fadeBlack > 0 then
             fadeBlack -= 0.1
         else
-            menuBgm:stop()
             toTitle = false
             init = false
             return "title"
@@ -242,7 +241,7 @@ function drawMainMenu()
 
     -- draw the pointer
     local pointerY = wheelYTimer.value-(wheelRadiusTimer.value*1.35)
-    pointerSprite:draw(screenCenterX-7, pointerY) 
+    pointerImage:draw(screenCenterX-7, pointerY) 
 
     
     -- draw the input prompts

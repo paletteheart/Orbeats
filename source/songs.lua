@@ -207,7 +207,7 @@ local leftHeldFor = 0 -- a measurement in ticks of how long left has been held
 local rightHeldFor = 0 -- a measurement in ticks of how long right has been held
 local selecting = "song"
 
-pointerSprite = gfx.image.new("sprites/pointer")
+pointerImage = gfx.image.new("sprites/pointer")
 
 -- Audio Variables
 sfx.low = pd.sound.sampleplayer.new("sfx/low")
@@ -219,7 +219,7 @@ sfx.switch = pd.sound.sampleplayer.new("sfx/switch")
 sfx.tap = pd.sound.sampleplayer.new("sfx/tap")
 sfx.jingle = pd.sound.sampleplayer.new("sfx/jingle")
 
-menuBgm = pd.sound.fileplayer.new("bgm/Cosmos")
+menuBgm = pd.sound.fileplayer.new("bgm/we are all listening")
 
 -- Song variables
 sortBy = settings.songSorting
@@ -770,7 +770,7 @@ function drawSongSelect()
         if pointerY ~= targetPointerY then
             pointerY = math.floor(pointerY + (targetPointerY-pointerY)*0.2)
         end
-        pointerSprite:draw(screenCenterX-7, pointerY) 
+        pointerImage:draw(screenCenterX-7, pointerY) 
     
         -- draw menu controls
         local controlsBubbleWidth = 50

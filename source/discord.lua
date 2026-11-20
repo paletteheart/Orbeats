@@ -78,9 +78,9 @@ function drawDiscordInvite()
 
     -- draw the background
     if bgScale.value == 1 then
-        bgSprite[4]:draw(0, 0)
+        bgImage:draw(0, 0)
     else
-        bgSprite[4]:drawScaled(screenCenterX-(screenCenterX*bgScale.value), screenCenterY-(screenCenterY*bgScale.value), bgScale.value)
+        bgImage:drawScaled(screenCenterX-(screenCenterX*bgScale.value), screenCenterY-(screenCenterY*bgScale.value), bgScale.value)
     end
 
     -- draw the qr code
