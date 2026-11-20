@@ -72,6 +72,7 @@ addRestartMenuItem() --pause
 addSortByMenuItem() --pause
 
 local gameState = "title"
+if settings.showSplashes then gameState = "splash" end
 local oldGameState = gameState
 -- local drawFunction
 
@@ -81,7 +82,7 @@ local function draw()
 		gfx.clear()
 		drawSong()
 		--alert the user to use crank if docked
-		if pd.isCrankDocked() then
+		if pd.isCrankDocked() and not tutorial then
 			pd.ui.crankIndicator:draw()
 		end
 	elseif gameState == "songEndScreen" then
@@ -114,6 +115,9 @@ local function draw()
 	elseif gameState == "discord" then
 		gfx.clear(gfx.kColorBlack)
 		drawDiscordInvite()
+	elseif gameState == "splash" then
+		gfx.clear(gfx.kColorBlack)
+		drawSplashes()
 	else
 		gfx.clear(gfx.kColorBlack)
 		drawTitleScreen()
@@ -159,7 +163,7 @@ function pd.update()
 	if gameState == "song" then
 		gameState = updateSong()
 		addSongSelectMenuItem()
-		addRestartMenuItem()
+		if not tutorial then addRestartMenuItem() end
 		-- drawFunction = drawSong
 	elseif gameState == "songEndScreen" then
 		gameState = updateEndScreen()
@@ -184,6 +188,8 @@ function pd.update()
 		gameState = updateDiscordInvite()
 	elseif gameState == "credits" then
 		gameState = "title"
+	elseif gameState == "splash" then
+		gameState = updateSplashes()
 	else
 		gameState = updateTitleScreen()
 	end
