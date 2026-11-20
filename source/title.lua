@@ -10,9 +10,23 @@ local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
+local titleSprite <const> = gfx.image.new("sprites/title")
+local titleSpriteBackup <const> = gfx.image.new("sprites/title")
+local titleWidth <const>, titleHeight <const> = titleSprite:getSize("Orbeats", fontFamilies.odinRounded)
+local titleX <const> = screenCenterX - (titleWidth/2)
+local titleY <const> = screenCenterY - (titleHeight/2)
+
+local function getSplashes()
+    local list = pd.file.listFiles("/splashes/")
+    local imgs = {}
+    for i=1, #list do
+        imgs[i] = gfx.image.new("/splashes/"..i..".pdi")
+    end
+    return imgs
+end
+local splashes = getSplashes()
+
 -- Define variables
-local titleSprite = gfx.image.new("sprites/title")
-local titleSpriteBackup = gfx.image.new("sprites/title")
 bgSprite = {
     gfx.image.new("sprites/titleBg1"),
     gfx.image.new("sprites/titleBg2"),
@@ -32,9 +46,6 @@ local pulseTimer = 0
 local titleHideX = -300
 local titleCurrentX = titleHideX
 local titleXTimer = tmr.new(0, titleHideX, titleHideX)
-local titleWidth, titleHeight = titleSprite:getSize("Orbeats", fontFamilies.odinRounded)
-local titleX <const> = screenCenterX - (titleWidth/2)
-local titleY <const> = screenCenterY - (titleHeight/2)
 local drawTitle = false
 -- orbit vars
 local orbitDither = 1
@@ -242,4 +253,44 @@ function drawTitleScreen()
         gfx.setDitherPattern(fadeOut)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
+end
+
+local currentSplash = 1
+local splashTime <const> = 4
+local transitionTime <const> = 0.4
+local splashTimer = tmr.new(splashTime*1000, 0, splashTime)
+local splashFade = 1
+local titleDelay
+
+function updateSplashes()
+    -- if splashTimer == nil then splashTimer = tmr.new(splashTime*1000, 0, splashTime) end
+    if splashTimer.value == splashTime or buttonPressed then
+        currentSplash += 1
+        splashTimer = tmr.new(splashTime*1000, 0, splashTime)
+        -- splashTimer:start()
+    end
+
+    if splashTimer.value < transitionTime then
+        splashFade = splashTimer.value/transitionTime
+    elseif splashTimer.value > splashTime-transitionTime then
+        splashFade = math.abs(splashTimer.value-splashTime)/transitionTime
+    else splashFade = 1 end
+
+    if currentSplash > #splashes then
+        if titleDelay == nil then
+            titleDelay = tmr.new(transitionTime*1000)
+        elseif titleDelay.currentTime == transitionTime*1000 then
+            return "title"
+        end
+    end
+    return "splash"
+end
+
+function drawSplashes()
+    if currentSplash > # splashes then return end
+    gfx.setStencilPattern(splashFade)
+
+    splashes[currentSplash]:draw(0, 0)
+
+    gfx.clearStencil()
 end

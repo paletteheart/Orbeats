@@ -20,34 +20,20 @@ local settingDefaults <const> = {
     drawBg = true,
     drawFps = false,
     drawSplash = true,
-    centerHitText = true
+    centerHitText = true,
+    showSplashes = true
 }
 
 -- define variables
 settings = pd.datastore.read("settings")
 if settings == nil then
-    settings = {
-        tutorialPlayed = settingDefaults.tutorialPlayed,
-        songSorting = settingDefaults.songSorting,
-        toggleSfx = settingDefaults.toggleSfx,
-        sfx = settingDefaults.sfx,
-        particles = settingDefaults.particles,
-        notePattern = settingDefaults.notePattern,
-        drawBg = settingDefaults.drawBg,
-        drawFps = settingDefaults.drawFps,
-        drawSplash = settingDefaults.drawSplash,
-        centerHitText = settingDefaults.centerHitText
-    }
+    settings = {}
 end
-if settings.tutorialPlayed == nil then settings.tutorialPlayed = settingDefaults.tutorialPlayed end
-if settings.toggleSfx == nil then settings.toggleSfx = settingDefaults.toggleSfx end
-if settings.sfx == nil then settings.sfx = settingDefaults.sfx end
-if settings.particles == nil then settings.particles = settingDefaults.particles end
-if settings.notePattern == nil then settings.notePattern = settingDefaults.notePattern end
-if settings.drawBg == nil then settings.drawBg = settingDefaults.drawBg end
-if settings.drawFps == nil then settings.drawFps = settingDefaults.drawFps end
-if settings.drawSplash == nil then settings.drawSplash = settingDefaults.drawSplash end
-if settings.centerHitText == nil then settings.centerHitText = settingDefaults.centerHitText end
+for key, value in pairs(settingDefaults) do
+    if settings[key] == nil then
+        settings[key] = settingDefaults[key]
+    end
+end
 pd.datastore.write(settings, "settings")
 
 settingsText = {}
