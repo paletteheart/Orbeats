@@ -55,6 +55,8 @@ local titlePieces = createTitlePieces()
 local titlePieceBackups = createTitlePieces()
 local pieceTiming <const> = {14.25, 14.5, 15, 15.25, 15.5, 15.75, 16}
 
+bgmIntro = pd.sound.fileplayer.new("bgm/intro")
+
 local function getSplashes()
     local list = pd.file.listFiles("/splashes/")
     local imgs = {}
@@ -103,9 +105,14 @@ local fadeOut = 1
 local fadeIn = 0
 
 function updateTitleScreen()
-    if not menuBgm:isPlaying() then
-        menuBgm:play(0)
-        menuBgm:setVolume(1)
+    if not menuBgm:isPlaying() and not bgmIntro:isPlaying() then
+        bgmIntro:play(1)
+        bgmIntro:setFinishCallback(function()
+            menuBgm:setOffset(6.741)
+            menuBgm:play(0)
+            menuBgm:setVolume(bgmIntro:getVolume())
+        end)
+        bgmIntro:setVolume(1)
     end
 
     -- init

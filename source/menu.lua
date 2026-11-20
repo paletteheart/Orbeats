@@ -86,7 +86,7 @@ function updateMainMenu()
     end
 
     -- play bgm if not already
-    if not menuBgm:isPlaying() then
+    if not menuBgm:isPlaying() and not bgmIntro:isPlaying() then
         menuBgm:play(0)
         menuBgm:setVolume(1)
     end
