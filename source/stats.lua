@@ -132,6 +132,7 @@ function updateStatsPage()
         scroll = -11
         readStats()
         init = false
+        playMenuMusic()
     end
     -- update the crank turns stat
     table.remove(statsText, #statsText)

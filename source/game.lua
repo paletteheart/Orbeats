@@ -190,6 +190,9 @@ local hitText <const> = {
 local exitText <const> = gfx.imageWithText("Press ⊙ to exit.", 100, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall)
 local exitTextW <const> = exitText:getSize()
 
+-- Misc constants
+local minimumCombo <const> = 5
+
 -- Define variables
 -- System variables
 toMenu = false
@@ -199,6 +202,7 @@ comboTutorial = false
 p = Particle()
 
 sfx = {}
+-- sfx.combo_break = pd.sound.sampleplayer.new("sfx/combo_break")
 sfx.hit = {}
 local function getListOfHitSfx()
     local sfxFiles = pd.file.listFiles("/sfx/hit/")
@@ -339,6 +343,11 @@ local function incrementCombo()
     end
 end
 
+local function breakCombo()
+    -- if combo >= minimumCombo and settings.toggleSfx then sfx.combo_break:play() end
+    combo = 0
+end
+
 local function updateHitTextPos(position)
     if not settings.centerHitText and not tutorial then return end -- escape if not centering the text
     hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
@@ -349,7 +358,7 @@ local function updateHitTextDisplay(hitScore)
     hitScoreDisplay = hitScore
     if hitScore < maxNoteScore*0.5 then
         -- up the missed note score and break combo
-        combo = 0
+        breakCombo()
         missedNotes += 1
         hitTextDisplay = hitText.miss
         -- lower health
@@ -606,7 +615,7 @@ local function updateNotes()
             -- if not a held note, miss the note
             if note.startRadius == nil then
                 -- up the missed note score
-                combo = 0
+                breakCombo()
                 missedNotes += 1
                 hitTextDisplay = hitText.miss
                 hitTextTimer = hitTextTime
@@ -1137,7 +1146,7 @@ function drawSong()
 
     if not tutorial or comboTutorial then
         --draw the combo counter
-        if combo > 4 then
+        if combo >= minimumCombo then
             comboText:draw(2, 215)
             gfx.drawText(combo, 2+comboTextWidth+1, 215, fontFamilies.orbeatsSans)
         end

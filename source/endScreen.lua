@@ -220,15 +220,17 @@ function updateEndScreen()
     end
 
     -- check inputs
-    if upPressed or aPressed then
-        toMenu = true
-        restart = false
-        sfx.low:play()
-    end
-    if downPressed or bPressed then
-        restart = true
-        toMenu = false
-        sfx.low:play()
+    if not failed or continueYTimer.value ~= screenHeight then
+        if upPressed or aPressed then
+            toMenu = true
+            restart = false
+            sfx.low:play()
+        end
+        if downPressed or bPressed then
+            restart = true
+            toMenu = false
+            sfx.low:play()
+        end
     end
 
     -- check if they're restarting the song
@@ -331,16 +333,18 @@ function drawEndScreen()
     end
 
     -- draw continue bar
-    continueCurrentY = continueYTimer.value
-    gfx.setColor(gfx.kColorWhite)
-    gfx.fillRect(0, continueCurrentY, screenWidth, 25)
-    -- draw continue text
-    local tickerX1 = tickerTimer.value
-    local tickerX2 = tickerTimer.value-tickerTextWidth
-    local tickerX3 = tickerTimer.value+tickerTextWidth
-    gfx.drawText(tickerText, tickerX1, continueCurrentY+5, fontFamilies.orbeatsSans)
-    gfx.drawText(tickerText, tickerX2, continueCurrentY+5, fontFamilies.orbeatsSans)
-    gfx.drawText(tickerText, tickerX3, continueCurrentY+5, fontFamilies.orbeatsSans)
+    if continueYTimer.value ~= screenHeight then
+        continueCurrentY = continueYTimer.value
+        gfx.setColor(gfx.kColorWhite)
+        gfx.fillRect(0, continueCurrentY, screenWidth, 25)
+        -- draw continue text
+        local tickerX1 = tickerTimer.value
+        local tickerX2 = tickerTimer.value-tickerTextWidth
+        local tickerX3 = tickerTimer.value+tickerTextWidth
+        gfx.drawText(tickerText, tickerX1, continueCurrentY+5, fontFamilies.orbeatsSans)
+        gfx.drawText(tickerText, tickerX2, continueCurrentY+5, fontFamilies.orbeatsSans)
+        gfx.drawText(tickerText, tickerX3, continueCurrentY+5, fontFamilies.orbeatsSans)
+    end
 
     -- draw fade out if fading out
     if fadeOutWhite ~= 1 then

@@ -6,4 +6,5 @@ version=0.9.7
 buildNumber=380
 imagePath=launcher
 launchSoundPath=sfx/play
-contentWarning=Some music in this game has explicit language.
+contentWarning=Some music in this game contains explicit language. Photosensitive players should enable 'Reduce Flashing' in the System Settings.
+contentWarning2=This is an unfinished demo! Expect limited content, but loads of fun to be had with the content available.
