@@ -105,10 +105,7 @@ function updateTutorialSelect()
     end
 
     -- play bgm if not already
-    if not menuBgm:isPlaying() and not bgmIntro:isPlaying() then
-        menuBgm:play(0)
-        menuBgm:setVolume(1)
-    end
+    playMenuMusic()
 
     -- update floating elements' animations
     floating += 0.025
@@ -201,7 +198,7 @@ function updateTutorialSelect()
                 if music:isPlaying() then
                     music:stop()
                 end
-                menuBgm:stop()
+                stopMenuMusic()
                 local tutorialMusicFile = ("tutorial/"..menuItems[menuSelectionRounded])
                 setUpSong(bpm, bpmChanges, beatOffset, tutorialMusicFile, songTablePath)
                 tutorialStarting = false

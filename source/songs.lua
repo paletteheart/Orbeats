@@ -346,10 +346,7 @@ function updateSongSelect()
         init = true
     end
 
-    if not menuBgm:isPlaying() and not bgmIntro:isPlaying() then
-        menuBgm:play(0)
-        menuBgm:setVolume(1)
-    end
+    playMenuMusic()
 
     -- update how long left and right has been held
     if leftHeld then
@@ -513,9 +510,9 @@ function updateSongSelect()
                     if not playedPreview then
                         music = pd.sound.fileplayer.new()
                         music:load(musicFile)
-                        music:setVolume(0.01)
+                        music:setVolume(0.01) -- needs to be above 0 for some reason
                         music:setVolume(1,1,1)
-                        if bgmIntro:isPlaying() then bgmIntro:setVolume(0,0,1) else menuBgm:setVolume(0,0,1) end
+                        setMenuMusicVolume(0,1)
                         music:play()
                         music:setOffset(currentSong.preview)
                         playedPreview = true
@@ -526,7 +523,7 @@ function updateSongSelect()
                     else
                         if music:getOffset() >= currentSong.preview+9 and music:getVolume() == 1 then
                             music:setVolume(0,0,1)
-                            if bgmIntro:isPlaying() then bgmIntro:setVolume(1,1,1) else menuBgm:setVolume(1,1,1) end
+                            setMenuMusicVolume(1,1)
                         end
                     end
                 end
@@ -537,7 +534,7 @@ function updateSongSelect()
             if music:isPlaying() then
                 music:stop()
             end
-            if bgmIntro:isPlaying() then bgmIntro:setVolume(1,1,1) else menuBgm:setVolume(1,1,1) end
+            setMenuMusicVolume(1,1)
             playedPreview = false
             -- plays a click when moving to a new song
             sfx.click:play()
@@ -562,8 +559,7 @@ function updateSongSelect()
             if music:isPlaying() then
                 music:stop()
             end
-            menuBgm:stop()
-            bgmIntro:stop()
+            stopMenuMusic()
             setUpSong(bpm, bpmChanges, beatOffset, musicFile, songTablePath)
             resetSongSelectAnim()
             songStarting = false
@@ -582,7 +578,7 @@ function updateSongSelect()
             if music:isPlaying() then
                 music:stop()
             end
-            if bgmIntro:isPlaying() then bgmIntro:setVolume(1) else menuBgm:setVolume(1) end
+            setMenuMusicVolume(1)
             toMenu = false
             return "menu"
         end

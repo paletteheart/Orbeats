@@ -414,7 +414,7 @@ local function killNote(noteIndex)
 end
 
 local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
-    print(note.hitBeat)
+    -- print(note.hitBeat)
     lastNoteChecked = mathMax(note.hitBeat, lastNoteChecked)
     local startAngle, endAngle = note:getNoteAngles()
     -- check if the player position is within the note
@@ -1096,11 +1096,11 @@ function updateSong()
         else
             if fadeOut > 0 then
                 fadeOut -= 0.1
-                if music:isPlaying() then
-                    music:setVolume(music:getVolume()-0.1)
-                end
+                -- if music:isPlaying() then
+                --     music:setVolume(music:getVolume()-0.1)
+                -- end
             else
-                music:stop()
+                -- music:stop()
                 
                 return "songEndScreen"
             end

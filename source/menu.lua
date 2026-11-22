@@ -86,10 +86,7 @@ function updateMainMenu()
     end
 
     -- play bgm if not already
-    if not menuBgm:isPlaying() and not bgmIntro:isPlaying() then
-        menuBgm:play(0)
-        menuBgm:setVolume(1)
-    end
+    playMenuMusic()
     
     -- check inputs
     -- check back inputs
@@ -303,5 +300,42 @@ function drawMainMenu()
         gfx.setColor(gfx.kColorWhite)
         gfx.setDitherPattern(fadeWhite)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
+    end
+end
+
+
+-- Menu Music Controls
+
+function isMenuMusicPlaying()
+    return bgmIntro:isPlaying() or menuBgm:isPlaying()
+end
+
+function playMenuMusic()
+    if isMenuMusicPlaying() then return end
+
+    bgmIntro:play(1)
+    bgmIntro:setFinishCallback(function()
+        menuBgm:setOffset(6.741)
+        menuBgm:play(0)
+        menuBgm:setVolume(bgmIntro:getVolume())
+    end)
+    bgmIntro:setVolume(1)
+end
+
+function stopMenuMusic()
+    if not isMenuMusicPlaying() then return end
+    bgmIntro:stop()
+    menuBgm:stop()
+end
+
+function setMenuMusicVolume(volume, fade)
+    if not isMenuMusicPlaying() then return end
+
+    if fade == nil then fade = 0 end
+
+    if bgmIntro:isPlaying() then
+        bgmIntro:setVolume(volume, volume, fade)
+    elseif menuBgm:isPlaying() then
+        menuBgm:setVolume(volume, volume, fade)
     end
 end

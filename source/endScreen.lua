@@ -41,10 +41,9 @@ local ratingXTimer = tmr.new(0, ratingCurrentX, ratingCurrentX)
 
 local continueCurrentY = screenHeight
 local continueYTimer = tmr.new(0, continueCurrentY, continueCurrentY)
-local bgmTimer
 local tickerTimer = tmr.new(0, 0, 0)
 tickerTimer.repeats = true
-local tickerText = "To Menu:"..char.up.."/"..char.A.." --- Retry:"..char.down.."/"..char.B.." --- "
+local tickerText <const> = "To Menu:"..char.up.."/"..char.A.." "..char.div.." Retry:"..char.down.."/"..char.B.." "..char.div.." "
 local tickerTextWidth = gfx.getTextSize(tickerText, fontFamilies.orbeatsSans)
 
 local sheenTimer = tmr.new(0, 600, 600)
@@ -64,11 +63,17 @@ local function initEndScreen()
     tmr.new(1500, function()
         ratingXTimer = replaceTimer(ratingXTimer, animationTime, ratingCurrentX, screenWidth-ratingImageWidth-5, ease.outCubic)
     end)
-    bgmTimer = tmr.new(2000, function()
+    tmr.new(animationTime, function()
         continueYTimer = replaceTimer(continueYTimer, animationTime, continueCurrentY, 215, ease.outCubic)
-        menuBgm:play(0)
-        menuBgm:setVolume(1)
     end)
+
+    if music:isPlaying() then
+        music:setFinishCallback(function()
+            playMenuMusic()
+        end)
+    else
+        playMenuMusic()
+    end
 
     sheenTimer = replaceTimer(sheenTimer, 20000, 600, -200)
     sheenTimer.repeats = true
@@ -233,10 +238,7 @@ function updateEndScreen()
             setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             restart = false
             initialized = false
-            bgmTimer:remove()
-            if menuBgm:isPlaying() then
-                menuBgm:stop()
-            end
+            stopMenuMusic()
             resetAnimationValues()
             return "song"
         end
