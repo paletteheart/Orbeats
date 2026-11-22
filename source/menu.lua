@@ -324,6 +324,9 @@ end
 
 function stopMenuMusic()
     if not isMenuMusicPlaying() then return end
+    bgmIntro:setFinishCallback(function ()
+        return
+    end)
     bgmIntro:stop()
     menuBgm:stop()
 end

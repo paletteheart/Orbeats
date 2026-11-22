@@ -66,12 +66,13 @@ local function initEndScreen()
     tmr.new(animationTime, function()
         continueYTimer = replaceTimer(continueYTimer, animationTime, continueCurrentY, 215, ease.outCubic)
     end)
-
-    if music:isPlaying() then
+    
+    if music:isPlaying() and not failed then
         music:setFinishCallback(function()
             playMenuMusic()
-        end)
+        end) 
     else
+        music:stop()
         playMenuMusic()
     end
 
@@ -235,6 +236,10 @@ function updateEndScreen()
         if fadeOutWhite > 0 then
             fadeOutWhite -= 0.1
         else
+            music:setFinishCallback(function ()
+                return
+            end)
+            music:stop()
             setUpSong(restartTable.bpm, restartTable.bpmChanges, restartTable.beatOffset, restartTable.musicFilePath, restartTable.tablePath)
             restart = false
             initialized = false
@@ -249,6 +254,7 @@ function updateEndScreen()
             fadeOutBlack -= 0.1
         else
             toMenu = false
+            music:stop()
             initialized = false
             resetAnimationValues()
             return "songSelect"
