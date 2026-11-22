@@ -537,7 +537,7 @@ function updateSongSelect()
             if music:isPlaying() then
                 music:stop()
             end
-            menuBgm:setVolume(1,1,1)
+            if bgmIntro:isPlaying() then bgmIntro:setVolume(1,1,1) else menuBgm:setVolume(1,1,1) end
             playedPreview = false
             -- plays a click when moving to a new song
             sfx.click:play()
@@ -563,6 +563,7 @@ function updateSongSelect()
                 music:stop()
             end
             menuBgm:stop()
+            bgmIntro:stop()
             setUpSong(bpm, bpmChanges, beatOffset, musicFile, songTablePath)
             resetSongSelectAnim()
             songStarting = false
@@ -581,7 +582,7 @@ function updateSongSelect()
             if music:isPlaying() then
                 music:stop()
             end
-            menuBgm:setVolume(1)
+            if bgmIntro:isPlaying() then bgmIntro:setVolume(1) else menuBgm:setVolume(1) end
             toMenu = false
             return "menu"
         end
