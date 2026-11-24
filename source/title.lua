@@ -103,7 +103,7 @@ local lastPulse = 0
 local currentBeat = 0
 -- parallax vars
 local accel = {}
-local oldAccel = {}
+local oldAccel = {x = 0, y = 0}
 local accelChange = {}
 local smoothAccel = {}
 local recentAccel = {x = {}, y = {}}

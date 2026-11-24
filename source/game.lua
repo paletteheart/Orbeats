@@ -697,7 +697,7 @@ local function updateNotes()
                         checkNoteHit(closestNotes[i], note, buttonPressed)
                     end
                 else
-                    if note.className == "note" then
+                    if note.className == "Note" then
                         checkNoteHit(closestNotes[i], note, hitPressed)
                     elseif note.className == "FlipNote" then
                         checkNoteHit(closestNotes[i], note, flipPressed)
