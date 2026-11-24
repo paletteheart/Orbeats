@@ -17,7 +17,7 @@ local codeHideY <const> = -codeHeight
 local codeCurrentY = codeHideY
 local codeYTimer = tmr.new(0, codeHideY, codeHideY)
 
-local text <const> = "Share custom maps\nin the\nOrbeats Discord!\n\nhttps://discord.gg/\nDMwDxVx8gq"
+local text <const> = "Share custom maps\nin the\nOrbeats Discord!\n\nhttps://discord.gg/\nEbJM4XkZTs"
 local textWidth, textHeight = gfx.getTextSize(text, fontFamilies.orbeatsSans)
 local textX <const> = screenWidth - codeX
 local textHideY <const> = screenHeight + textHeight/2
