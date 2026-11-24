@@ -31,9 +31,9 @@ local screenCenterY <const> = screenHeight / 2
 local reduceFlashing <const> = pd.getReduceFlashing()
 
 -- Player cursor cache
-local playerRadius <const> = 8
+local cursorRadius <const> = 8
 local function cachePlayerCursors()
-    local imgSize = playerRadius*2+2 -- +2 for the line weight
+    local imgSize = cursorRadius*2+2 -- +2 for the line weight
     local imgCenter = imgSize*0.5
     local img = gfx.image.new(imgSize, imgSize)
     local cursorLine = gfx.kColorBlack
@@ -44,25 +44,25 @@ local function cachePlayerCursors()
     -- normal cursor state
     gfx.pushContext(img)
         gfx.setColor(cursorFill)
-        gfx.fillCircleAtPoint(imgCenter, imgCenter, playerRadius)
+        gfx.fillCircleAtPoint(imgCenter, imgCenter, cursorRadius)
         gfx.setColor(cursorLine)
         gfx.setLineWidth(2)
-        gfx.drawCircleAtPoint(imgCenter, imgCenter, playerRadius)
+        gfx.drawCircleAtPoint(imgCenter, imgCenter, cursorRadius)
     gfx.popContext()
     imgtable:setImage(1, img)
 
 
-    imgSize = (playerRadius+bulge)*2+2 -- +2 for the line weight
+    imgSize = (cursorRadius+bulge)*2+2 -- +2 for the line weight
     imgCenter = imgSize*0.5
     local img2 = gfx.image.new(imgSize, imgSize)
 
     -- pressed cursor state
     gfx.pushContext(img2)
         gfx.setColor(cursorFill)
-        gfx.fillCircleAtPoint(imgCenter, imgCenter, playerRadius+bulge)
+        gfx.fillCircleAtPoint(imgCenter, imgCenter, cursorRadius+bulge)
         gfx.setColor(cursorLine)
         gfx.setLineWidth(2)
-        gfx.drawCircleAtPoint(imgCenter, imgCenter, playerRadius+bulge)
+        gfx.drawCircleAtPoint(imgCenter, imgCenter, cursorRadius+bulge)
     gfx.popContext()
     imgtable:setImage(2, img2)
 
@@ -230,10 +230,10 @@ local orbitCenterY = screenCenterY
 local pulse = 0
 
 -- Player variables
-local playerX = orbitCenterX + orbitRadius
-local playerY = orbitCenterY
-local playerPos = crankPos
-local playerFlipped = false
+local cursorX = orbitCenterX + orbitRadius
+local cursorY = orbitCenterY
+local cursorPos = crankPos
+local cursorFlipped = false
 local flipTrail = 0
 local flipPos = 0
 local health = 100
@@ -316,6 +316,7 @@ noteInstances = {}
 local notePool = {}
 local notesKilled = 0
 local lastNoteChecked = -8 -- used for determining if any notes would be skipped in the hit checks
+local currentMaxPoints = maxNoteScore
 
 -- Effects variables
 local invertedScreen = false
@@ -348,6 +349,13 @@ local function breakCombo()
     combo = 0
 end
 
+local function flipCursor()
+    cursorFlipped = not cursorFlipped
+    -- set the trail behind the cursor when you flip
+    flipTrail = orbitRadius*2
+    flipPos = cursorPos
+end
+
 local function updateHitTextPos(position)
     if not settings.centerHitText and not tutorial then return end -- escape if not centering the text
     hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
@@ -356,18 +364,18 @@ end
 
 local function updateHitTextDisplay(hitScore)
     hitScoreDisplay = hitScore
-    if hitScore < maxNoteScore*0.5 then
+    if hitScore < currentMaxPoints*0.5 then
         -- up the missed note score and break combo
         breakCombo()
         missedNotes += 1
         hitTextDisplay = hitText.miss
         -- lower health
         health -= noteDamage
-    elseif hitScore < maxNoteScore*0.65 then
+    elseif hitScore < currentMaxPoints*0.65 then
         hitTextDisplay = hitText.ok
-    elseif hitScore < maxNoteScore*0.75 then
+    elseif hitScore < currentMaxPoints*0.75 then
         hitTextDisplay = hitText.good
-    elseif hitScore == maxNoteScore then
+    elseif hitScore == currentMaxPoints then
         hitTextDisplay = hitText.perfect
     else
         hitTextDisplay = hitText.great
@@ -376,9 +384,9 @@ end
 
 local function getHitScore(noteDistance)
     if noteDistance <= perfectDistance then
-        return maxNoteScore
+        return currentMaxPoints
     end
-    return mathFloor((maxNoteScore/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance)))))
+    return mathFloor((currentMaxPoints/(1+((noteDistance-perfectDistance)/(hitForgiveness-perfectDistance)))))
 end
 
 local function killNote(noteIndex)
@@ -391,12 +399,12 @@ local function killNote(noteIndex)
         if noteInstances[noteIndex].startRadius == orbitRadius then
             -- check if the end is within perfect distance
             if noteInstances[noteIndex].endRadius >= orbitRadius-perfectDistance then
-                hitScore = maxNoteScore
-                score += maxNoteScore
+                hitScore = currentMaxPoints
+                score += currentMaxPoints
                 perfectHits += 1
                 showHitScore = false
             else
-                hitScore = mathFloor(maxNoteScore*percentHit)
+                hitScore = mathFloor(currentMaxPoints*percentHit)
                 score += hitScore
                 hitScoreDisplay = hitScore
                 showHitScore = true
@@ -417,101 +425,113 @@ local function killNote(noteIndex)
         updateHitTextDisplay(hitScore)
         if hitScore >= 50 then incrementCombo() end
     end
+    -- flip the cursor if playing in one button mode and killing a flip note
+    if settings.oneButtonMode and noteInstances[noteIndex].className == "FlipNote" then
+        flipCursor()
+    end
     tableInsert(notePool, noteInstances[noteIndex])
     tableRemove(noteInstances, noteIndex)
     notesKilled += 1
 end
 
+local startAngle, endAngle
 local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
-    -- print(note.hitBeat)
+
+    -- set this as the last checked note
     lastNoteChecked = mathMax(note.hitBeat, lastNoteChecked)
-    local startAngle, endAngle = note:getNoteAngles()
-    -- check if the player position is within the note
-    if (playerPos > startAngle and playerPos < endAngle) or (playerPos+360 > startAngle and playerPos+360 < endAngle) or (playerPos-360 > startAngle and playerPos-360 < endAngle) then
-        if trigger then
-            --note is hit
-            hitTextTimer = hitTextTime
-            updateHitTextPos(note.hitPos)
 
-            --remove note if a short note, begin hitting if a long note
-            if alwaysPerfect ~= nil and alwaysPerfect then
-                -- if alwaysPerfect, then skip calculating score
-                if note.endRadius == note.radius then
-                    score += maxNoteScore
-                    killNote(noteIndex)
+    -- check if the cursor position is within the note
+    startAngle, endAngle = note:getNoteAngles()
+    if not ((cursorPos > startAngle and cursorPos < endAngle) or (cursorPos+360 > startAngle and cursorPos+360 < endAngle) or (cursorPos-360 > startAngle and cursorPos-360 < endAngle)) then
+        return false
+    end
+    -- check that the trigger is met
+    if not trigger then return false end
+
+    -- note is hit
+
+    hitTextTimer = hitTextTime
+    updateHitTextPos(note.hitPos)
+
+    -- if alwaysPerfect, then skip calculating score
+    if alwaysPerfect ~= nil and alwaysPerfect then
+        --remove note if a short note, begin hitting if a long note
+        if note.endRadius == note.radius then
+            score += currentMaxPoints
+            killNote(noteIndex)
+            hitTextDisplay = hitText.perfect
+            showHitScore = false
+            perfectHits += 1
+        else
+            note:beginHitting(orbitRadius, true)
+            hitTextDisplay = hitText.perfect
+            showHitScore = false
+        end
+    else  
+        --figure out how many points you get
+        local noteDistance = mathAbs(orbitRadius-note.radius)
+
+        if note.endRadius == note.radius then
+            -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
+            -- you can be, which scores half max points.
+            if noteDistance <= perfectDistance then
+                score += currentMaxPoints
+                hitTextDisplay = hitText.perfect
+                perfectHits += 1
+                showHitScore = false
+            else
+                -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
+                -- Probably don't mess with this equation
+                local hitScore = getHitScore(noteDistance)
+                score += hitScore
+                updateHitTextDisplay(hitScore)
+                showHitScore = true
+            end
+
+            killNote(noteIndex)
+        else
+            -- no points are scored when you first hit a long note, the points are added when you finish hitting it
+            -- check if you're resuming/'catching' the note
+            if note.startRadius == nil then
+                if noteDistance <= perfectDistance then
                     hitTextDisplay = hitText.perfect
                     showHitScore = false
-                    perfectHits += 1
-                else
                     note:beginHitting(orbitRadius, true)
-                    hitTextDisplay = hitText.perfect
-                    showHitScore = false
-                end
-            else  
-                --figure out how many points you get
-                local noteDistance = mathAbs(orbitRadius-note.radius)
-
-                if note.endRadius == note.radius then
-                    -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
-                    -- you can be, which scores half max points.
-                    if noteDistance <= perfectDistance then
-                        score += maxNoteScore
-                        hitTextDisplay = hitText.perfect
-                        perfectHits += 1
-                        showHitScore = false
-                    else
-                        -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
-                        -- Probably don't mess with this equation
-                        local hitScore = getHitScore(noteDistance)
-                        score += hitScore
-                        updateHitTextDisplay(hitScore)
-                        showHitScore = true
-                    end
-
-                    killNote(noteIndex)
                 else
-                    -- no points are scored when you first hit a long note, the points are added when you finish hitting it
-                    -- check if you're resuming/'catching' the note
-                    if note.startRadius == nil then
-                        if noteDistance <= perfectDistance then
-                            hitTextDisplay = hitText.perfect
-                            showHitScore = false
-                            note:beginHitting(orbitRadius, true)
-                        else
-                            local hitScore = getHitScore(noteDistance)
-                            updateHitTextDisplay(hitScore)
-                            showHitScore = false
-                            note:beginHitting(orbitRadius, false)
-                        end
-                    else
-                        -- if it's a catch, resume hitting and undo the 
-                        hitTextDisplay = hitText.catch
-                        showHitScore = false
-                        note:resumeHitting(orbitRadius)
-                    end
+                    local hitScore = getHitScore(noteDistance)
+                    updateHitTextDisplay(hitScore)
+                    showHitScore = false
+                    note:beginHitting(orbitRadius, false)
+                end
+            else
+                -- if it's a catch, resume hitting and undo the 
+                hitTextDisplay = hitText.catch
+                showHitScore = false
+                note:resumeHitting(orbitRadius)
+            end
 
-                end
-            end
-            -- up your health
-            health += noteDamage * 0.5
-            -- create particles
-            if settings.particles then
-                p:moveTo(playerX, playerY)
-                p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
-                p:add(5)
-            end
-            
-            if note.finishBeat == nil then
-                -- up the hit note score and combo counter
-                hitNotes += 1
-                incrementCombo()
-                -- play sfx
-                if settings.toggleSfx then
-                    sfx.hit[settings.sfx]:play()
-                end
-            end
         end
     end
+    -- up your health
+    health += noteDamage * 0.5
+    -- create particles
+    if settings.particles then
+        p:moveTo(cursorX, cursorY)
+        p:setSpread(mathFloor(cursorPos-90), mathCeil(cursorPos+90))
+        p:add(5)
+    end
+    
+    if note.finishBeat == nil then
+        -- up the hit note score and combo counter
+        hitNotes += 1
+        incrementCombo()
+        -- play sfx
+        if settings.toggleSfx then
+            sfx.hit[settings.sfx]:play()
+        end
+    end
+
+    return true
 end
 
 local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, spin, duration)
@@ -554,13 +574,13 @@ local function updateLongNote(note, noteIndex)
     else
         workingBeat = currentBeat
     end
-    local isCursorWithinNote = (playerPos > noteStartAngle and playerPos < noteEndAngle) or (playerPos+360 > noteStartAngle and playerPos+360 < noteEndAngle) or (playerPos-360 > noteStartAngle and playerPos-360 < noteEndAngle)
+    local isCursorWithinNote = (cursorPos > noteStartAngle and cursorPos < noteEndAngle) or (cursorPos+360 > noteStartAngle and cursorPos+360 < noteEndAngle) or (cursorPos-360 > noteStartAngle and cursorPos-360 < noteEndAngle)
 
     if isCursorWithinNote and buttonHeld then
         -- continue hitting note
         if settings.particles then
-            p:moveTo(playerX, playerY)
-            p:setSpread(mathFloor(playerPos-90), mathCeil(playerPos+90))
+            p:moveTo(cursorX, cursorY)
+            p:setSpread(mathFloor(cursorPos-90), mathCeil(cursorPos+90))
             p:add(1)
         end
         -- check if the end has passed the orbit
@@ -649,14 +669,13 @@ local function updateNotes()
         local note = noteInstances[closestNotes[i]]
         -- update the current note with the current beat and get its old radius and type
         local oldRadius
-        local noteType
-        oldRadius, noteType = note:update(workingBeat, orbitRadius)
+        oldRadius = note:update(workingBeat, orbitRadius)
 
         local hitDistThreshold = (note.radius >= orbitRadius-hitForgiveness and note.radius < orbitRadius) or ((oldRadius < orbitRadius or note.radius <= orbitRadius+hitForgiveness) and note.radius >= orbitRadius)
         local holdDistThreshold = (oldRadius < orbitRadius+hitForgiveness or note.radius <= orbitRadius+hitForgiveness) and note.radius >= orbitRadius
 
         -- Check if note can be hit or is being hit
-        if noteType == "slidenote" then
+        if note.className == "SlideNote" then
             -- do default distance thresholding and scoring if a button was just pressed,
             -- otherwise score it like it's always perfect from the hold distance threshold
             if buttonPressed then
@@ -671,12 +690,20 @@ local function updateNotes()
         else
             -- if not a slide note, score normally
             if hitDistThreshold then
-                if noteType == "note" then
-                    checkNoteHit(closestNotes[i], note, hitPressed)
-                elseif noteType == "flipnote" then
-                    checkNoteHit(closestNotes[i], note, flipPressed)
-                elseif noteType == "releasenote" then
-                    checkNoteHit(closestNotes[i], note, buttonReleased)
+                if settings.oneButtonMode then
+                    if note.className == "ReleaseNote" then
+                        checkNoteHit(closestNotes[i], note, buttonReleased)
+                    else
+                        checkNoteHit(closestNotes[i], note, buttonPressed)
+                    end
+                else
+                    if note.className == "note" then
+                        checkNoteHit(closestNotes[i], note, hitPressed)
+                    elseif note.className == "FlipNote" then
+                        checkNoteHit(closestNotes[i], note, flipPressed)
+                    elseif note.className == "ReleaseNote" then
+                        checkNoteHit(closestNotes[i], note, buttonReleased)
+                    end
                 end
             end
         end
@@ -1040,30 +1067,24 @@ function updateSong()
         end
     end
 
-    -- update player position based on crank position
-    if playerFlipped then
-        playerPos = crankPos+180
-        if playerPos > 360 then playerPos -= 360 end
+    -- update cursor position based on crank position
+    if cursorFlipped then
+        cursorPos = crankPos+180
+        if cursorPos > 360 then cursorPos -= 360 end
     else
-        playerPos = crankPos
+        cursorPos = crankPos
     end
     
     -- update effects
     updateEffects()
 
-    -- update player x and y based on player position
-    playerX = orbitCenterX + orbitRadius * mathCos(mathRad(playerPos-90))
-    playerY = orbitCenterY + orbitRadius * mathSin(mathRad(playerPos-90))
+    -- update cursor x and y based on cursor position
+    cursorX = orbitCenterX + orbitRadius * mathCos(mathRad(cursorPos-90))
+    cursorY = orbitCenterY + orbitRadius * mathSin(mathRad(cursorPos-90))
 
-    --flip player if up is hit
-    if upPressed or aPressed or leftPressed then
-        playerFlipped = not playerFlipped
-        -- set the trail behind the cursor when you flip
-        flipTrail = orbitRadius*2
-        flipPos = playerPos
-    else
-        flipTrail = mathFloor(flipTrail/1.4)
-    end
+    
+    -- flip player if up is hit
+    if flipPressed and not settings.oneButtonMode then flipCursor() end
 
 	--update notes
 	updateNotes()
@@ -1205,7 +1226,7 @@ function drawSong()
         -- draw a circle where you were flipped to
         local trailX = orbitCenterX + orbitRadius * mathCos(mathRad(flipPos-270))
         local trailY = orbitCenterY + orbitRadius * mathSin(mathRad(flipPos-270))
-        local trailRadius = (flipTrail/(orbitRadius*2))*playerRadius
+        local trailRadius = (flipTrail/(orbitRadius*2))*cursorRadius
         gfx.fillCircleAtPoint(trailX, trailY, trailRadius)
         -- draw a triangle pointed where you flipped from
         local tangentStartX = trailX + trailRadius * mathCos(mathRad(flipPos+180))
@@ -1215,6 +1236,8 @@ function drawSong()
         local pointX = trailX - flipTrail * mathCos(mathRad(flipPos+90))
         local pointY = trailY - flipTrail * mathSin(mathRad(flipPos+90))
         gfx.fillTriangle(tangentStartX, tangentStartY, tangentEndX, tangentEndY, pointX, pointY)
+
+        flipTrail = mathFloor(flipTrail/1.4)
     end 
 
     --draw and update the particles
@@ -1230,15 +1253,15 @@ function drawSong()
 
     if invertedScreen then gfx.setImageDrawMode(gfx.kDrawModeInverted) else gfx.setImageDrawMode(gfx.kDrawModeCopy) end
 
-	--draw the player
+	--draw the cursor
     local cursorImg = 1
-    if downPressed or bPressed or rightPressed then
+    if buttonPressed then
         cursorImg = 2
     end
-    if playerFlipped then
-        cursor:getImage(cursorImg):invertedImage():drawCentered(playerX, playerY)
+    if cursorFlipped then
+        cursor:getImage(cursorImg):invertedImage():drawCentered(cursorX, cursorY)
     else
-        cursor:getImage(cursorImg):drawCentered(playerX, playerY)
+        cursor:getImage(cursorImg):drawCentered(cursorX, cursorY)
     end
 
     --draw the centered hit text if enabled
@@ -1331,7 +1354,7 @@ function setUpSong(bpm, bpmChange, newBeatOffset, musicFilePath, tablePath)
     startTime = pd.sound.getCurrentTime()
     -- Misc variables
     invertedScreen = false
-    playerFlipped = false
+    cursorFlipped = false
     orbitCenterX = screenCenterX
     orbitCenterY = screenCenterY
     oldOrbitCenterX = orbitCenterX
@@ -1339,6 +1362,8 @@ function setUpSong(bpm, bpmChange, newBeatOffset, musicFilePath, tablePath)
     lastMovementBeatX = lastBeat
     lastMovementBeatY = lastMovementBeatX
     lastNoteChecked = -8
+
+    if settings.oneButtonMode then setScoreMult(.8) else setScoreMult(1) end
 end
 
 
@@ -1381,4 +1406,8 @@ function drawTextCentered(text, x, y, font)
     local textWidth, textHeight = gfx.getTextSize(text, font)
     gfx.setFontFamily(font)
     gfx.drawTextAligned(text, x, y-textHeight*0.5, kTextAlignment.center)
+end
+
+function setScoreMult(mult)
+    currentMaxPoints = math.floor(maxNoteScore*mult)
 end

@@ -32,6 +32,7 @@ end
 
 local oldRadius
 local beatsSinceSpawn
+local spinPos
 function Note:update(currentBeat, orbitRadius)
     oldRadius = self.radius
     beatsSinceSpawn = currentBeat-self.spawnBeat
@@ -60,7 +61,7 @@ function Note:update(currentBeat, orbitRadius)
     -- this function creates a linear graph that passes through two points in the vector space of beats and position.
     -- the first point is the spawnBeat and the spinPos (which is how many degrees away it spins in from),
     -- the second point is the hitBeat and the position where it will be hit.
-    local spinPos = self.hitPos + self.spin
+    spinPos = self.hitPos + self.spin
     self.currentPos = ((self.hitPos - spinPos)/(self.hitBeat - self.spawnBeat))*(currentBeat - self.spawnBeat) + spinPos
 
     -- keep the position between 0 and 360 degrees
@@ -71,10 +72,11 @@ function Note:update(currentBeat, orbitRadius)
         self.currentPos += 360
     end
 
-    return oldRadius, "note"
+    return oldRadius
 end
 
 local noteStartAngle, noteEndAngle
+local distance, maxDist
 local lineStartX1, lineStartY1
 local lineStartX2, lineStartY2
 local lineEndX1, lineEndY1
@@ -89,8 +91,8 @@ function Note:draw(x, y, rad) -- rad is the orbit radius
 	gfx.setLineWidth(5*(self.radius/rad))
     -- dither via stencil if beyond the orbit
     if self.radius > rad then
-        local distance = self.radius - rad
-        local maxDist = missedNoteRadius - rad
+        distance = self.radius - rad
+        maxDist = missedNoteRadius - rad
         gfx.setStencilPattern(1-distance/maxDist)
     end
     lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
@@ -133,20 +135,21 @@ function Note:finishHitting(currentBeat)
     self.finishBeat = currentBeat
 end
 
-
+local width
+local px, py
 function drawNoteArc(x, y, r, startAngle, endAngle)
-    local width  = endAngle-startAngle
+    width  = endAngle-startAngle
     if r <= LODRadius or width <= LODWidth or endAngle == nil then
-        local px = x + r * math.cos(math.rad(startAngle-90))
-        local py = y + r * math.sin(math.rad(startAngle-90))
+        px = x + r * math.cos(math.rad(startAngle-90))
+        py = y + r * math.sin(math.rad(startAngle-90))
         drawLineArc(x, y, px, py, width)
         return px, py
     else
         gfx.drawArc(x, y, r, startAngle, endAngle)
         return nil, nil
     end
-    -- local px = x + r * math.cos(math.rad(startAngle-90))
-    -- local py = y + r * math.sin(math.rad(startAngle-90))
+    -- px = x + r * math.cos(math.rad(startAngle-90))
+    -- py = y + r * math.sin(math.rad(startAngle-90))
     -- drawZapTest(x, y, px, py, width, r)
     -- return px, py
 end
@@ -156,7 +159,7 @@ local dx, dy
 local theta
 local steps, steppedTheta
 local ctheta, stheta
-local x2 ,y2
+local x2, y2
 local stepSize <const> = 22.5 -- in degrees
 local iStepSize <const> = 1/stepSize
 function drawLineArc(x, y, px, py, length)

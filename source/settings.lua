@@ -19,9 +19,11 @@ local settingDefaults <const> = {
     notePattern = 1,
     drawBg = true,
     drawFps = false,
-    drawSplash = true,
+    drawSplash = true, -- combo splashes
     centerHitText = true,
-    showSplashes = true
+    -- no option to change then yet
+    showSplashes = true, -- intro splash screens
+    oneButtonMode = false,
 }
 
 -- define variables
@@ -48,7 +50,8 @@ settingsOrder = {
     "drawSplash",
     "centerHitText",
     "drawFps",
-    "resetSave"
+    "oneButtonMode",
+    "resetSave",
 }
 settingsLabels = {
     toggleSfx = "Note SFX Toggle: ",
@@ -61,7 +64,8 @@ settingsLabels = {
     on = "ON",
     off = "OFF",
     drawSplash = "Combo Splash: ",
-    centerHitText = "Center Hit Info: "
+    centerHitText = "Center Hit Info: ",
+    oneButtonMode = "One Button Mode: ",
 }
 
 notePatterns = {

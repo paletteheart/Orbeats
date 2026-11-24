@@ -13,9 +13,11 @@ local initialRadius <const> = 5
 
 class('ReleaseNote').extends(Note)
 
+local oldRadius
+local beatsSinceSpawn
+local spinPos
 function ReleaseNote:update(currentBeat, orbitRadius)
-    local oldRadius = self.radius
-    local beatsSinceSpawn
+    oldRadius = self.radius
     beatsSinceSpawn = currentBeat-self.spawnBeat
 
     -- this formula creates an exponential graph connecting two points (spawnBeat,initialRadius and hitBeat,orbitRadius) in the vector space of beats and radii,
@@ -33,7 +35,7 @@ function ReleaseNote:update(currentBeat, orbitRadius)
     -- this function creates a linear graph that passes through two points in the vector space of beats and position.
     -- the first point is the spawnBeat and the spinPos (which is how many degrees away it spins in from),
     -- the second point is the hitBeat and the position where it will be hit.
-    local spinPos = self.hitPos + self.spin
+    spinPos = self.hitPos + self.spin
     self.currentPos = ((self.hitPos - spinPos)/(self.hitBeat - self.spawnBeat))*(currentBeat - self.spawnBeat) + spinPos
 
     -- keep the position between 0 and 360 degrees
@@ -44,53 +46,61 @@ function ReleaseNote:update(currentBeat, orbitRadius)
         self.currentPos += 360
     end
 
-    return oldRadius, "releasenote"
+    return oldRadius
 
 end
 
+local noteStartAngle, noteEndAngle
+local distance, maxDist
+local steps
+local offsetAngle
+local xa1, ya1, xa2, ya2, dxa, dya
+local xb1, yb1, xb2, yb2, dxb, dyb
+local xc1, yc1, xc2, yc2, dxc, dyc
+local theta, ctheta, stheta
 function ReleaseNote:draw(x, y, rad)
     if self.radius == initialRadius then return end
 
-    local noteStartAngle, noteEndAngle = self:getNoteAngles()
+    noteStartAngle, noteEndAngle = self:getNoteAngles()
 
     --draw note
     -- gfx.setColor(gfx.kColorBlack) -- handled in game.lua
 	gfx.setLineWidth(self.radius/rad)
     -- dither via stencil if beyond the orbit
     if self.radius > rad then
-        local distance = self.radius - rad
-        local maxDist = missedNoteRadius - rad
+        distance = self.radius - rad
+        maxDist = missedNoteRadius - rad
         gfx.setStencilPattern(1-distance/maxDist)
     end
     drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
 
     --draw tris
-    local steps = max(math.ceil(self.width/45)-1, 1)
-    local offsetAngle = noteStartAngle-min(45, (self.width/steps)/2)
+    steps = max(math.ceil(self.width/45)-1, 1)
+    offsetAngle = noteStartAngle-min(45, (self.width/steps)/2)
 
-    local xa1 = x + (self.radius*0.8) * math.cos(math.rad(offsetAngle-90))
-    local ya1 = y + (self.radius*0.8) * math.sin(math.rad(offsetAngle-90))
-    local dxa, dya = xa1 - x, ya1 - y
+    xa1 = x + (self.radius*0.8) * math.cos(math.rad(offsetAngle-90))
+    ya1 = y + (self.radius*0.8) * math.sin(math.rad(offsetAngle-90))
+    dxa, dya = xa1 - x, ya1 - y
 
-    local xb1 = x + (self.radius*0.9) * math.cos(math.rad(offsetAngle-95))
-    local yb1 = y + (self.radius*0.9) * math.sin(math.rad(offsetAngle-95))
-    local dxb, dyb = xb1 - x, yb1 - y
+    xb1 = x + (self.radius*0.9) * math.cos(math.rad(offsetAngle-95))
+    yb1 = y + (self.radius*0.9) * math.sin(math.rad(offsetAngle-95))
+    dxb, dyb = xb1 - x, yb1 - y
 
-    local xc1 = x + (self.radius*0.9) * math.cos(math.rad(offsetAngle-85))
-    local yc1 = y + (self.radius*0.9) * math.sin(math.rad(offsetAngle-85))
-    local dxc, dyc = xc1 - x, yc1 - y
+    xc1 = x + (self.radius*0.9) * math.cos(math.rad(offsetAngle-85))
+    yc1 = y + (self.radius*0.9) * math.sin(math.rad(offsetAngle-85))
+    dxc, dyc = xc1 - x, yc1 - y
 
-    local theta = math.rad(self.width)
-    local ctheta = math.cos(theta/steps)
-    local stheta = math.sin(theta/steps)
+    theta = math.rad(self.width)
+    ctheta = math.cos(theta/steps)
+    stheta = math.sin(theta/steps)
     
     for i=steps,1,-1 do
-        local xa2 = ctheta*dxa - stheta*dya
-        local ya2 = stheta*dxa + ctheta*dya
-        local xb2 = ctheta*dxb - stheta*dyb
-        local yb2 = stheta*dxb + ctheta*dyb
-        local xc2 = ctheta*dxc - stheta*dyc
-        local yc2 = stheta*dxc + ctheta*dyc
+        xa2 = ctheta*dxa - stheta*dya
+        ya2 = stheta*dxa + ctheta*dya
+        xb2 = ctheta*dxb - stheta*dyb
+        yb2 = stheta*dxb + ctheta*dyb
+        xc2 = ctheta*dxc - stheta*dyc
+        yc2 = stheta*dxc + ctheta*dyc
 
         gfx.fillTriangle(xa2+x, ya2+y, xb2+x, yb2+y, xc2+x, yc2+y)
         dxa, dya = xa2, ya2
