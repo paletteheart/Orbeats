@@ -224,8 +224,8 @@ local modeOptions <const> = {
 local modeMult <const> = {
     1.0,
     0.8,
-    0.8,
-    0.64,
+    0.6,
+    0.48,
     0.0
 }
 local speedOptions <const> = {
@@ -969,11 +969,14 @@ end
 local function addSortByMenuItem()
 	return menu:addOptionsMenuItem("Sort By", sortOptions, settings.songSorting, function(option)
 		settings.songSorting = option
+        print(option)
+        sortSongs()
 	end)
 end
 local function addFavoritesFirstMenuItem()
     return menu:addCheckmarkMenuItem("Faves First", settings.favoritesFirst, function (checked)
         settings.favoritesFirst = checked
+        sortSongs()
     end)
 end
 local function addFavoriteMenuItem()
@@ -1029,7 +1032,6 @@ function setSongSelectMenuItems()
         addSortByMenuItem()
         addFavoritesFirstMenuItem()
         addFavoriteMenuItem()
-        sortSongs()
     else
         -- add mods menu items
         addModeMenuItem()

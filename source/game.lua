@@ -412,11 +412,14 @@ local function isCursorWithinNote(startAngle, endAngle)
     return (cursorPos > startAngle and cursorPos < endAngle) or (cursorPos+360 > startAngle and cursorPos+360 < endAngle) or (cursorPos-360 > startAngle and cursorPos-360 < endAngle)
 end
 
-local function spawnParticles()
-
+local function spawnParticles(x, y, dir, amount)
+    p:moveTo(x, y)
+    p:setSpread(mathFloor(dir-90), mathCeil(dir+90))
+    p:add(amount)
 end
 
 local startAngle, endAngle
+local noteDistance, hitScore
 local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
 
     -- set this as the last checked note
@@ -450,7 +453,7 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
         end
     else  
         --figure out how many points you get
-        local noteDistance = mathAbs(orbitRadius-note.radius)
+        noteDistance = mathAbs(orbitRadius-note.radius)
 
         if note.endRadius == note.radius then
             -- if you hit it perfectly as it reaches the orbit, score the max points. Otherwise, you score less and less, down to the furthest from the orbit
@@ -463,7 +466,7 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
             else
                 -- this equation calculates the amount of points you get (between 100 and 50) proportional to the where the noteDistance is between the perfectDistance and the hitForgiveness
                 -- Probably don't mess with this equation
-                local hitScore = getHitScore(noteDistance)
+                hitScore = getHitScore(noteDistance)
                 score += hitScore
                 updateHitTextDisplay(hitScore)
                 showHitScore = true
@@ -479,7 +482,7 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
                     showHitScore = false
                     note:beginHitting(orbitRadius, true)
                 else
-                    local hitScore = getHitScore(noteDistance)
+                    hitScore = getHitScore(noteDistance)
                     updateHitTextDisplay(hitScore)
                     showHitScore = false
                     note:beginHitting(orbitRadius, false)
@@ -497,9 +500,8 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
     health += noteDamage * 0.5
     -- create particles
     if settings.particles then
-        p:moveTo(cursorX, cursorY)
-        p:setSpread(mathFloor(note.currentPos-90), mathCeil(note.currentPos+90))
-        p:add(5)
+        if settings.noCrankMode then cursorX, cursorY = pointFromCirclePosition(orbitCenterX, orbitCenterY, orbitRadius, note.currentPos-90) end
+        spawnParticles(cursorX, cursorY, note.currentPos, 5)
     end
     
     if note.finishBeat == nil then
@@ -555,12 +557,11 @@ local function updateLongNote(note, noteIndex)
         workingBeat = currentBeat
     end
 
-    if isCursorWithinNote(note:getNoteAngles()) and buttonHeld then
+    if (settings.noCrankMode or isCursorWithinNote(note:getNoteAngles())) and buttonHeld then
         -- continue hitting note
         if settings.particles then
-            p:moveTo(cursorX, cursorY)
-            p:setSpread(mathFloor(cursorPos-90), mathCeil(cursorPos+90))
-            p:add(1)
+            if settings.noCrankMode then cursorX, cursorY = pointFromCirclePosition(orbitCenterX, orbitCenterY, orbitRadius, note.currentPos-90) end
+            spawnParticles(cursorX, cursorY, note.currentPos, 1)
         end
         -- check if the end has passed the orbit
         if note.endRadius >= orbitRadius then
@@ -1202,14 +1203,16 @@ function drawSong()
     if invertedScreen then gfx.setImageDrawMode(gfx.kDrawModeInverted) else gfx.setImageDrawMode(gfx.kDrawModeCopy) end
 
 	--draw the cursor
-    local cursorImg = 1
-    if buttonPressed then
-        cursorImg = 2
-    end
-    if cursorFlipped then
-        cursor:getImage(cursorImg):invertedImage():drawCentered(cursorX, cursorY)
-    else
-        cursor:getImage(cursorImg):drawCentered(cursorX, cursorY)
+    if not settings.noCrankMode then
+        local cursorImg = 1
+        if buttonPressed then
+            cursorImg = 2
+        end
+        if cursorFlipped then
+            cursor:getImage(cursorImg):invertedImage():drawCentered(cursorX, cursorY)
+        else
+            cursor:getImage(cursorImg):drawCentered(cursorX, cursorY)
+        end
     end
 
     --draw the centered hit text if enabled
