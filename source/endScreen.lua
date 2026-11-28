@@ -4,20 +4,21 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local tmr <const> = pd.timer
 local ease <const> = pd.easingFunctions
+local menu <const> = pd.getSystemMenu()
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 
 -- Define Variables
-songRating = ""
+local songRating = ""
 local songHiScore = 0
 local songHiCombo = 0
 local fullCombo = false
+local allPerfect = false
 local initialized = false
 
 -- Rating variables
 local ratingImage = {}
-ratingImage.P = gfx.image.new("sprites/ratingP")
 ratingImage.SS = gfx.image.new("sprites/ratingSS")
 ratingImage.S = gfx.image.new("sprites/ratingS")
 ratingImage.A = gfx.image.new("sprites/ratingA")
@@ -25,9 +26,10 @@ ratingImage.B = gfx.image.new("sprites/ratingB")
 ratingImage.C = gfx.image.new("sprites/ratingC")
 ratingImage.D = gfx.image.new("sprites/ratingD")
 ratingImage.F = gfx.image.new("sprites/ratingF")
-local fullComboImage = gfx.image.new("sprites/fullCombo")
+local fullComboImage <const> = gfx.image.new("sprites/fullCombo")
+local allPerfectImage <const> = gfx.image.new("sprites/allPerfect")
 local ratingImageWidth, ratingImageHeight = ratingImage.SS:getSize()
-local ratingY = (screenHeight-ratingImageHeight)/2
+local ratingY <const> = (screenHeight-ratingImageHeight)/2
 
 -- Animation variables
 local completedCurrentY = -45
@@ -82,9 +84,7 @@ local function initEndScreen()
     tickerTimer.repeats = true
 
     -- calculate what rating they got
-    if pointPercentage == 1 then
-        songRating = "P"
-    elseif pointPercentage >= 0.9 then
+    if pointPercentage >= 0.9 then
         songRating = "SS"
     elseif pointPercentage >= 0.8 then
         songRating = "S"
@@ -103,96 +103,48 @@ local function initEndScreen()
     -- check if they got a full combo
     if missedNotes == 0 then
         fullCombo = true
+        if perfectHits == hitNotes then
+            allPerfect = true
+        end
     else
         fullCombo = false
+        allPerfect = false
     end
 
     -- if they got a high score, save it
-    songHiScore = 0
-    songHiCombo = 0
-    if scores ~= nil then
-        if scores[currentSong.name] ~= nil then
-            if scores[currentSong.name][currentDifficulty] ~= nil then
-                songHiScore = scores[currentSong.name][currentDifficulty].score
-                songHiCombo = scores[currentSong.name][currentDifficulty].combo
-            else
-                scores[currentSong.name][currentDifficulty] = {}
-            end
-        else
-            scores[currentSong.name] = {}
-            scores[currentSong.name][currentDifficulty] = {}
-        end
-    else
-        scores = {}
-        scores[currentSong.name] = {}
-        scores[currentSong.name][currentDifficulty] = {}
-    end
-    if songHiScore == nil then
-        songHiScore = 0
-    end
-    if songHiCombo == nil then
-        songHiCombo = 0
-    end
+    local save = false
+    songHiScore, songHiCombo = getMapRecords(currentSong.name, currentDifficulty)
     
     if songHiScore < score then
         scores[currentSong.name][currentDifficulty].score = score
         scores[currentSong.name][currentDifficulty].rating = songRating
+        save = true
     end
-    if songHiCombo < largestCombo then
+    if songHiCombo <= largestCombo then
         scores[currentSong.name][currentDifficulty].combo = largestCombo
         scores[currentSong.name][currentDifficulty].fc = fullCombo
+        scores[currentSong.name][currentDifficulty].ap = allPerfect
+        save = true
     end
     
-    pd.datastore.write(scores, "scores")
+    if save then pd.datastore.write(scores, "scores") end
 
     -- update stats
-    if stats.lifetimeScore ~= nil then
-        stats.lifetimeScore += score
-    else
-        stats.lifetimeScore = score
-    end
-
-    if stats.hitNotes ~= nil then
-        stats.hitNotes += hitNotes
-    else
-        stats.hitNotes = hitNotes
-    end
+    incrementStat("lifetimeScore", score)
+    incrementStat("hitNotes", hitNotes)
+    incrementStat("perfectHits", perfectHits)
+    incrementStat("missedNotes", missedNotes)
+    incrementStat("levelsCompleted")
     
-    if stats.perfectHits ~= nil then
-        stats.perfectHits += perfectHits
-    else
-        stats.perfectHits = perfectHits
-    end
-
-    if stats.missedNotes ~= nil then
-        stats.missedNotes += missedNotes
-    else
-        stats.missedNotes = missedNotes
-    end
-
-    if stats.levelsCompleted ~= nil then
-        stats.levelsCompleted += 1
-    else
-        stats.levelsCompleted = 1
-    end
-
     if fullCombo then
-        if stats.fullCombos ~= nil then
-            stats.fullCombos += 1
-        else
-            stats.fullCombos = 1
+        incrementStat("fullCombos")
+        if allPerfect then
+            incrementStat("allPerfects")
         end
     end
 
-    if stats.ranksReceived == nil then
-        stats.ranksReceived = {}
-    end
-
-    if stats.ranksReceived[songRating] ~= nil then
-        stats.ranksReceived[songRating] += 1
-    else
-        stats.ranksReceived[songRating] = 1
-    end
+    initStat("ranksReceived", {})
+    incrementStat(songRating, 1, stats.ranksReceived)
 
     pd.datastore.write(stats, "stats")
 end
@@ -247,6 +199,7 @@ function updateEndScreen()
             initialized = false
             stopMenuMusic()
             resetAnimationValues()
+            setGameMenuItems()
             return "song"
         end
     end
@@ -259,6 +212,7 @@ function updateEndScreen()
             music:stop()
             initialized = false
             resetAnimationValues()
+            setSongSelectMenuItems()
             return "songSelect"
         end
     end
@@ -309,9 +263,7 @@ function drawEndScreen()
 
     -- draw rating
     ratingCurrentX = ratingXTimer.value
-    if songRating == "P" then
-        ratingImage.P:draw(ratingCurrentX, ratingY)
-    elseif songRating == "SS" then
+    if songRating == "SS" then
         ratingImage.SS:draw(ratingCurrentX, ratingY)
     elseif songRating == "S" then
         ratingImage.S:draw(ratingCurrentX, ratingY)
@@ -329,7 +281,11 @@ function drawEndScreen()
 
     -- draw full combo sprite if full combo
     if fullCombo then
-        fullComboImage:draw(ratingCurrentX+33, ratingY+95)
+        if allPerfect then
+            allPerfectImage:drawCentered(ratingCurrentX+ratingImageWidth*0.5, ratingY+ratingImageHeight)
+        else
+            fullComboImage:drawCentered(ratingCurrentX+ratingImageWidth*0.5, ratingY+ratingImageHeight)
+        end
     end
 
     -- draw continue bar

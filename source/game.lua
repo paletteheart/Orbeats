@@ -10,6 +10,7 @@ import "notes/releasenote"
 -- Shorthands
 local pd <const> = playdate
 local gfx <const> = pd.graphics
+local menu <const> = pd.getSystemMenu()
 local ease <const> = pd.easingFunctions
 local tableInsert <const> = table.insert
 local tableRemove <const> = table.remove
@@ -134,42 +135,6 @@ local maxNoteScore <const> = 100 --the max score you can get from a note
 local perfectDistance <const> = 12 -- the distance from the center of a note or from the exact orbit radius where you can still get a perfect note
 local noteCap <const> = 10 -- the max amount of notes that will be updated per frame
 
--- Global symbols and fonts
-char = {}
-char.A = "Ⓐ"
-char.B = "Ⓑ"
-char.a = "Ⓐ"
-char.b = "Ⓑ"
-char.left = "←"
-char.up = "↑"
-char.right = "→"
-char.down = "↓"
-char.dir = "✛"
-char.menu = "⊙"
-char.cw = "↻"
-char.ccw = "↺"
-char.div = "∘--∘"
-
-fontFamilies = {}
-fontFamilies.orbeatsSans = gfx.font.newFamily({
-    [gfx.font.kVariantNormal] = "fonts/Orbeats Sans"
-})
-fontFamilies.orbeatsSmall = gfx.font.newFamily({
-    [gfx.font.kVariantNormal] = "fonts/Orbeats Small"
-})
-fontFamilies.odinRounded = gfx.font.newFamily({
-    [gfx.font.kVariantNormal] = "fonts/Odin Rounded PD"
-})
-fontFamilies.carbonNumbers = gfx.font.newFamily({
-    [gfx.font.kVariantNormal] = "fonts/Carbon Numbers"
-})
-
-fonts = {}
-fonts.orbeatsSans = gfx.font.new("fonts/Orbeats Sans")
-fonts.orbeatsSmall = gfx.font.new("fonts/Orbeats Small")
-fonts.odinRounded = gfx.font.new("fonts/Odin Rounded PD")
-fonts.carbonNumbers = gfx.font.new("fonts/Carbon Numbers")
-
 -- Combo text cache
 local comboText <const> = gfx.imageWithText("Combo:", 50, 50, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
 local comboTextWidth <const>, comboTextHeight <const> = comboText:getSize()
@@ -199,29 +164,7 @@ toMenu = false
 restart = false
 tutorial = false
 comboTutorial = false
-p = Particle()
-
-sfx = {}
--- sfx.combo_break = pd.sound.sampleplayer.new("sfx/combo_break")
-sfx.hit = {}
-local function getListOfHitSfx()
-    local sfxFiles = pd.file.listFiles("/sfx/hit/")
-    if sfxFiles == nil then sfxFiles = {} end
-
-    for i=#sfxFiles,1,-1 do
-        if sfxFiles[i]:sub(-4) ~= '.pda' then
-            tableRemove(sfxFiles, i)
-        else
-            sfxFiles[i] = sfxFiles[i]:sub(1, -5)
-            print(sfxFiles[i])
-        end
-    end
-
-    for i=1,#sfxFiles do
-        sfx.hit[i] = pd.sound.sampleplayer.new("sfx/hit/"..sfxFiles[i])
-    end
-end
-getListOfHitSfx()
+local p = Particle()
 
 -- Orbit variables
 local orbitCenterX = screenCenterX
@@ -239,32 +182,6 @@ local flipPos = 0
 local health = 100
 local noteDamage = 20
 failed = false
-
--- input variables
-crankPos = pd.getCrankPosition()
-crankChange = pd.getCrankChange()
-
-upPressed = pd.buttonJustPressed(pd.kButtonUp)
-downPressed = pd.buttonJustPressed(pd.kButtonDown)
-leftPressed = pd.buttonJustPressed(pd.kButtonLeft)
-rightPressed = pd.buttonJustPressed(pd.kButtonRight)
-aPressed = pd.buttonJustPressed(pd.kButtonA)
-bPressed = pd.buttonJustPressed(pd.kButtonB)
-
-hitPressed = downPressed or bPressed or rightPressed
-flipPressed = upPressed or aPressed or leftPressed
-buttonPressed = downPressed or bPressed or upPressed or aPressed or leftPressed or rightPressed
-
-upHeld = pd.buttonIsPressed(pd.kButtonUp)
-downHeld = pd.buttonIsPressed(pd.kButtonDown)
-leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
-rightHeld = pd.buttonIsPressed(pd.kButtonRight)
-aHeld = pd.buttonIsPressed(pd.kButtonA)
-bHeld = pd.buttonIsPressed(pd.kButtonB)
-
-buttonHeld = downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld
-
-buttonReleased = false
 
 -- Song variables
 local songTable = {}
@@ -963,7 +880,7 @@ local function updateEffects()
                     songBpm = nextBpmChange.bpm
                     tableRemove(bpmChanges, 1)
                     referenceTime = musicTime
-                    referenceBeat = currentBeat + beatOffset
+                    referenceBeat = currentBeat + beatOffset + settings.audioOffset
                 end
             end
         end
@@ -1015,18 +932,36 @@ local function drawHitText(x, y, bgCol)
     end
 end
 
+local function addToMenuMenuItem()
+	return menu:addMenuItem("Exit Song", function()
+		toMenu = true
+		if restart then
+			restart = false
+		end
+	end)
+end
+
+local function addRestartMenuItem()
+	return menu:addMenuItem("Restart", function()
+		restart = true
+		if toMenu then
+			toMenu = false
+		end
+	end)
+end
 
 -- global functions
 
+local timeSinceStart
 function updateSong()
     -- update the fake beat if the music isn't playing
-    timeSinceStart = pd.sound.getCurrentTime()-startTime-3
-    fakeCurrentBeat = (timeSinceStart)*(songBpm/60)-beatOffset
+    timeSinceStart = (pd.sound.getCurrentTime()-startTime-3)*settings.speed
+    fakeCurrentBeat = (timeSinceStart)*(songBpm/60)-beatOffset + settings.audioOffset
 
     -- update the audio timer variable
     musicTime = music:getOffset()
     -- update the current beat
-    currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + referenceBeat
+    currentBeat = ((musicTime-referenceTime) / (60/songBpm))-beatOffset + settings.audioOffset + referenceBeat
 
     -- clamp health
     health = mathMin(100, mathMax(0, health))
@@ -1042,6 +977,7 @@ function updateSong()
 
     -- if seconds since level loaded is 0, begin playing song
     if (timeSinceStart >= 0 and not music:isPlaying()) or songEnded then
+        music:setRate(settings.speed)
         music:play()
     end
 
@@ -1066,25 +1002,26 @@ function updateSong()
             pulse = mathMax(pulse-1, 0)
         end
     end
-
-    -- update cursor position based on crank position
-    if cursorFlipped then
-        cursorPos = crankPos+180
-        if cursorPos > 360 then cursorPos -= 360 end
-    else
-        cursorPos = crankPos
-    end
     
     -- update effects
     updateEffects()
 
-    -- update cursor x and y based on cursor position
-    cursorX = orbitCenterX + orbitRadius * mathCos(mathRad(cursorPos-90))
-    cursorY = orbitCenterY + orbitRadius * mathSin(mathRad(cursorPos-90))
+    -- update cursor position based on crank position
+    if not settings.noCrankMode then
+        if cursorFlipped then
+            cursorPos = crankPos+180
+            if cursorPos > 360 then cursorPos -= 360 end
+        else
+            cursorPos = crankPos
+        end
 
+        -- update cursor x and y based on cursor position
+        cursorX = orbitCenterX + orbitRadius * mathCos(mathRad(cursorPos-90))
+        cursorY = orbitCenterY + orbitRadius * mathSin(mathRad(cursorPos-90))
+    end
     
     -- flip player if up is hit
-    if flipPressed and not settings.oneButtonMode then flipCursor() end
+    if flipPressed and not (settings.oneButtonMode or settings.noCrankMode) then flipCursor() end
 
 	--update notes
 	updateNotes()
@@ -1109,8 +1046,10 @@ function updateSong()
             if tutorial then
                 tutorial = false
                 comboTutorial = false
+                menu:removeAllMenuItems()
                 return "tutorialSelect"
             else
+                setSongSelectMenuItems()
                 return "songSelect"
             end
         end
@@ -1126,12 +1065,8 @@ function updateSong()
         else
             if fadeOut > 0 then
                 fadeOut -= 0.1
-                -- if music:isPlaying() then
-                --     music:setVolume(music:getVolume()-0.1)
-                -- end
             else
-                -- music:stop()
-                
+                menu:removeAllMenuItems()
                 return "songEndScreen"
             end
         end
@@ -1362,52 +1297,17 @@ function setUpSong(bpm, bpmChange, newBeatOffset, musicFilePath, tablePath)
     lastMovementBeatX = lastBeat
     lastMovementBeatY = lastMovementBeatX
     lastNoteChecked = -8
-
-    if settings.oneButtonMode then setScoreMult(.8) else setScoreMult(1) end
-end
-
-
-function updateInputs() -- used to check if buttons were pressed during a dead frame and update crank position
-    -- update crank position
-    crankPos = pd.getCrankPosition()
-    crankChange = pd.getCrankChange()
-    stats.crankTurns += mathAbs(crankChange)/360
-    -- update button inputs
-    upPressed = pd.buttonJustPressed(pd.kButtonUp)
-    downPressed = pd.buttonJustPressed(pd.kButtonDown)
-    leftPressed = pd.buttonJustPressed(pd.kButtonLeft)
-    rightPressed = pd.buttonJustPressed(pd.kButtonRight)
-    aPressed = pd.buttonJustPressed(pd.kButtonA)
-    bPressed = pd.buttonJustPressed(pd.kButtonB)
-
-    hitPressed = downPressed or bPressed or rightPressed
-    flipPressed = upPressed or aPressed or leftPressed
-    buttonPressed = downPressed or bPressed or upPressed or aPressed or leftPressed or rightPressed
-
-    upHeld = pd.buttonIsPressed(pd.kButtonUp)
-    downHeld = pd.buttonIsPressed(pd.kButtonDown)
-    leftHeld = pd.buttonIsPressed(pd.kButtonLeft)
-    rightHeld = pd.buttonIsPressed(pd.kButtonRight)
-    aHeld = pd.buttonIsPressed(pd.kButtonA)
-    bHeld = pd.buttonIsPressed(pd.kButtonB)
-
-    buttonHeld = downHeld or bHeld or upHeld or aHeld or leftHeld or rightHeld
-
-    buttonReleased = pd.buttonJustReleased(pd.kButtonUp) or
-                     pd.buttonJustReleased(pd.kButtonDown) or
-                     pd.buttonJustReleased(pd.kButtonLeft) or
-                     pd.buttonJustReleased(pd.kButtonRight) or
-                     pd.buttonJustReleased(pd.kButtonA) or
-                     pd.buttonJustReleased(pd.kButtonB)
-end
-
-function drawTextCentered(text, x, y, font)
-    -- draws text centered both horizontally and vertically to the point given
-    local textWidth, textHeight = gfx.getTextSize(text, font)
-    gfx.setFontFamily(font)
-    gfx.drawTextAligned(text, x, y-textHeight*0.5, kTextAlignment.center)
 end
 
 function setScoreMult(mult)
     currentMaxPoints = math.floor(maxNoteScore*mult)
+end
+
+function setGameMenuItems(isTutorial)
+    -- reset system menu items
+    menu:removeAllMenuItems()
+    -- add 'to menu' item
+    addToMenuMenuItem()
+    -- add restart item if not a tutorial
+    if not (isTutorial ~= nil and isTutorial) then addRestartMenuItem() end
 end

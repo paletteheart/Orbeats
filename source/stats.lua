@@ -3,6 +3,8 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
+local tableInsert <const> = table.insert
+
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 local screenCenterY <const> = screenHeight / 2
@@ -13,18 +15,10 @@ local moon2Dither <const> = {0x83, 0x7C, 0x45, 0x55, 0x45, 0x7C, 0x83, 0xBB}
 local starsBg <const> = gfx.image.new("sprites/stars")
 
 -- Define variables
-stats = pd.datastore.read("stats")
-if stats == nil then
-    stats = {}
-end
 local statsText = {}
 
-if stats.playTime == nil then
-    stats.playTime = 0
-end
-if stats.crankTurns == nil then
-    stats.crankTurns = 0
-end
+initStat("playTime")
+initStat("crankTurns")
 
 local toMenu = false
 local init = true
@@ -43,24 +37,34 @@ local rankings = {
     "B",
     "A",
     "S",
-    "SS",
-    "P"
+    "SS"
 }
 
-
+local days, hours, minutes, seconds
+local playTimeText = {}
+local timeFormat <const> = "%02d"
 local function calculatePlayTime()
-    local days = math.floor(stats.playTime/86400)
-    local hours = math.floor((stats.playTime%86400)/3600)
-    local minutes = math.floor((stats.playTime%3600)/60)
-    local seconds = math.floor(stats.playTime%60)
+    days = math.floor(stats.playTime/86400)
+    hours = math.floor((stats.playTime%86400)/3600)
+    minutes = math.floor((stats.playTime%3600)/60)
+    seconds = math.floor(stats.playTime%60)
 
-    local playTimeText = ""
-    if days > 0 then playTimeText = days..":"..hours..":"
-    elseif hours > 0 then playTimeText = hours..":" end
-    playTimeText = playTimeText..minutes..":"..seconds
+    playTimeText = {}
+    if days > 0 then
+        tableInsert(playTimeText, timeFormat:format(days))
+        tableInsert(playTimeText, ":")
+        tableInsert(playTimeText, timeFormat:format(hours))
+        tableInsert(playTimeText, ":")
+    elseif hours > 0 then
+        tableInsert(playTimeText, timeFormat:format(hours))
+        tableInsert(playTimeText, ":")
+    end
+    tableInsert(playTimeText, timeFormat:format(minutes))
+    tableInsert(playTimeText, ":")
+    tableInsert(playTimeText, timeFormat:format(seconds))
     
 
-    return playTimeText
+    return table.concat(playTimeText)
 end
 
 local function readStats()
@@ -71,54 +75,40 @@ local function readStats()
 
     statsText = {}
 
-    if stats.lifetimeScore == nil then
-        stats.lifetimeScore = 0
-    end
-    table.insert(statsText, "Lifetime Score: "..stats.lifetimeScore)
+    initStat("lifetimeScore")
+    tableInsert(statsText, "Lifetime Score: "..commaFormat(stats.lifetimeScore))
 
-    if stats.playTime == nil then
-        stats.playTime = 0
-    end
-    table.insert(statsText, "Total Play Time: "..calculatePlayTime())
+    -- Initialized on boot
+    tableInsert(statsText, "Total Play Time: "..calculatePlayTime())
 
-    if stats.hitNotes == nil then
-        stats.hitNotes = 0
-    end
-    table.insert(statsText, stats.hitNotes.." Notes Hit")
+    initStat("hitNotes")
+    tableInsert(statsText, commaFormat(stats.hitNotes).." Notes Hit")
     
-    if stats.perfectHits == nil then
-        stats.perfectHits = 0
-    end
-    table.insert(statsText, stats.perfectHits.." Perfect Hits")
+    initStat("perfectHits")
+    tableInsert(statsText, commaFormat(stats.perfectHits).." Perfect Hits")
 
-    if stats.missedNotes == nil then
-        stats.missedNotes = 0
-    end
-    table.insert(statsText, stats.missedNotes.." Missed Notes")
+    initStat("missedNotes")
+    tableInsert(statsText, commaFormat(stats.missedNotes).." Missed Notes")
 
-    if stats.levelsCompleted == nil then
-        stats.levelsCompleted = 0
-    end
-    table.insert(statsText, stats.levelsCompleted.." Levels Finished")
+    initStat("levelsCompleted")
+    tableInsert(statsText, commaFormat(stats.levelsCompleted).." Levels Finished")
 
-    if stats.fullCombos == nil then
-        stats.fullCombos = 0
-    end
-    table.insert(statsText, stats.fullCombos.." Full Combos")
-
-    if stats.ranksReceived == nil then
-        stats.ranksReceived = {}
-    end
-    table.insert(statsText, "Ranks Received:")
+    initStat("ranksReceived", {})
+    tableInsert(statsText, "Ranks Received:")
 
     for i=1,#rankings do
-        if stats.ranksReceived[rankings[i]] == nil then
-            stats.ranksReceived[rankings[i]] = 0
-        end
-        table.insert(statsText, "  "..rankings[i]..": "..stats.ranksReceived[rankings[i]])
+        initStat(rankings[i], 0, stats.ranksReceived)
+        tableInsert(statsText, "  "..rankings[i]..": "..commaFormat(stats.ranksReceived[rankings[i]]))
     end
 
-    table.insert(statsText, "Crank Revolutions: "..round(stats.crankTurns))
+    initStat("fullCombos")
+    tableInsert(statsText, commaFormat(stats.fullCombos).." Full Combos")
+
+    initStat("allPerfects")
+    tableInsert(statsText, commaFormat(stats.allPerfects).." All Perfects")
+
+    -- Initialized on boot
+    tableInsert(statsText, "Crank Revolutions: "..commaFormat(round(stats.crankTurns)))
 
 
     pd.datastore.write(stats, "stats")
@@ -136,10 +126,10 @@ function updateStatsPage()
     end
     -- update the crank turns stat
     table.remove(statsText, #statsText)
-    table.insert(statsText, "Crank Revolutions: "..round(stats.crankTurns))
+    tableInsert(statsText, "Crank Revolutions: "..commaFormat(round(stats.crankTurns)))
     -- update the play time stat
     table.remove(statsText, 2)
-    table.insert(statsText, 2, "Total Play Time: "..calculatePlayTime())
+    tableInsert(statsText, 2, "Total Play Time: "..calculatePlayTime())
     
     -- check inputs
     if downPressed or bPressed then

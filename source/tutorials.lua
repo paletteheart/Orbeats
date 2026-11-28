@@ -208,6 +208,7 @@ function updateTutorialSelect()
                 init = false
                 tutorial = true
                 if menuItemNames[menuSelectionRounded] == comboTutorialName then comboTutorial = true end
+                setGameMenuItems(true)
                 return "song"
             end
         end

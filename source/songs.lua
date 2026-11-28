@@ -6,6 +6,14 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local tmr <const> = pd.timer
 local ease <const> = pd.easingFunctions
+local menu <const> = pd.getSystemMenu()
+local abs <const> = math.abs
+local min <const> = math.min
+local max <const> = math.max
+local floor <const> = math.floor
+local rad <const> = math.rad
+local sin <const> = math.sin
+local cos <const> = math.cos
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -47,6 +55,12 @@ local function getListOfSongs()
 end
 
 local songList <const>, mapExists <const>, audioFileExists <const> = getListOfSongs()
+
+local sortOptions <const> = {
+	"artist",
+	"name",
+	"bpm"
+}
 
 local function sortSongListByName()
     local sortedList = {}
@@ -158,11 +172,14 @@ local tickerTextBack <const> = gfx.imageWithText("Back:"..char.down.."/"..char.B
 local leftControls <const> = gfx.imageWithText(char.left.."/"..char.ccw, 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
 local rightControls <const> = gfx.imageWithText(char.right.."/"..char.cw, 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
 local sortingControls <const> = gfx.imageWithText("Sorting:"..char.menu, 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
+local modsControls <const> = gfx.imageWithText("Mods:"..char.menu, 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans)
+local multText <const> = gfx.imageWithText("Score Mult:", 400, 400, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall)
 
 local songDataText <const> = {
     score = gfx.imageWithText("Best Score:", 100, 100, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall),
     combo = gfx.imageWithText("Best Combo:", 100, 100, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall),
     fc = gfx.imageWithText("Full Combo", 100, 100, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans),
+    ap = gfx.imageWithText("All Perfect", 100, 100, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSans),
     rank = gfx.imageWithText("Best Rank:", 100, 100, gfx.kColorClear, nil, "oops", kTextAlignment.left, fonts.orbeatsSmall)
 }
 
@@ -199,38 +216,65 @@ local selectYPresets <const> = {
 
 local hasSongs <const> = #songList ~= 0
 
+-- Mods constants
+local modeOptions <const> = {
+    "classic",
+    "one button",
+    "no crank",
+    "o.b. + n.c.",
+    "visualizer",
+}
+local modeMult <const> = {
+    1.0,
+    0.8,
+    0.8,
+    0.64,
+    0.0
+}
+local speedOptions <const> = {
+    0.75,
+    1.0,
+    1.5
+}
+local speedOptionLabels <const> = {
+    "75%",
+    "100%",
+    "150%",
+}
+local speedMult <const> = {
+    0.5,
+    1.0,
+    1.25,
+}
+local damageOptions <const> = {
+    "normal",
+    "no miss",
+    "no heal",
+    "no fail",
+}
+local damageMult <const> = {
+    1.0,
+    1.0,
+    1.0,
+    0.5,
+}
+
 -- Define variables
 -- Misc variables
-scores = pd.datastore.read("scores")
 
 local leftHeldFor = 0 -- a measurement in ticks of how long left has been held
 local rightHeldFor = 0 -- a measurement in ticks of how long right has been held
 local selecting = "song"
 
-pointerImage = gfx.image.new("sprites/pointer")
-
--- Audio Variables
-sfx.low = pd.sound.sampleplayer.new("sfx/low")
-sfx.mid = pd.sound.sampleplayer.new("sfx/mid")
-sfx.high = pd.sound.sampleplayer.new("sfx/high")
-sfx.play = pd.sound.sampleplayer.new("sfx/play")
-sfx.click = pd.sound.sampleplayer.new("sfx/click")
-sfx.switch = pd.sound.sampleplayer.new("sfx/switch")
-sfx.tap = pd.sound.sampleplayer.new("sfx/tap")
-sfx.jingle = pd.sound.sampleplayer.new("sfx/jingle")
-
-menuBgm = pd.sound.fileplayer.new("bgm/we are all listening")
-
 -- Song variables
-sortBy = settings.songSorting
-currentSongList = {}
+local currentSongList = {}
 currentSong = {}
 currentDifficulty = ""
 local mapList = {}
 if hasSongs then
-    if sortBy == "artist" then
+    if settings.songSorting == sortOptions[1] then
         currentSongList = songListSortedByArtist
-    elseif sortBy == "name" then
+    elseif settings.songSorting == sortOptions[2] then
         currentSongList = songListSortedByName
     else
         currentSongList = songListSortedByBpm
@@ -240,7 +284,6 @@ if hasSongs then
     mapList = currentSong.difficulties
 end
 songTable = {}
-sortSongs = true
 local songStarting = false
 local toMenu = false
 local songSelection = 1
@@ -256,8 +299,6 @@ local songTablePath
 
 -- Animation variables
 local init = false
-
-animationTime = 300
 
 local tickerText = tickerTextConfirm
 local tickerTextWidth = tickerText:getSize()
@@ -292,6 +333,85 @@ local inputTimer = tmr.new(0)
 local controlsTimer = tmr.new(0)
 
 -- Local functions
+
+local function getInputMode()
+    -- check if it's on vizualizer mode
+    if settings.autoMode then return modeOptions[5] end
+    -- check if it's one button, no crank, or both
+    if settings.oneButtonMode then
+        if settings.noCrankMode then return modeOptions[4] end
+        return modeOptions[2]
+    elseif settings.noCrankMode then return modeOptions[3]
+    -- if none of the above, it's classic mode
+    else return modeOptions[1] end
+end
+
+local function getSpeed(option)
+    for i=1,#speedOptions do
+        if option == speedOptionLabels[i] then return speedOptions[i] end
+    end
+    return 1.0
+end
+
+local function getSpeedLabel(speed)
+    for i=1,#speedOptions do
+        if speed == speedOptions[i] then return speedOptionLabels[i] end
+    end
+    return "?"
+end
+
+local function isSongFavorited(songFolder)
+    local favorited = false
+
+    for i=#settings.favorites,1,-1 do
+
+        if settings.favorites[i] == songFolder then
+            favorited = true
+            break
+        end
+
+    end
+
+    return favorited
+end
+
+local function sortSongs()
+    if settings.songSorting == sortOptions[1] then
+        currentSongList = songListSortedByArtist
+    elseif settings.songSorting == sortOptions[2] then
+        currentSongList = songListSortedByName
+    else
+        currentSongList = songListSortedByBpm
+    end
+end
+
+local function updateScoreMult()
+    local mult = 1.0
+
+    local inputMode = getInputMode()
+    for i=1,#modeOptions do
+        if inputMode == modeOptions[i] then
+            mult *= modeMult[i]
+            break
+        end
+    end
+
+    for i=1,#speedOptions do
+        if settings.speed == speedOptions[i] then
+            mult *= speedMult[i]
+            break
+        end
+    end
+
+    for i=1,#damageOptions do
+        if settings.damageMode == damageOptions[i] then
+            mult *= damageMult[i]
+            break
+        end
+    end
+
+    setScoreMult(mult)
+end
 
 local function resetAnimTimers()
     menuYTimer = replaceTimer(menuYTimer, animationTime, menuYPresets.reveal, menuYPresets.songs, ease.outBack)
@@ -367,7 +487,7 @@ function updateSongSelect()
             drawInputPrompts = false
         else drawInputPrompts = true end
         -- update animations if inputs given
-        if leftHeld or rightHeld or upHeld or downHeld or aHeld or bHeld or math.abs(crankChange) > 0.5 then
+        if leftHeld or rightHeld or upHeld or downHeld or aHeld or bHeld or abs(crankChange) > 0.5 then
             inputTimer = replaceTimer(inputTimer, 4000, function()
                 controlsTimer = replaceTimer(controlsTimer, animationTime, controlsTimer.value, 1.0, ease.outCubic)
                 startHideAnimation = true
@@ -391,27 +511,13 @@ function updateSongSelect()
         end
         songSelection += crankChange/30
         -- move the songSelection to the nearest integer if not moving the crank or if past the edge of the list
-        if math.abs(crankChange) < 0.1 or songSelection > #songList or songSelection < 1 then
-            songSelection = closeDistance(songSelection, math.min(#songList, math.max(1, round(songSelection))), 0.3)
+        if abs(crankChange) < 0.1 or songSelection > #songList or songSelection < 1 then
+            songSelection = closeDistance(songSelection, min(#songList, max(1, round(songSelection))), 0.3)
         end
     end
 
     -- round the songSelection for things that need the exact songSelection
-    songSelectionRounded = math.min(#songList, math.max(1, round(songSelection)))
-
-    
-
-    -- sort the song list if the sorting method has changed
-    if sortSongs then
-        if sortBy == "artist" then
-            currentSongList = songListSortedByArtist
-        elseif sortBy == "name" then
-            currentSongList = songListSortedByName
-        else
-            currentSongList = songListSortedByBpm
-        end
-        sortSongs = false
-    end
+    songSelectionRounded = min(#songList, max(1, round(songSelection)))
 
     -- update the current song
     if hasSongs then
@@ -433,11 +539,11 @@ function updateSongSelect()
     end 
 
     -- move the mapSelection to the nearest integer if not moving the crank or if past the edge of the list
-    if math.abs(crankChange) < 0.5 or mapSelection > #mapList or mapSelection < 1 or selecting ~= "map" then
-        mapSelection = closeDistance(mapSelection, math.min(#mapList, math.max(1, round(mapSelection))), 0.3)
+    if abs(crankChange) < 0.5 or mapSelection > #mapList or mapSelection < 1 or selecting ~= "map" then
+        mapSelection = closeDistance(mapSelection, min(#mapList, max(1, round(mapSelection))), 0.3)
     end
     -- round the mapSelection for things that need the exact mapSelection
-    mapSelectionRounded = math.min(#mapList, math.max(1, round(mapSelection)))
+    mapSelectionRounded = min(#mapList, max(1, round(mapSelection)))
     -- update what map (difficulty) is selected
     if hasSongs then
         currentDifficulty = currentSong.difficulties[mapSelectionRounded]
@@ -563,6 +669,10 @@ function updateSongSelect()
             setUpSong(bpm, bpmChanges, beatOffset, musicFile, songTablePath)
             resetSongSelectAnim()
             songStarting = false
+
+            setGameMenuItems()
+            updateScoreMult()
+
             return "song"
         end
     end
@@ -580,6 +690,10 @@ function updateSongSelect()
             end
             setMenuMusicVolume(1)
             toMenu = false
+
+            -- reset system menu items
+	        menu:removeAllMenuItems()
+
             return "menu"
         end
     end
@@ -588,135 +702,123 @@ function updateSongSelect()
 end
 
 
-
+local sheenX, songBarY
+local pathTable, songPath
+local mapDistDiff, menuDist
+local mapPos, mapX, mapY
+local textWidth, textHeight, textX, textY, textFont
+local currentHiScore, currentHiCombo, currentBestRank, currentFCStatus, currentAPStatus
+local bpmTextTable, bpmText, nameBubbleWidth
+local albumPos, albumX, albumY
+local playTextH <const> = 33
+local confirmText, confirmWidth
+local controlsBubbleWidth <const> = 50
+local controlsBubbleHeight <const> = 26
+local controlsYDiff <const> = controlsYPresets.hide - controlsYPresets.show
+local controlsY
+local selectYDiff <const> = selectYPresets.show - selectYPresets.hide
+local selectBarY, sortingTextWidth, modsTextWidth
+local tickerX1, tickerX2, tickerX3
+local tickerPadding <const> = 4
+local dataBubbleWidth <const> = 100
+local dataBubbleHeight <const> = 89
+local dataBubbleY <const> = 80
 function drawSongSelect()
     -- update the menu Y
     menuY = menuYTimer.value
 
     -- draw background sheen
-    local sheenX = sheenTimer.value
+    sheenX = sheenTimer.value
     gfx.setColor(gfx.kColorWhite)
     gfx.setDitherPattern(0.5)
     gfx.setLineWidth(250)
     gfx.drawLine(sheenX, screenHeight+50, sheenX+30, -50)
 
     -- draw the song bar
-    local songBarY = menuY + screenHeight - songBarH*0.5
+    songBarY = menuY + screenHeight - songBarH*0.5
     if selecting == "song" or (selecting == "map" and menuY < menuYPresets.maps) then
         songBarImg:draw(0, songBarY)
     end
 
     -- check if there are any songs to display
-    local pathTable = {"songs/", currentSong.folder, mapList[mapSelectionRounded], ".json"}
-    local songPath = table.concat(pathTable)
+    pathTable = {"songs/", currentSong.folder, mapList[mapSelectionRounded], ".json"}
+    songPath = table.concat(pathTable)
     if hasSongs then
         -- draw the difficulty satellites
         if selecting == "map" or (selecting == "play" and menuY < menuYPresets.play) or (selecting == "song" and menuY > menuYPresets.songs) then
             
             -- calculate satellite distance
-            local mapDistDiff = mapDistPresets.far - mapDistPresets.close
-            local menuDist = 1-(math.abs(menuY - menuYPresets.maps)/menuYPresets.maps) -- normalized
+            mapDistDiff = mapDistPresets.far - mapDistPresets.close
+            menuDist = 1-(abs(menuY - menuYPresets.maps)/menuYPresets.maps) -- normalized
             mapDist = mapDistPresets.close + menuDist*mapDistDiff
 
             mapSelectionOffset = closeDistance(mapSelectionOffset, 0, 0.3)
             for i=mapSelectionRounded+3,mapSelectionRounded-3,-1 do
                 if i <= #mapList and i >= 1 then
-                    local mapPos = (i-mapSelection)*mapDist
-                    local mapX = screenCenterX + (songBarRadius+200) * math.cos(math.rad(mapPos-90))
-                    local mapY = mapSelectionOffset + menuY - screenCenterY + songBarRadius + songBarRadius * math.sin(math.rad(mapPos-90))
+                    mapPos = (i-mapSelection)*mapDist
+                    mapX = screenCenterX + (songBarRadius+200) * cos(rad(mapPos-90))
+                    mapY = mapSelectionOffset + menuY - screenCenterY + songBarRadius + songBarRadius * sin(rad(mapPos-90))
                     -- round the position to the nearest even number so dither doesn't kill anyone
-                    mapX = math.floor(mapX/2)*2
-                    mapY = math.floor(mapY/2)*2
+                    mapX = floor(mapX/2)*2
+                    mapY = floor(mapY/2)*2
     
-                    -- draw difficuty availability
-                    -- check if the map exists, do nothing if not
+                    -- draw difficuty name if on the currently selected difficulty
                     if i == mapSelectionRounded then
-                        -- if not pd.file.exists(songPath) then
-                        --     local textWidth, textHeight = gfx.getTextSize("Unavailable", fontFamilies.orbeatsSmall)
-                        --     local textX = mapX-textWidth/2
-                        --     local textY = mapY-textHeight/2+56
-                        --     gfx.setColor(gfx.kColorWhite)
-                        --     gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-                        --     gfx.drawText("Unavailable", textX, textY, fontFamilies.orbeatsSmall)
-                        -- end
-        
-                        -- draw difficulty name
-                        local textWidth, textHeight = gfx.getTextSize(mapList[i], fontFamilies.orbeatsSans)
+                        textFont = fontFamilies.orbeatsSans
+                        textWidth, textHeight = gfx.getTextSize(mapList[i], textFont)
                         if textWidth > 100 then
-                            local textWidth, textHeight = gfx.getTextSize(mapList[i], fontFamilies.orbeatsSmall)
-                            local textX = mapX-textWidth/2
-                            local textY = mapY-textHeight/2+40
-                            gfx.setColor(gfx.kColorWhite)
-                            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-                            gfx.drawText(mapList[i], textX, textY, fontFamilies.orbeatsSmall)
-                        else
-                            local textX = mapX-textWidth/2
-                            local textY = mapY-textHeight/2+40
-                            gfx.setColor(gfx.kColorWhite)
-                            gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
-                            gfx.drawText(mapList[i], textX, textY, fontFamilies.orbeatsSans)
+                            textFont = fontFamilies.orbeatsSmall
+                            textWidth, textHeight = gfx.getTextSize(mapList[i], textFont)
                         end
+                        textX = mapX-textWidth/2
+                        textY = mapY-textHeight/2+40
+                        gfx.setColor(gfx.kColorWhite)
+                        gfx.fillRoundRect(textX-2, textY-2, textWidth+4, textHeight+4, 2)
+                        gfx.drawText(mapList[i], textX, textY, textFont)
                     end
                 
                     -- draw difficulty icon
-                    local filePath = {"songs/", currentSong.folder, currentSong.difficulties[i], ".pdi"}
-                    local mapArtFilePath = table.concat(filePath)
-                    
-                    getImage(mapArtFilePath, i):draw(mapX-24, mapY-24)
+                    getImage(table.concat({"songs/", currentSong.folder, currentSong.difficulties[i], ".pdi"}), i):draw(mapX-24, mapY-24)
                 end
             end
         end
     
         -- draw the song data
-        local dataBubbleWidth = 100
-        local dataBubbleHeight = 85
-        local dataBubbleY = 85
         -- draw main data bubble
         gfx.setColor(gfx.kColorWhite)
-        gfx.fillRoundRect(songDataX, dataBubbleY, dataBubbleWidth, dataBubbleHeight, 5)
-        local currentHiScore = 0
-        local currentHiCombo = 0
-        local currentBestRank = "-"
-        if scores ~= nil then
-            if scores[currentSong.name] ~= nil then
-                if scores[currentSong.name][currentDifficulty] ~= nil then
-                    if scores[currentSong.name][currentDifficulty].score ~= nil then
-                        currentHiScore = scores[currentSong.name][currentDifficulty].score
-                    end
-                    if scores[currentSong.name][currentDifficulty].rating ~= nil then
-                        currentBestRank = scores[currentSong.name][currentDifficulty].rating
-                    end
-                    if scores[currentSong.name][currentDifficulty].combo ~= nil and scores[currentSong.name][currentDifficulty].fc ~= nil then
-                        if scores[currentSong.name][currentDifficulty].fc then
-                            currentHiCombo = -1
-                        else
-                            currentHiCombo = scores[currentSong.name][currentDifficulty].combo
-                        end
-                    end
-                end
-            end
-        end
+        gfx.fillRoundRect(songDataX, dataBubbleY, max(dataBubbleWidth, gfx.getTextSize(currentHiScore, fontFamilies.orbeatsSans)+10), dataBubbleHeight, 5)
+
+        currentHiScore, currentHiCombo, currentBestRank, currentFCStatus, currentAPStatus = getMapRecords(currentSong.name, currentDifficulty)
+        
+        -- draw the score
         songDataText.score:draw(songDataX+5, dataBubbleY+5)
-        gfx.drawText(currentHiScore, songDataX+5, dataBubbleY+15, fontFamilies.orbeatsSans)
-        songDataText.combo:draw(songDataX+5, dataBubbleY+30)
-        if currentHiCombo < 0 then
-            songDataText.fc:draw(songDataX+5, dataBubbleY+40)
+        gfx.drawText(commaFormat(currentHiScore), songDataX+5, dataBubbleY+15, fontFamilies.orbeatsSans)
+        -- draw the combo
+        songDataText.combo:draw(songDataX+5, dataBubbleY+32)
+        if currentFCStatus then
+            if currentAPStatus then       
+                songDataText.ap:draw(songDataX+5, dataBubbleY+42)
+            else
+                songDataText.fc:draw(songDataX+5, dataBubbleY+42)
+            end
         else
-            gfx.drawText(currentHiCombo, songDataX+5, dataBubbleY+40, fontFamilies.orbeatsSans)
+            gfx.drawText(commaFormat(currentHiCombo), songDataX+5, dataBubbleY+42, fontFamilies.orbeatsSans)
         end
-        songDataText.rank:draw(songDataX+5, dataBubbleY+55)
-        gfx.drawText(currentBestRank, songDataX+5, dataBubbleY+65, fontFamilies.orbeatsSans)
+        -- draw the rank
+        songDataText.rank:draw(songDataX+5, dataBubbleY+59)
+        gfx.drawText(currentBestRank, songDataX+5, dataBubbleY+69, fontFamilies.orbeatsSans)
+
         -- draw the name/artist/bpm bubble
-        local bpmTextTable = {currentSong.bpm, "BPM"}
-        local bpmText = table.concat(bpmTextTable)
-        local nameBubbleWidth = math.max(gfx.getTextSize(currentSong.name, fontFamilies.orbeatsSans)+10, gfx.getTextSize(currentSong.artist, fontFamilies.orbeatsSmall)+gfx.getTextSize(bpmText, fontFamilies. orbeatsSmall)+20)
+        bpmTextTable = {currentSong.bpm, "BPM"}
+        bpmText = table.concat(bpmTextTable)
+        nameBubbleWidth = max(gfx.getTextSize(currentSong.name, fontFamilies.orbeatsSans)+10, gfx.getTextSize(currentSong.artist, fontFamilies.orbeatsSmall)+gfx.getTextSize(bpmText, fontFamilies. orbeatsSmall)+20)
         gfx.setColor(gfx.kColorWhite)
         gfx.fillRoundRect(songDataX, 30, nameBubbleWidth, 40, 5)
         gfx.drawText(bpmText, songDataX+gfx.getTextSize(currentSong.artist, fontFamilies.orbeatsSmall)+13, 55, fontFamilies.orbeatsSmall)
         gfx.drawText(currentSong.artist, songDataX+5, 55, fontFamilies.orbeatsSmall)
         gfx.drawText(currentSong.name, songDataX+5, 35, fontFamilies.orbeatsSans)
         -- update songDataX
-        if songDataX ~= 0 then songDataX = songDataX + math.abs(math.floor(songDataX*0.3)) end
+        if songDataX ~= 0 then songDataX = songDataX + abs(floor(songDataX*0.3)) end
         
         
     
@@ -724,31 +826,27 @@ function drawSongSelect()
         if selecting == "song" or (selecting == "map" and menuY < menuYPresets.maps) then
             for i=songSelectionRounded+3,songSelectionRounded-3,-1 do
                 if i <= #songList and i >= 1 then
-                    local filePath = {"songs/", currentSongList[i].folder, "/albumArt.pdi"}
-                    local albumArtFilePath = table.concat(filePath)
+                    albumPos = -(songSelection-i)*8
         
-                    local albumPos = -(songSelection-i)*8
-        
-                    local albumX = screenCenterX + songBarRadius * math.cos(math.rad(albumPos-90)) - albumArtCenter
-                    local albumY = songBarY + songBarRadius + songBarRadius * math.sin(math.rad(albumPos-90)) - albumArtCenter
+                    albumX = screenCenterX + songBarRadius * cos(rad(albumPos-90)) - albumArtCenter
+                    albumY = songBarY + songBarRadius + songBarRadius * sin(rad(albumPos-90)) - albumArtCenter
                     -- round the position to the nearest even number so dither doesn't kill anyone
-                    albumX = math.floor(albumX/2)*2
-                    albumY = math.floor(albumY/2)*2
+                    albumX = floor(albumX/2)*2
+                    albumY = floor(albumY/2)*2
                     
-                    getImage(albumArtFilePath):draw(albumX, albumY)
+                    getImage(table.concat({"songs/", currentSongList[i].folder, "/albumArt.pdi"})):draw(albumX, albumY)
                 end
             end
         end
     
         -- draw the play text
-        local textH = 33
-        playY = menuY-menuYPresets.play + screenCenterY - textH*0.5
-        if playY > -textH then
+        playY = menuY-menuYPresets.play + screenCenterY - playTextH*0.5
+        if playY > -playTextH then
             if mapExists[songPath] then
                 if currentSong.confirmText ~= nil then
-                    local confirmText = currentSong.confirmText[mapList[mapSelectionRounded]]
+                    confirmText = currentSong.confirmText[mapList[mapSelectionRounded]]
                     if confirmText ~= nil then
-                        local confirmWidth = gfx.getTextSize(confirmText, fontFamilies.odinRounded)
+                        confirmWidth = gfx.getTextSize(confirmText, fontFamilies.odinRounded)
                         gfx.drawText(confirmText, screenCenterX-confirmWidth/2, playY, fontFamilies.odinRounded)
                     else
                         gfx.drawText(playText, screenCenterX-playTextWidth/2, playY, fontFamilies.odinRounded)
@@ -765,15 +863,12 @@ function drawSongSelect()
     
         -- draw the pointer
         if pointerY ~= targetPointerY then
-            pointerY = math.floor(pointerY + (targetPointerY-pointerY)*0.2)
+            pointerY = floor(pointerY + (targetPointerY-pointerY)*0.2)
         end
         pointerImage:draw(screenCenterX-7, pointerY) 
     
         -- draw menu controls
-        local controlsBubbleWidth = 50
-        local controlsBubbleHeight = 26
-        local controlsYDiff = controlsYPresets.hide - controlsYPresets.show
-        local controlsY = controlsYPresets.show + (1-controlsTimer.value)*controlsYDiff
+        controlsY = controlsYPresets.show + (1-controlsTimer.value)*controlsYDiff
         if drawInputPrompts and selecting ~= "play" then
             -- draw the left controls bubble
             gfx.setColor(gfx.kColorWhite)
@@ -794,9 +889,8 @@ function drawSongSelect()
     
     -- draw the sorting bubble and controls ticker
     if drawInputPrompts then
-        local selectYDiff = selectYPresets.show - selectYPresets.hide
-        local selectBarY = selectYPresets.hide + controlsTimer.value*selectYDiff
-        local sortingTextWidth, stw = sortingControls:getSize()
+        selectBarY = selectYPresets.hide + controlsTimer.value*selectYDiff
+        sortingTextWidth = sortingControls:getSize()
         -- draw the sorting button prompt
         if hasSongs then
             gfx.setColor(gfx.kColorWhite)
@@ -817,16 +911,12 @@ function drawSongSelect()
         gfx.setColor(gfx.kColorBlack)
         gfx.setLineWidth(2)
         gfx.drawLine(0, selectBarY+25, screenWidth, selectBarY+25)
-        local tickerX1 = tickerTimer.value
-        local tickerX2 = tickerTimer.value-tickerTextWidth
-        local tickerX3 = tickerTimer.value+tickerTextWidth
-        local padding = 4
-        tickerText:draw(tickerX1, selectBarY+padding)
-        tickerText:draw(tickerX2, selectBarY+padding)
-        tickerText:draw(tickerX3, selectBarY+padding)
-        -- gfx.drawText(tickerText, tickerX1, selectBarY+4, fontFamilies.orbeatsSans)
-        -- gfx.drawText(tickerText, tickerX2, selectBarY+4, fontFamilies.orbeatsSans)
-        -- gfx.drawText(tickerText, tickerX3, selectBarY+4, fontFamilies.orbeatsSans)
+        tickerX1 = tickerTimer.value
+        tickerX2 = tickerTimer.value-tickerTextWidth
+        tickerX3 = tickerTimer.value+tickerTextWidth
+        tickerText:draw(tickerX1, selectBarY+tickerPadding)
+        tickerText:draw(tickerX2, selectBarY+tickerPadding)
+        tickerText:draw(tickerX3, selectBarY+tickerPadding)
     end
 
     if #songList == 0 then
@@ -858,7 +948,7 @@ function closeDistance(currentVal, targetVal, speed)
 end
 
 function round(number)
-    local integralPart = math.floor(number)
+    local integralPart = floor(number)
     local fractionalPart = number - integralPart
 
     if fractionalPart == 0.5 then
@@ -866,14 +956,89 @@ function round(number)
         if integralPart % 2 == 0 then
             return integralPart  -- Round to the nearest even number
         else
-            return math.floor(number + 0.5)  -- Round up for odd integral part
+            return floor(number + 0.5)  -- Round up for odd integral part
         end
     else
-        return math.floor(number + 0.5)  -- Round normally for other cases
+        return floor(number + 0.5)  -- Round normally for other cases
     end
 end
 
 function replaceTimer(timer, ...)
     timer:remove()
     return tmr.new(...)
+end
+
+-- System Menu Items Functions
+
+-- sorting items
+local function addSortByMenuItem()
+	return menu:addOptionsMenuItem("Sort By", sortOptions, settings.songSorting, function(option)
+		settings.songSorting = option
+	end)
+end
+local function addFavoritesFirstMenuItem()
+    return menu:addCheckmarkMenuItem("Faves First", settings.favoritesFirst, function (checked)
+        settings.favoritesFirst = checked
+    end)
+end
+local function addFavoriteMenuItem()
+    return menu:addCheckmarkMenuItem("Fave Song", isSongFavorited(currentSong.folder), function (checked)
+
+        for i=#settings.favorites,1,-1 do
+
+            if settings.favorites[i] == currentSong.folder then
+                table.remove(settings.favorites, i)
+                break
+            end
+
+        end
+
+        if checked then
+            table.insert(settings.favorites, currentSong.folder)
+        end
+    end)
+end
+
+-- modifier items
+local function addModeMenuItem()
+	return menu:addOptionsMenuItem("Input", modeOptions, getInputMode(), function (option)
+        settings.autoMode, settings.oneButtonMode, settings.noCrankMode = false, false, false
+
+        if option == modeOptions[5] then
+            settings.autoMode = true
+        elseif option == modeOptions[4] then
+            settings.oneButtonMode, settings.noCrankMode = true, true
+        elseif option == modeOptions[3] then
+            settings.noCrankMode = true
+        elseif option == modeOptions[2] then
+            settings.oneButtonMode = true
+        end
+    end)
+end
+local function addSpeedMenuItem()
+    return menu:addOptionsMenuItem("Speed", speedOptionLabels, getSpeedLabel(settings.speed), function (option)
+        settings.speed = getSpeed(option)
+    end)
+end
+local function addDamageMenuItem()
+    return menu:addOptionsMenuItem("Damage", damageOptions, settings.damageMode, function (option)
+        settings.damageMode = option
+    end)
+end
+
+function setSongSelectMenuItems()
+    -- reset system menu items
+    menu:removeAllMenuItems()
+    if selecting == "song" then
+        -- add song sort items
+        addSortByMenuItem()
+        addFavoritesFirstMenuItem()
+        addFavoriteMenuItem()
+        sortSongs()
+    else
+        -- add mods menu items
+        addModeMenuItem()
+        addDamageMenuItem()
+        addSpeedMenuItem()
+    end
 end

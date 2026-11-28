@@ -10,20 +10,51 @@ local screenHeight <const> = 240
 local screenCenterX <const> = screenWidth / 2
 local screenCenterY <const> = screenHeight / 2
 
+local tabIcons <const> = {
+    visual = gfx.image.new("sprites/settingsTab1"),
+    audio = gfx.image.new("sprites/settingsTab2"),
+    system = gfx.image.new("sprites/settingsTab3"),
+}
+
 local settingDefaults <const> = {
-    tutorialPlayed = false,
-    songSorting = 1,
-    toggleSfx = true,
-    sfx = 2,
+    -- system settings
+    songSorting = "bpm",
+    favoritesFirst = true,
+    drawFps = false,
+    audioOffset = -0.07,
+
+    -- visual settings
     particles = true,
     notePattern = 1,
     drawBg = true,
-    drawFps = false,
     drawSplash = true, -- combo splashes
     centerHitText = true,
-    -- no option to change then yet
-    showSplashes = true, -- intro splash screens
+
+    -- audio settings
+    toggleSfx = true,
+    sfx = 2,
+
+    -- no option to change yet
+    skipIntro = false, -- intro splash screens
+    hideTips = false, -- hide the tips on the title screen
+
+    drawTextFX = true,
+    toggleInvertFX = true,
+    toggleMoveFX = true, -- move orbit fx
+
+    musicVolume = 1.0,
+    sfxVolume = 1.0,
+
+    -- mods
     oneButtonMode = false,
+    noCrankMode = false,
+    autoMode = false,
+    damageMode = "normal", -- for normal/no fail/no misses
+    speed = 1.0,
+
+    -- misc
+    tutorialPlayed = false,
+    favorites = {},
 }
 
 -- define variables
@@ -38,10 +69,10 @@ for key, value in pairs(settingDefaults) do
 end
 pd.datastore.write(settings, "settings")
 
-settingsText = {}
-textXTimer = tmr.new(0, -100, -100)
+local settingsText = {}
+local textXTimer = tmr.new(0, -100, -100)
 
-settingsOrder = {
+local settingsOrder = {
     "toggleSfx",
     "sfx",
     "particles",
@@ -53,30 +84,35 @@ settingsOrder = {
     "oneButtonMode",
     "resetSave",
 }
-settingsLabels = {
-    toggleSfx = "Note SFX Toggle: ",
-    sfx = "Note SFX: ",
-    particles = "Note Particles: ",
-    notePattern = "Slide Note Pattern: ",
-    drawBg = "Background FX: ",
-    drawFps = "Framerate Display: ",
-    resetSave = "Reset Save Data",
+local settingsLabels = {
     on = "ON",
     off = "OFF",
-    drawSplash = "Combo Splash: ",
-    centerHitText = "Center Hit Info: ",
-    oneButtonMode = "One Button Mode: ",
-}
 
-notePatterns = {
-    {0x99, 0x66, 0x66, 0x99, 0x99, 0x66, 0x66, 0x99}, -- checker big
-    {0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA}, -- checker
-    {0xD2, 0x5A, 0x4B, 0x69, 0x2D, 0xA5, 0xB4, 0x96}, -- diagonal
-    {0x83, 0x7C, 0x45, 0x55, 0x45, 0x7C, 0x83, 0xBB}, -- squares and rectangles
-    {0x5A, 0xA5, 0x5A, 0xA5, 0xA5, 0x5A, 0xA5, 0x5A}, -- circles
-    {0x77, 0x11, 0xDD, 0x44, 0x77, 0x11, 0xDD, 0x44}, -- zigzags
-    {0xF3, 0xF3, 0x30, 0x30, 0x3F, 0x3F, 0x3, 0x3}, -- big zigzags
-    {0xA6, 0x59, 0x65, 0x9A, 0x6A, 0x95, 0x56, 0xA9} -- sharp zigzags
+    -- system settings
+    drawFps = "Framerate Display",
+    skipIntro = "Skip Splash Screens",
+    hideTips = "Hide Title Screen Tips",
+    resetSave = "Reset Save Data",
+
+    -- visual settings
+    particles = "Note Particles",
+    notePattern = "Slide Note Pattern",
+    drawBg = "Background FX",
+    drawSplash = "Combo Splash",
+    centerHitText = "Center Hit Info",
+    drawTextFX = "Text FX",
+    toggleInvertFX = "Screen Inversions",
+    toggleMoveFX = "Move the Orbit",
+
+    -- audio settings
+    toggleSfx = "Toggle Hit SFX",
+    sfx = "Hit Sound",
+    musicVolume = "Music Volume",
+    sfxVolume = "SFX Volume",
+
+
+    oneButtonMode = "One Button Mode"
+
 }
 
 local toMenu = false

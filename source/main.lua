@@ -7,9 +7,8 @@ import "CoreLibs/easing"
 
 playdate.display.setRefreshRate(50) -- up here so image caches render right
 
--- import "pdParticles"
+import "common"
 import "particles"
-
 import "songs"
 import "game"
 import "endScreen"
@@ -32,47 +31,10 @@ local menu <const> = pd.getSystemMenu()
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 
--- pd.datastore.delete("settings")
-
-local sortOptions <const> = {
-	"artist",
-	"name",
-	"bpm"
-}
-
 -- Define variables
--- Menu Item Variables
-local function addSongSelectMenuItem()
-	return menu:addMenuItem("To Menu", function()
-		toMenu = true
-		if restart then
-			restart = false
-		end
-	end)
-end
-local function addRestartMenuItem()
-	return menu:addMenuItem("Restart", function()
-		restart = true
-		if toMenu then
-			toMenu = false
-		end
-	end)
-end
-local function addSortByMenuItem()
-	return menu:addOptionsMenuItem("Sort By", sortOptions, sortBy, function(option)
-		sortBy = option
-		settings.songSorting = option
-		pd.datastore.write(settings, "settings")
-		sortSongs = true
-	end)
-end
-
-addSongSelectMenuItem() --pause
-addRestartMenuItem() --pause
-addSortByMenuItem() --pause
 
 local gameState = "title"
-if settings.showSplashes then gameState = "splash" end
+if not settings.skipIntro then gameState = "splash" end
 local oldGameState = gameState
 -- local drawFunction
 
@@ -82,7 +44,7 @@ local function draw()
 		gfx.clear()
 		drawSong()
 		--alert the user to use crank if docked
-		if pd.isCrankDocked() and not tutorial then
+		if pd.isCrankDocked() and not (tutorial or settings.noCrankMode) then
 			pd.ui.crankIndicator:draw()
 		end
 	elseif gameState == "songEndScreen" then
@@ -133,11 +95,6 @@ local function draw()
 
 end
 
--- for i=0,145 do
--- 	drawArc(200, 120, i, 0, 90)
--- end
--- drawArc(200, 120, 50, 0, 90)
-
 
 pd.resetElapsedTime()
 
@@ -155,23 +112,16 @@ function pd.update()
 		pd.datastore.write(stats, "stats")
 		oldGameState = gameState
 	end
-	
-	-- reset system menu items
-	menu:removeAllMenuItems()
 
 	-- update the current game state
 	if gameState == "song" then
 		gameState = updateSong()
-		addSongSelectMenuItem()
-		if not tutorial then addRestartMenuItem() end
 		-- drawFunction = drawSong
 	elseif gameState == "songEndScreen" then
 		gameState = updateEndScreen()
-		addSongSelectMenuItem()
 		-- drawFunction = drawSong
 	elseif gameState == "songSelect" then
 		gameState = updateSongSelect()
-		addSortByMenuItem()
 	elseif gameState == "tutorialSelect" then
 		gameState = updateTutorialSelect()
 	elseif gameState == "menu" then
@@ -206,6 +156,19 @@ function pd.deviceWillSleep()
 end
 function pd.deviceWillLock()
 	pd.datastore.write(stats, "stats")
+end
+function pd.deviceDidUnlock()
+	-- make sure you don't count time locked in the total playtime
+	pd.resetElapsedTime()
+end
+
+function pd.gameWillPause()
+	-- used to update the values in the menu
+	if gameState == "songSelect" then setSongSelectMenuItems() end
+end
+function pd.gameWillResume()
+	-- for saving when you change the sorting or mods
+	if gameState == "songSelect" then pd.datastore.write(settings, "settings") end
 end
 
 -- instantly restart the level in the simulator if pressed

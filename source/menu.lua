@@ -49,16 +49,6 @@ local wheelY = 450
 local wheelYTimer = tmr.new(0, wheelY, wheelY)
 
 local sheenTimer = tmr.new(0, 600, 600)
-
-inputText = {
-    left = char.left.."/"..char.ccw,
-    right = char.right.."/"..char.cw,
-    confirm = "Confirm:"..char.up.."/"..char.A,
-    back = "Back:"..char.down.."/"..char.B,
-    select = "Select:"..char.left.."/"..char.right.."/"..char.A,
-    save = "Save and Exit:"..char.B,
-    scroll = "Scroll:"..char.down.."/"..char.cw.."/"..char.up.."/"..char.ccw
-}
 local inputXTimer = tmr.new(0, 0, 0)
 local drawInputPrompts = true
 local promptTimer = tmr.new(0, 0, 0)
@@ -173,6 +163,7 @@ function updateMainMenu()
         else
             leavingMenu = false
             init = false
+            if menuItems[menuSelectionRounded] == "songSelect" then setSongSelectMenuItems() end
             return menuItems[menuSelectionRounded]
         end
     else
@@ -300,45 +291,5 @@ function drawMainMenu()
         gfx.setColor(gfx.kColorWhite)
         gfx.setDitherPattern(fadeWhite)
         gfx.fillRect(0, 0, screenWidth, screenHeight)
-    end
-end
-
-
--- Menu Music Controls
-
-function isMenuMusicPlaying()
-    return bgmIntro:isPlaying() or menuBgm:isPlaying()
-end
-
-function playMenuMusic()
-    if isMenuMusicPlaying() then return end
-
-    bgmIntro:play(1)
-    bgmIntro:setFinishCallback(function()
-        menuBgm:setOffset(6.741)
-        menuBgm:play(0)
-        menuBgm:setVolume(bgmIntro:getVolume())
-    end)
-    bgmIntro:setVolume(1)
-end
-
-function stopMenuMusic()
-    if not isMenuMusicPlaying() then return end
-    bgmIntro:setFinishCallback(function ()
-        return
-    end)
-    bgmIntro:stop()
-    menuBgm:stop()
-end
-
-function setMenuMusicVolume(volume, fade)
-    if not isMenuMusicPlaying() then return end
-
-    if fade == nil then fade = 0 end
-
-    if bgmIntro:isPlaying() then
-        bgmIntro:setVolume(volume, volume, fade)
-    elseif menuBgm:isPlaying() then
-        menuBgm:setVolume(volume, volume, fade)
     end
 end

@@ -4,6 +4,11 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local tmr <const> = pd.timer
 local ease <const> = pd.easingFunctions
+local floor <const> = math.floor
+local ceil <const> = math.ceil
+local min <const> = math.min
+local max <const> = math.max
+local abs <const> = math.abs
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -56,7 +61,19 @@ local titlePieceBackups = createTitlePieces()
 local pieceTiming <const> = {14.25, 14.5, 15, 15.25, 15.5, 15.75, 16}
 local showInputBeat <const> = 17
 
-bgmIntro = pd.sound.fileplayer.new("bgm/intro")
+local tips <const> = {
+    "If your hands cramp often, try playing on the simulator with a controller, or buy a grip!",
+    "Remember that practice makes perfect, and it's normal to fail often!",
+    "If you struggle with the swap between buttons, try out one button mode in the mods!",
+    "If you struggle with the aiming the cursor, try out no crank mode in the mods!",
+    "To get the highest possible score, use the speed mod to set your speed to 150%!",
+    "If you're struggling, try a lower diffculty or changing your mods! There's no shame in tailoring the game to your skill level.",
+    "If you crank enough on the title screen it'll take you to the credits!",
+    "If the game is running slowly during beatmaps, try disabling visual effects in the settings!",
+
+}
+
+-- Define variables
 
 local function getSplashes()
     local list = pd.file.listFiles("/splashes/")
@@ -68,8 +85,6 @@ local function getSplashes()
 end
 local splashes = getSplashes()
 
--- Define variables
-bgImage = gfx.image.new("sprites/stars2")
 local bgDither = 0
 local bgDitherTimer = tmr.new(0)
 local start = false
@@ -120,9 +135,9 @@ end
 
 local function trunc(number)
     if sign(number) > 0 then
-        return math.floor(number*100)*0.01
+        return floor(number*100)*0.01
     elseif sign(number) < 0 then
-        return math.ceil(number*100)*0.01
+        return ceil(number*100)*0.01
     else
         return number
     end
@@ -197,9 +212,9 @@ function updateTitleScreen()
 
     -- calculate if the orbit should pulse
     if drawInput then
-        if math.floor(currentBeat) > lastPulse then
+        if floor(currentBeat) > lastPulse then
             pulse = true
-            lastPulse = math.floor(currentBeat)
+            lastPulse = floor(currentBeat)
         else
             if pulseTimer == 4 then
                 pulse = false
@@ -218,7 +233,7 @@ function updateTitleScreen()
     end
 
     -- orbit radius toy
-    orbitRadius = math.min(orbitMaxRadius, math.max(orbitMinRadius, orbitRadius+(crankChange/5)))
+    orbitRadius = min(orbitMaxRadius, max(orbitMinRadius, orbitRadius+(crankChange/5)))
 
     if fadeIn < 1 then
         fadeIn += 0.1
@@ -379,7 +394,7 @@ function updateSplashes()
     if splashTimer.value < transitionTime then
         splashFade = splashTimer.value/transitionTime
     elseif splashTimer.value > splashTime-transitionTime then
-        splashFade = math.abs(splashTimer.value-splashTime)/transitionTime
+        splashFade = abs(splashTimer.value-splashTime)/transitionTime
     else splashFade = 1 end
 
     if currentSplash > #splashes then
@@ -394,7 +409,7 @@ function updateSplashes()
 end
 
 function drawSplashes()
-    if currentSplash > # splashes then return end
+    if currentSplash > #splashes then return end
     gfx.setStencilPattern(splashFade)
 
     splashes[currentSplash]:draw(0, 0)
