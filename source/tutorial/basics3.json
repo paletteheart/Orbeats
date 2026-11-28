@@ -190,14 +190,6 @@
                 "x": 200,
                 "y": 180,
                 "font": "orbeatsSmall"
-            },
-            {
-                "startBeat": -5,
-                "endBeat": 37,
-                "text": "Press ⊙ to exit.",
-                "x": 346,
-                "y": 9,
-                "font": "orbeatsSmall"
             }
         ]
     },
