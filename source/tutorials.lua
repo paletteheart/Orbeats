@@ -5,11 +5,12 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local tmr <const> = pd.timer
 local ease <const> = pd.easingFunctions
+local sin <const> = math.sin
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 
-local wheelDither <const> = {0xFF, 0xDD, 0xFF, 0x77, 0xFF, 0xDD, 0xFF, 0x77}
+local ringDither <const> = {0xFF, 0xDD, 0xFF, 0x77, 0xFF, 0xDD, 0xFF, 0x77}
 local planetDither <const> = {0x0, 0x3C, 0x5A, 0x7E, 0x5A, 0x66, 0x3C, 0x0}
 
 local menuItems <const> = {
@@ -34,6 +35,9 @@ local comboTutorialName <const> = "Combos and Health" -- used to determine which
 
 local tutorialIcon <const> = gfx.image.new("sprites/tutorialSelect.pdi")
 local iconWidth <const>, iconHeight <const> = tutorialIcon:getSize()
+local iconCenterX <const>, iconCenterY <const> = iconWidth*0.5, iconHeight*0.5
+local iconAngle <const> = -42
+
 local menuTextString <const> = "Read the explanations,\nthen attempt.\nRetry as many times\nas you need."
 local function cacheMenuText()
     local textW, textH = gfx.getTextSize(menuTextString, fontFamilies.orbeatsSans)
@@ -68,11 +72,11 @@ local leavingMenu = false
 local fadeBlack = 1
 local fadeWhite = 1
 
-local wheelXRadius = 100
-local wheelYRadius = 50
-local wheelYRadiusTimer = tmr.new(0, wheelYRadius, wheelYRadius)
-local wheelY = 450
-local wheelYTimer = tmr.new(0, wheelY, wheelY)
+local ringXRadius = 100
+local ringYRadius = 50
+local ringYRadiusTimer = tmr.new(0, ringYRadius, ringYRadius)
+local ringY = 450
+local ringYTimer = tmr.new(0, ringY, ringY)
 
 local sheenTimer = tmr.new(0, 600, 600)
 
@@ -86,10 +90,10 @@ local floating = 0
 
 
 local function resetAnim()
-    wheelY = 450
-    wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, screenHeight, ease.outBack)
-    wheelYRadius = 50
-    wheelYRadiusTimer = replaceTimer(wheelYRadiusTimer, 500, wheelYRadius, 150, ease.outBack)
+    ringY = 450
+    ringYTimer = replaceTimer(ringYTimer, 500, ringY, screenHeight, ease.outBack)
+    ringYRadius = 50
+    ringYRadiusTimer = replaceTimer(ringYRadiusTimer, 500, ringYRadius, 150, ease.outBack)
     sheenTimer = replaceTimer(sheenTimer, 20000, 600, -200)
     sheenTimer.repeats = true
     inputXTimer = replaceTimer(inputXTimer, animationTime, -0.1, 1, ease.outBack)
@@ -116,12 +120,12 @@ function updateTutorialSelect()
     if downPressed or bPressed then
         if tutorialStarting then
             tutorialStarting = false
-            wheelYRadiusTimer = replaceTimer(wheelYRadiusTimer, animationTime, wheelYRadius, 150, ease.outCubic)
+            ringYRadiusTimer = replaceTimer(ringYRadiusTimer, animationTime, ringYRadius, 150, ease.outCubic)
             sfx.mid:play()
         else
             leavingMenu = true
-            wheelYRadiusTimer = replaceTimer(wheelYRadiusTimer, animationTime, wheelYRadius, 50, ease.outCubic)
-            wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, 450, ease.outCubic)
+            ringYRadiusTimer = replaceTimer(ringYRadiusTimer, animationTime, ringYRadius, 50, ease.outCubic)
+            ringYTimer = replaceTimer(ringYTimer, 500, ringY, 450, ease.outCubic)
             sfx.low:play()
         end
     end
@@ -129,12 +133,12 @@ function updateTutorialSelect()
     if upPressed or aPressed then
         if leavingMenu then
             leavingMenu = false
-            wheelYRadiusTimer = replaceTimer(wheelYRadiusTimer, animationTime, wheelYRadius, 150, ease.outCubic)
-            wheelYTimer = replaceTimer(wheelYTimer, 500, wheelY, screenHeight, ease.outBack)
+            ringYRadiusTimer = replaceTimer(ringYRadiusTimer, animationTime, ringYRadius, 150, ease.outCubic)
+            ringYTimer = replaceTimer(ringYTimer, 500, ringY, screenHeight, ease.outBack)
             sfx.mid:play()
         else
             tutorialStarting = true
-            wheelYRadiusTimer = replaceTimer(wheelYRadiusTimer, animationTime, wheelYRadius, 300, ease.outCubic)
+            ringYRadiusTimer = replaceTimer(ringYRadiusTimer, animationTime, ringYRadius, 300, ease.outCubic)
             sfx.play:play()
         end
     end
@@ -229,14 +233,21 @@ function updateTutorialSelect()
     return "tutorialSelect"
 end
 
-
+local sheenX
+local yScale, ringSize
+local iconFloat, iconX, iconY
+local itemPos
+local textWidth, textHeight
+local textX, textY
+local padding <const> = 3
+local inputX
 function drawTutorialSelect()
     -- draw background
     gfx.setColor(gfx.kColorBlack)
     gfx.fillRect(0, 0, screenWidth, screenHeight)
 
     -- draw background sheen
-    local sheenX = sheenTimer.value
+    sheenX = sheenTimer.value
     gfx.setColor(gfx.kColorWhite)
     gfx.setDitherPattern(0.5)
     gfx.setLineWidth(250)
@@ -245,41 +256,38 @@ function drawTutorialSelect()
 
     --draw planet
     gfx.setPattern(planetDither)
-    gfx.fillCircleAtPoint(screenWidth, wheelY, wheelYRadius)
+    gfx.fillCircleAtPoint(screenWidth, ringY, ringYRadius)
     gfx.setColor(gfx.kColorWhite)
     gfx.setLineWidth(5)
-    gfx.drawCircleAtPoint(screenWidth, wheelY, wheelYRadius)
+    gfx.drawCircleAtPoint(screenWidth, ringY, ringYRadius)
 
-    -- draw wheel
-    wheelY = wheelYTimer.value
-    wheelYRadius = wheelYRadiusTimer.value
-    wheelXRadius = wheelYRadius*2
-    gfx.setPattern(wheelDither)
-    -- gfx.setColor(gfx.kColorWhite)
-    -- gfx.setDitherPattern(0.25)
-    local yScale = 0.7
-    local ringSize
+    -- draw ring
+    ringY = ringYTimer.value
+    ringYRadius = ringYRadiusTimer.value
+    ringXRadius = ringYRadius*2
+    gfx.setPattern(ringDither)
+    yScale = 0.7
     ringSize = 30
     gfx.setLineWidth(6)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
+    gfx.drawEllipseInRect(screenWidth-ringXRadius-ringSize, ringY-ringYRadius-ringSize*yScale, (ringXRadius+ringSize)*2, (ringYRadius+ringSize*yScale)*2)
     ringSize = 20
     gfx.setLineWidth(2)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
+    gfx.drawEllipseInRect(screenWidth-ringXRadius-ringSize, ringY-ringYRadius-ringSize*yScale, (ringXRadius+ringSize)*2, (ringYRadius+ringSize*yScale)*2)
     ringSize = 10
     gfx.setLineWidth(10)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
+    gfx.drawEllipseInRect(screenWidth-ringXRadius-ringSize, ringY-ringYRadius-ringSize*yScale, (ringXRadius+ringSize)*2, (ringYRadius+ringSize*yScale)*2)
     ringSize = -10
     gfx.setLineWidth(14)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
+    gfx.drawEllipseInRect(screenWidth-ringXRadius-ringSize, ringY-ringYRadius-ringSize*yScale, (ringXRadius+ringSize)*2, (ringYRadius+ringSize*yScale)*2)
     ringSize = -25
     gfx.setLineWidth(5)
-    gfx.drawEllipseInRect(screenWidth-wheelXRadius-ringSize, wheelY-wheelYRadius-ringSize*yScale, (wheelXRadius+ringSize)*2, (wheelYRadius+ringSize*yScale)*2)
+    gfx.drawEllipseInRect(screenWidth-ringXRadius-ringSize, ringY-ringYRadius-ringSize*yScale, (ringXRadius+ringSize)*2, (ringYRadius+ringSize*yScale)*2)
 
     -- draw floating icon
-    local iconFloat = math.sin(floating)*8
-    local iconAngle = -42
-    local iconX = screenWidth + (wheelXRadius*1.7) * math.cos(math.rad(iconAngle-90)) - iconWidth/2
-    local iconY = wheelY + (wheelYRadius*1.7) * math.sin(math.rad(iconAngle-90)) - iconHeight/2
+    iconFloat = sin(floating)*8
+    iconX, iconY = pointFromEllipsePosition(screenWidth, ringY, ringXRadius*1.7, ringYRadius*1.7, iconAngle-90)
+    iconX -= iconCenterX
+    iconY -= iconCenterY
     -- round the movement to 2s so the dither doesn't flicker
     iconX, iconY = math.floor(iconX*0.5)*2, math.floor(iconY*0.5)*2
     tutorialIcon:draw(iconX, iconY+iconFloat)
@@ -290,13 +298,13 @@ function drawTutorialSelect()
     gfx.setLineWidth(1)
     for i=1,#menuItems do
 
-        local itemPos = (menuSelection-i)*(135/#menuItems)-30
+        itemPos = (menuSelection-i)*(135/#menuItems)-30
 
         -- draw menu item names
-        local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fontFamilies.orbeatsSans)
-        local textX = screenWidth + wheelXRadius * math.cos(math.rad(itemPos-90)) - textWidth/2
-        local textY = wheelY + wheelYRadius * math.sin(math.rad(itemPos-90)) - textHeight/2
-        local padding = 3
+        textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fontFamilies.orbeatsSans)
+        textX, textY = pointFromEllipsePosition(screenWidth, ringY, ringXRadius, ringYRadius, itemPos-90)
+        textX -= textWidth*0.5
+        textY -= textHeight*0.5
         gfx.setColor(gfx.kColorWhite)
         gfx.fillRoundRect(textX-padding, textY-padding, textWidth+padding*2, textHeight+padding*2, 2)
         gfx.setColor(gfx.kColorBlack)
@@ -310,7 +318,7 @@ function drawTutorialSelect()
 
     
     -- draw the input prompts
-    local inputX = inputXTimer.value
+    inputX = inputXTimer.value
 
     if drawInputPrompts then
         local padding = 3

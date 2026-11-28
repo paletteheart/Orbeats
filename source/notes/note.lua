@@ -5,6 +5,11 @@ local gfx <const> = pd.graphics
 local exp <const> = math.exp
 local max <const> = math.max
 local min <const> = math.min
+local floor <const> = math.floor
+local ceil <const> = math.ceil
+local sin <const> = math.sin
+local cos <const> = math.cos
+local rad <const> = math.rad
 
 local initialRadius <const> = 5
 local LODRadius <const> = 40
@@ -13,6 +18,8 @@ local missedNoteRadius <const> = 140
 
 class('Note').extends(Object)
 
+local stepSize <const> = 22.5 -- in degrees
+local iStepSize <const> = 1/stepSize
 function Note:init(spawnBeat, hitBeat, spd, width, pos, spin, dur)
     self.spawnBeat = spawnBeat -- the beat when the note is spawned
     self.hitBeat = hitBeat -- the beat when the note is supposed to be hit
@@ -23,11 +30,25 @@ function Note:init(spawnBeat, hitBeat, spd, width, pos, spin, dur)
     if spin ~= nil then self.spin = spin else self.spin = 0 end
     self.currentPos = self.hitPos + self.spin -- the current position of the note
     self.radius = initialRadius
-    if dur ~= nil and dur >= 0 then self.duration = dur else self.duration = 0 end
+    if dur ~= nil and dur >= 0 then
+        self.duration = dur
+        self.isHold = true
+    else
+        self.duration = 0
+        self.isHold = false
+    end
     self.startRadius = nil -- used for figuring out the points of a hold note
     self.endRadius = initialRadius -- only used if the note has a duration to it
     self.hitting = false -- only used to tell if your hitting a hold note
     self.finishBeat = nil -- used for drawing if you stop hitting a hold note mid-note
+
+    -- LOD drawing values
+    -- width never changes, so it's best these are only calculated once
+    self.theta = rad(self.width)
+    self.steps = max(ceil(self.width*iStepSize), 1)
+    local steppedTheta = self.theta/self.steps
+    self.ctheta = cos(steppedTheta)
+    self.stheta = sin(steppedTheta)
 end
 
 local oldRadius
@@ -48,7 +69,7 @@ function Note:update(currentBeat, orbitRadius)
         end
     end
 
-    if self.duration > 0 then
+    if self.isHold then
         self.endRadius = max(initialRadius, ((orbitRadius-initialRadius)/(exp(self.spd*self.lifeLength)-1))*(exp(self.spd*(beatsSinceSpawn-self.duration))-1)+initialRadius)
     else
         self.endRadius = self.radius
@@ -95,20 +116,12 @@ function Note:draw(x, y, rad) -- rad is the orbit radius
         maxDist = missedNoteRadius - rad
         gfx.setStencilPattern(1-distance/maxDist)
     end
-    lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
+    lineStartX1, lineStartY1, lineStartX2, lineStartY2 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle, self.steps, self.ctheta, self.stheta, self.isHold, self.isHold)
 
     --draw duration
-    if self.duration > 0 then
+    if self.isHold then
         gfx.setLineWidth(self.endRadius/rad)
-        if lineStartX1 == nil then lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90)) end
-        if lineStartY1 == nil then lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90)) end
-        lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
-        lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
-        lineEndX1 = x - self.endRadius * math.cos(math.rad(noteStartAngle+90))
-        lineEndY1 = y - self.endRadius * math.sin(math.rad(noteStartAngle+90))
-        lineEndX2 = x - self.endRadius * math.cos(math.rad(noteEndAngle+90))
-        lineEndY2 = y - self.endRadius * math.sin(math.rad(noteEndAngle+90))
-        drawNoteArc(x, y, self.endRadius, noteStartAngle, noteEndAngle)
+        lineEndX1, lineEndY1, lineEndX2, lineEndY2 = drawNoteArc(x, y, self.endRadius, noteStartAngle, noteEndAngle, self.steps, self.ctheta, self.stheta, true, true)
         gfx.drawLine(lineStartX1, lineStartY1, lineEndX1, lineEndY1)
         gfx.drawLine(lineStartX2, lineStartY2, lineEndX2, lineEndY2)
     end
@@ -137,39 +150,47 @@ end
 
 local width
 local px, py
-function drawNoteArc(x, y, r, startAngle, endAngle)
+local qx, qy
+function drawNoteArc(x, y, r, startAngle, endAngle, steps, ctheta, stheta, forceReturnStart, forceReturnEnd)
     width  = endAngle-startAngle
-    if r <= LODRadius or width <= LODWidth or endAngle == nil then
-        px = x + r * math.cos(math.rad(startAngle-90))
-        py = y + r * math.sin(math.rad(startAngle-90))
-        drawLineArc(x, y, px, py, width)
-        return px, py
-    else
+
+    if not (r <= LODRadius or width <= LODWidth) then -- deleted "or endAngle == nil", not sure why it was there
         gfx.drawArc(x, y, r, startAngle, endAngle)
-        return nil, nil
+
+        px, py, qx, qy = nil, nil, nil, nil
+
+        if forceReturnStart then px, py = pointFromCirclePosition(x, y, r, startAngle-90) end
+        if forceReturnEnd then qx, qy = pointFromCirclePosition(x, y, r, endAngle-90) end
+
+        return px, py, qx, qy
     end
-    -- px = x + r * math.cos(math.rad(startAngle-90))
-    -- py = y + r * math.sin(math.rad(startAngle-90))
+
+    -- is LOD'd
+    px, py = pointFromCirclePosition(x, y, r, startAngle-90)
+    qx, qy = drawLineArc(x, y, px, py, steps, ctheta, stheta)
+    return px, py, qx, qy
+
+    -- px, py = pointFromCirclePosition(x, y, r, startAngle-90)
     -- drawZapTest(x, y, px, py, width, r)
     -- return px, py
 end
 
 local x1, y1
 local dx, dy
-local theta
-local steps, steppedTheta
-local ctheta, stheta
 local x2, y2
-local stepSize <const> = 22.5 -- in degrees
-local iStepSize <const> = 1/stepSize
-function drawLineArc(x, y, px, py, length)
+--- Used to quickly draw an approximation of an arc using lines.
+---@param x number
+---@param y number
+---@param px number
+---@param py number
+---@param steps integer
+---@param ctheta number
+---@param stheta number
+---@return number endX
+---@return number endY
+function drawLineArc(x, y, px, py, steps, ctheta, stheta)
     x1, y1 = px, py
     dx, dy = x1 - x, y1 - y
-    theta = math.rad(length)
-    steps = max(math.floor(length*iStepSize), 1)
-    steppedTheta = theta/steps
-    ctheta = math.cos(steppedTheta)
-    stheta = math.sin(steppedTheta)
     for i=steps,1,-1 do
         x2 = ctheta*dx - stheta*dy
         y2 = stheta*dx + ctheta*dy
@@ -179,6 +200,7 @@ function drawLineArc(x, y, px, py, length)
         x1 = x2+x
         y1 = y2+y
     end
+    return x1, y1 --return the endAngle position
 end
 
 -- local rand <const> = math.random
@@ -192,11 +214,11 @@ end
 
 -- function drawZapTest(x, y, px, py, length, r)
 --     rScale = r*iHalfMissedR
---     theta = math.rad(length)
---     steps = max(math.floor(length*iStepSize), 2)
+--     theta = rad(length)
+--     steps = max(floor(length*iStepSize), 2)
 --     steppedTheta = theta/steps
---     ctheta = math.cos(steppedTheta)
---     stheta = math.sin(steppedTheta)
+--     ctheta = cos(steppedTheta)
+--     stheta = sin(steppedTheta)
     
 --     for arcs=1,2 do
 --         x1, y1 = px, py

@@ -2,6 +2,9 @@
 -- Define constants
 local pd <const> = playdate
 local gfx <const> = pd.graphics
+local sin <const> = math.sin
+local cos <const> = math.cos
+local rad <const> = math.rad
 
 local tableInsert <const> = table.insert
 
@@ -167,27 +170,24 @@ function updateStatsPage()
 end
 
 
+local planetRadius <const> = 50
+local moon1Radius <const> = 20
+local moon2Radius <const> = 10
+local orbitWidth <const> = 100
+local orbitHeight <const> = orbitWidth/3
+local orbitRotation <const> = rad(30)
+local moon2Speed <const> = 0.65
+local moon2Mult <const> = 1.25
+local moon1X, moon1Y, moon2X, moon2Y
+local radians
 local function drawPlanetAnim(x, y, degrees)
-    local planetRadius = 50
-    local moon1Radius = 20
-    local moon2Radius = 10
-    local orbitWidth = 100
-    local orbitHeight = orbitWidth/3
-    local orbitRotation = 30
-    local moon2Speed = 0.65
-    local moon2Mult = 1.25
+    radians = rad(degrees)
 
     -- Calculate moon position
-    local moon1X = x + orbitWidth * math.cos(math.rad(degrees)) * math.cos(math.rad(orbitRotation)) - orbitHeight * math.sin(math.rad(degrees)) * math.sin(math.rad(orbitRotation))
-    local moon1Y = y + orbitWidth * math.cos(math.rad(degrees)) * math.sin(math.rad(orbitRotation)) + orbitHeight * math.sin(math.rad(degrees)) * math.cos(math.rad(orbitRotation))
-    local moon2X = x + orbitWidth * moon2Mult * math.cos(math.rad(degrees*moon2Speed)) * math.cos(math.rad(orbitRotation)) - orbitHeight * moon2Mult * math.sin(math.rad(degrees*moon2Speed)) * math.sin(math.rad(orbitRotation))
-    local moon2Y = y + orbitWidth * moon2Mult * math.cos(math.rad(degrees*moon2Speed)) * math.sin(math.rad(orbitRotation)) + orbitHeight * moon2Mult * math.sin(math.rad(degrees*moon2Speed)) * math.cos(math.rad(orbitRotation))
-
-    -- -- draw the orbit behind the planet
-    -- gfx.setLineWidth(2)
-    -- gfx.setColor(gfx.kColorWhite)
-    -- gfx.setDitherPattern(0.5)
-    -- gfx.drawEllipseInRect(x-orbitRadius, y-orbitRadius/3, orbitRadius*2, orbitRadius*(2/3), -135, 135)
+    moon1X = x + orbitWidth * cos(radians) * cos(orbitRotation) - orbitHeight * sin(radians) * sin(orbitRotation)
+    moon1Y = y + orbitWidth * cos(radians) * sin(orbitRotation) + orbitHeight * sin(radians) * cos(orbitRotation)
+    moon2X = x + orbitWidth * moon2Mult * cos(radians*moon2Speed) * cos(orbitRotation) - orbitHeight * moon2Mult * sin(radians*moon2Speed) * sin(orbitRotation)
+    moon2Y = y + orbitWidth * moon2Mult * cos(radians*moon2Speed) * sin(orbitRotation) + orbitHeight * moon2Mult * sin(radians*moon2Speed) * cos(orbitRotation)
 
     -- Draw the second moon if behind the planet
     if math.abs((degrees*moon2Speed)%360) >= 180 then
@@ -214,12 +214,6 @@ local function drawPlanetAnim(x, y, degrees)
     gfx.setLineWidth(3)
     gfx.drawCircleAtPoint(x, y, planetRadius)
 
-    -- -- draw the orbit in front of the planet
-    -- gfx.setLineWidth(2)
-    -- gfx.setColor(gfx.kColorWhite)
-    -- gfx.setDitherPattern(0.5)
-    -- gfx.drawEllipseInRect(x-orbitRadius, y-orbitRadius/3, orbitRadius*2, orbitRadius*(2/3), 135, 225)
-
     -- Draw the first moon if in front of the planet
     if math.abs(degrees%360) < 180 then
         gfx.setPattern(moon1Dither)
@@ -229,7 +223,7 @@ local function drawPlanetAnim(x, y, degrees)
         gfx.drawCircleAtPoint(moon1X, moon1Y, moon1Radius)
     end
 
-    -- Draw the second moon if behind the planet
+    -- Draw the second moon if in front of the planet
     if math.abs((degrees*moon2Speed)%360) < 180 then
         gfx.setPattern(moon2Dither)
         gfx.fillCircleAtPoint(moon2X, moon2Y, moon2Radius)

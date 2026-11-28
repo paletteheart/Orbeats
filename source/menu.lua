@@ -202,18 +202,19 @@ function drawMainMenu()
 
         local itemPos = -(menuSelection-i)*(360/#menuItems)
 
-        local itemX = screenCenterX + wheelRadius * math.cos(math.rad(itemPos-90)) - 32
-        local itemY = wheelY + wheelRadius * math.sin(math.rad(itemPos-90)) - 32
+        local itemX, itemY = pointFromCirclePosition(screenCenterX, wheelY, wheelRadius, itemPos-90)
+        itemX -= 32 -- centering
+        itemY -= 32
         -- round the position to the nearest even number so dither doesn't kill anyone
-        itemX = math.floor(itemX/2)*2
-        itemY = math.floor(itemY/2)*2
+        itemX, itemY = pointToTwos(itemX, itemY)
         
         getImage(itemArtFilePath):draw(itemX, itemY)
 
         -- draw menu item names
         local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fontFamilies.orbeatsSans)
-        local textX = screenCenterX + (wheelRadius-64) * math.cos(math.rad(itemPos-90)) - textWidth/2
-        local textY = wheelY + (wheelRadius-64) * math.sin(math.rad(itemPos-90)) - textHeight/2
+        local textX, textY = pointFromCirclePosition(screenCenterX, wheelY, wheelRadius-64, itemPos-90)
+        textX -= textWidth*0.5
+        textY -= textHeight*0.5
         local padding = 3
         if textWidth > 100 then
             local textWidth, textHeight = gfx.getTextSize(menuItemNames[i], fontFamilies.orbeatsSmall)

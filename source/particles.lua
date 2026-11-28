@@ -4,6 +4,14 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
+local min <const> = math.min
+local rad <const> = math.rad
+local sin <const> = math.sin
+local cos <const> = math.cos
+local rand <const> = math.random
+
+local tableRemove <const> = table.remove
+
 local screenWidth <const> = 400
 local screenHeight <const> = 240
 
@@ -117,26 +125,26 @@ function Particle:add(amount)
         -- cap the amount of particles
         if #self.particles >= maxParticles then break end
 
-        dir = math.random(self.spread[1],self.spread[2])
-        speed = math.random(self.speed[1],self.speed[2])
+        dir = rad(rand(self.spread[1],self.spread[2]))
+        speed = rand(self.speed[1],self.speed[2])
 
         if #partPool > 0 then
             part = partPool[1]
-            table.remove(partPool, 1)
+            tableRemove(partPool, 1)
             part.x = self.x
             part.y = self.y
-            part.size = math.random(self.size[1],self.size[2])
-            part.thickness = math.random(self.thickness[1],self.thickness[2])
-            part.xStep = math.sin(math.rad(dir)) * speed
-            part.yStep = -math.cos(math.rad(dir)) * speed
+            part.size = rand(self.size[1],self.size[2])
+            part.thickness = rand(self.thickness[1],self.thickness[2])
+            part.xStep = sin(dir) * speed
+            part.yStep = -cos(dir) * speed
         else
             part = {
                 x = self.x,
                 y = self.y,
-                size = math.random(self.size[1],self.size[2]),
-                thickness = math.random(self.thickness[1],self.thickness[2]),
-                xStep = math.sin(math.rad(dir)) * speed,
-                yStep = -math.cos(math.rad(dir)) * speed
+                size = rand(self.size[1],self.size[2]),
+                thickness = rand(self.thickness[1],self.thickness[2]),
+                xStep = sin(dir) * speed,
+                yStep = -cos(dir) * speed
             }
         end
 
@@ -148,7 +156,7 @@ local circ
 local oobHorz
 local oobVert
 function Particle:update()
-    for part = math.min(maxParticles, #self.particles), 1, -1 do
+    for part = min(maxParticles, #self.particles), 1, -1 do
 
         circ = self.particles[part]
         -- circ = partPool[self.particles[part]]

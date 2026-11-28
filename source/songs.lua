@@ -11,9 +11,6 @@ local abs <const> = math.abs
 local min <const> = math.min
 local max <const> = math.max
 local floor <const> = math.floor
-local rad <const> = math.rad
-local sin <const> = math.sin
-local cos <const> = math.cos
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -756,11 +753,9 @@ function drawSongSelect()
             for i=mapSelectionRounded+3,mapSelectionRounded-3,-1 do
                 if i <= #mapList and i >= 1 then
                     mapPos = (i-mapSelection)*mapDist
-                    mapX = screenCenterX + (songBarRadius+200) * cos(rad(mapPos-90))
-                    mapY = mapSelectionOffset + menuY - screenCenterY + songBarRadius + songBarRadius * sin(rad(mapPos-90))
+                    mapX, mapY = pointFromEllipsePosition(screenCenterX, menuY-screenCenterY+songBarRadius, songBarRadius+200, songBarRadius, mapPos-90)
                     -- round the position to the nearest even number so dither doesn't kill anyone
-                    mapX = floor(mapX/2)*2
-                    mapY = floor(mapY/2)*2
+                    mapX, mapY = pointToTwos(mapX, mapY)
     
                     -- draw difficuty name if on the currently selected difficulty
                     if i == mapSelectionRounded then
@@ -827,12 +822,12 @@ function drawSongSelect()
             for i=songSelectionRounded+3,songSelectionRounded-3,-1 do
                 if i <= #songList and i >= 1 then
                     albumPos = -(songSelection-i)*8
-        
-                    albumX = screenCenterX + songBarRadius * cos(rad(albumPos-90)) - albumArtCenter
-                    albumY = songBarY + songBarRadius + songBarRadius * sin(rad(albumPos-90)) - albumArtCenter
+                    
+                    albumX, albumY = pointFromCirclePosition(screenCenterX, songBarY+songBarRadius, songBarRadius, albumPos-90)
+                    albumX -= albumArtCenter
+                    albumY -= albumArtCenter
                     -- round the position to the nearest even number so dither doesn't kill anyone
-                    albumX = floor(albumX/2)*2
-                    albumY = floor(albumY/2)*2
+                    albumX, albumY = pointToTwos(albumX, albumY)
                     
                     getImage(table.concat({"songs/", currentSongList[i].folder, "/albumArt.pdi"})):draw(albumX, albumY)
                 end

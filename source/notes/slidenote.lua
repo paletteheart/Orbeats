@@ -32,21 +32,13 @@ function SlideNote:draw(x, y, rad) -- rad is the orbit radius
         maxDist = missedNoteRadius - rad
         gfx.setStencilPattern(1-distance/maxDist)
     end
-    lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
+    lineStartX1, lineStartY1, lineStartX2, lineStartY2 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle, self.steps, self.ctheta, self.stheta, self.isHold, self.isHold)
 
     --draw duration
-    if self.duration > 0 then
-        gfx.setColor(col)
+    if self.isHold then
         gfx.setLineWidth(self.endRadius/rad)
-        if lineStartX1 == nil then lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90)) end
-        if lineStartY1 == nil then lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90)) end
-        lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
-        lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
-        lineEndX1 = x - self.endRadius * math.cos(math.rad(noteStartAngle+90))
-        lineEndY1 = y - self.endRadius * math.sin(math.rad(noteStartAngle+90))
-        lineEndX2 = x - self.endRadius * math.cos(math.rad(noteEndAngle+90))
-        lineEndY2 = y - self.endRadius * math.sin(math.rad(noteEndAngle+90))
-        drawNoteArc(x, y, self.endRadius, noteStartAngle, noteEndAngle)
+        gfx.setColor(col)
+        lineEndX1, lineEndY1, lineEndX2, lineEndY2 = drawNoteArc(x, y, self.endRadius, noteStartAngle, noteEndAngle, self.steps, self.ctheta, self.stheta, true, true)
         gfx.drawLine(lineStartX1, lineStartY1, lineEndX1, lineEndY1)
         gfx.drawLine(lineStartX2, lineStartY2, lineEndX2, lineEndY2)
     end

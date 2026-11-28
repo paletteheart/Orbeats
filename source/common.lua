@@ -3,12 +3,61 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
+local floor <const> = math.floor
 local abs <const> = math.abs
+local sin <const> = math.sin
+local cos <const> = math.cos
+local rad <const> = math.rad
 
 
 --#region Math and Numbers
 
+local radians
 
+--- Takes a circle and a number of degrees and returns
+--- coordinates corrosponding to the point at `degrees`
+--- around its circumference.
+--- 
+--- The rightmost side is 0°/360°, and degrees go clockwise.
+---@param circleX number
+---@param circleY number
+---@param degrees number
+---@param radius number
+---@return number x
+---@return number y
+function pointFromCirclePosition(circleX, circleY, radius, degrees)
+    radians = rad(degrees)
+    return circleX + radius * cos(radians), circleY + radius * sin(radians)
+end
+
+--- Takes an ellipse and a number of degrees and returns
+--- coordinates corrosponding to the point at `degrees`
+--- around its circumference.
+--- 
+--- The rightmost side is 0°/360°, and degrees go clockwise.
+---@param ellipseX number
+---@param ellipseY number
+---@param degrees number
+---@param xRadius number
+---@param yRadius number
+---@return number x
+---@return number y
+function pointFromEllipsePosition(ellipseX, ellipseY, xRadius, yRadius, degrees)
+    radians = rad(degrees)
+    return ellipseX + xRadius * cos(radians), ellipseY + yRadius * sin(radians)
+end
+
+--- Used to snap any point to every other x/y.
+--- 
+--- This is useful for making sure that images
+--- with dithering don't flicker.
+---@param x number
+---@param y number
+---@return integer
+---@return integer
+function pointToTwos(x, y)
+    return floor(x*0.5)*2, floor(y*0.5)*2
+end
 
 --#endregion
 

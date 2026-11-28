@@ -7,12 +7,25 @@ local gfx <const> = pd.graphics
 local exp <const> = math.exp
 local max <const> = math.max
 local min <const> = math.min
+local sin <const> = math.sin
+local cos <const> = math.cos
+
+local PI <const> = math.pi
 
 local missedNoteRadius <const> = 140
 local initialRadius <const> = 5
 local LODRadius <const> = 20
 
 class('FlipNote').extends(Note)
+
+function FlipNote:init(spawnBeat, hitBeat, spd, width, pos, spin, dur)
+    FlipNote.super.init(self, spawnBeat, hitBeat, spd, width, pos, spin, dur)
+    -- width never changes, so it's best these are only calculated once
+    local iTheta = (2*PI)-self.theta
+    local arrowSteppedTheta = iTheta*0.5 -- two steps are all that's necessary for the arrow of a flip note
+    self.arrowctheta = cos(arrowSteppedTheta)
+    self.arrowstheta = sin(arrowSteppedTheta)
+end
 
 local oldRadius
 local beatsSinceSpawn
@@ -52,8 +65,7 @@ end
 
 local noteStartAngle, noteEndAngle
 local distance, maxDist
-local lineStartX1, lineStartY1, lineStartX2, lineStartY2
-local lineEndX, lineEndY
+local px, py, qx, qy
 local col
 function FlipNote:draw(x, y, rad)
     if self.radius == initialRadius then return end
@@ -69,29 +81,23 @@ function FlipNote:draw(x, y, rad)
         maxDist = missedNoteRadius - rad
         gfx.setStencilPattern(1-distance/maxDist)
     end
-    lineStartX1, lineStartY1 = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle)
-
+    px, py, qx, qy = drawNoteArc(x, y, self.radius, noteStartAngle, noteEndAngle, self.steps, self.ctheta, self.stheta, false, true)
+    
     --draw lines
-    if lineStartX1 == nil then lineStartX1 = x + self.radius * math.cos(math.rad(noteStartAngle-90)) end
-    if lineStartY1 == nil then lineStartY1 = y + self.radius * math.sin(math.rad(noteStartAngle-90)) end
-    lineStartX2 = x + self.radius * math.cos(math.rad(noteEndAngle-90))
-    lineStartY2 = y + self.radius * math.sin(math.rad(noteEndAngle-90))
-    lineEndX = x - self.radius * math.cos(math.rad(self.currentPos-90))
-    lineEndY = y - self.radius * math.sin(math.rad(self.currentPos-90))
+    -- double up the lines if not LOD'd
     if not (self.radius <= LODRadius) then
         gfx.setLineWidth(3)
-        gfx.drawLine(lineStartX1, lineStartY1, lineEndX, lineEndY)
-        gfx.drawLine(lineStartX2, lineStartY2, lineEndX, lineEndY)
+        drawLineArc(x, y, qx, qy, 2, self.arrowctheta, self.arrowstheta)
         col = gfx.getColor()
         gfx.setColor(gfx.kColorXOR)
     end
 	gfx.setLineWidth(0)
-    gfx.drawLine(lineStartX1, lineStartY1, lineEndX, lineEndY)
-    gfx.drawLine(lineStartX2, lineStartY2, lineEndX, lineEndY)
+    drawLineArc(x, y, qx, qy, 2, self.arrowctheta, self.arrowstheta)
     if col ~= nil then
         gfx.setColor(col)
         col = nil
     end
+    
     if self.radius > rad then gfx.clearStencil() end -- reset stencil
 
 end

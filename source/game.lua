@@ -5,23 +5,21 @@ import "notes/flipnote"
 import "notes/slidenote"
 import "notes/releasenote"
 
--- Define constants
+--#region Define constants
 
--- Shorthands
+--#region Shorthands
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 local menu <const> = pd.getSystemMenu()
 local ease <const> = pd.easingFunctions
 local tableInsert <const> = table.insert
 local tableRemove <const> = table.remove
-local mathSin <const> = math.sin
-local mathCos <const> = math.cos
-local mathRad <const> = math.rad
 local mathMax <const> = math.max
 local mathMin <const> = math.min
 local mathAbs <const> = math.abs
 local mathFloor <const> = math.floor
 local mathCeil <const> = math.ceil
+--#endregion
 
 local screenWidth <const> = 400
 local screenHeight <const> = 240
@@ -158,7 +156,10 @@ local exitTextW <const> = exitText:getSize()
 -- Misc constants
 local minimumCombo <const> = 5
 
--- Define variables
+--#endregion
+
+--#region Define variables
+
 -- System variables
 toMenu = false
 restart = false
@@ -243,14 +244,15 @@ local oldOrbitCenterY = orbitCenterY -- used for animating orbit movement
 local lastMovementBeatX = 0 -- used for animating the orbit movement
 local lastMovementBeatY = 0 -- used for animating the orbit movement
 
+--#endregion
 
-
--- local functions
+--#region Local functions
 
 local function isBeforeSong()
     if fakeCurrentBeat < 0 then return true else return false end
 end
 
+--#region Combo handling
 local function incrementCombo()
     combo += 1
     if combo > largestCombo then largestCombo = combo end
@@ -265,18 +267,27 @@ local function breakCombo()
     -- if combo >= minimumCombo and settings.toggleSfx then sfx.combo_break:play() end
     combo = 0
 end
+--#endregion
 
+local trailX, trailY, trailRadius
+local tangentStartX, tangentStartY, tangentEndX, tangentEndY, pointX, pointY
+local trailLength <const> = orbitRadius*2
+local invertedTrailLength <const> = 1/trailLength
 local function flipCursor()
     cursorFlipped = not cursorFlipped
     -- set the trail behind the cursor when you flip
-    flipTrail = orbitRadius*2
+    flipTrail = trailLength
     flipPos = cursorPos
+    trailX, trailY = pointFromCirclePosition(orbitCenterX, orbitCenterY, orbitRadius, flipPos-270)
+    trailRadius = (flipTrail*invertedTrailLength)*cursorRadius
+    tangentStartX, tangentStartY = pointFromCirclePosition(trailX, trailY, trailRadius, flipPos+180)
+    tangentEndX, tangentEndY = pointFromCirclePosition(trailX, trailY, trailRadius, flipPos)
 end
 
+--#region Hit text handling
 local function updateHitTextPos(position)
     if not settings.centerHitText and not tutorial then return end -- escape if not centering the text
-    hitTextX = orbitCenterX + 20 * mathCos(mathRad(position+90))
-    hitTextY = orbitCenterY + 20 * mathSin(mathRad(position+90))
+    hitTextX, hitTextY = pointFromCirclePosition(orbitCenterX, orbitCenterY,  20, position+90)
 end
 
 local function updateHitTextDisplay(hitScore)
@@ -299,6 +310,52 @@ local function updateHitTextDisplay(hitScore)
     end
 end
 
+local function drawHitText(x, y, bgCol)
+    local hitTextWidth, hitTextHeight = hitTextDisplay:getSize()
+    local totalHitWidth
+    -- local showScore = hitTextDisplay ~= hitText.perfect and hitTextDisplay ~= hitText.miss
+    if hitTextTimer > 0 then
+        local offsetY = 0
+        if hitTextTimer == hitTextTime then
+            offsetY = -2
+        end
+
+        if settings.centerHitText or tutorial then
+            local hitScoreWidth = gfx.getTextSize(hitScoreDisplay, fontFamilies.orbeatsSmall)
+            local hitPuncWidth
+            if showHitScore then
+                totalHitWidth = hitTextWidth+hitScoreWidth+1
+            else
+                hitPuncWidth = hitText.punc:getSize()
+                totalHitWidth = hitTextWidth+hitPuncWidth+1
+            end
+
+            gfx.setColor(bgCol)
+            gfx.fillRoundRect(x-totalHitWidth*0.5-1, y-hitTextHeight*0.5-1+offsetY, totalHitWidth+2, hitTextHeight+2, 2)
+
+            if showHitScore then
+                hitTextDisplay:drawCentered(x-(hitScoreWidth*0.5), y+offsetY)
+                drawTextCentered(hitScoreDisplay, x+(hitTextWidth*0.5)+1, y+offsetY, fontFamilies.orbeatsSmall)
+            else
+                hitTextDisplay:drawCentered(x-(hitPuncWidth*0.5), y+offsetY)
+                hitText.punc:drawCentered(x+(hitTextWidth*0.5)+1, y+offsetY)
+            end
+        else
+            if showHitScore then
+                hitTextDisplay:draw(x, y+offsetY)
+                gfx.drawText(hitScoreDisplay, x+hitTextWidth+1, y+offsetY, fontFamilies.orbeatsSmall)
+            else
+                hitTextDisplay:draw(x, y+offsetY)
+                hitText.punc:draw(x+hitTextWidth+1, y+offsetY)
+            end
+        end
+
+        hitTextTimer -= 1
+    end
+end
+--#endregion
+
+--#region Note handling
 local function getHitScore(noteDistance)
     if noteDistance <= perfectDistance then
         return currentMaxPoints
@@ -351,6 +408,14 @@ local function killNote(noteIndex)
     notesKilled += 1
 end
 
+local function isCursorWithinNote(startAngle, endAngle)
+    return (cursorPos > startAngle and cursorPos < endAngle) or (cursorPos+360 > startAngle and cursorPos+360 < endAngle) or (cursorPos-360 > startAngle and cursorPos-360 < endAngle)
+end
+
+local function spawnParticles()
+
+end
+
 local startAngle, endAngle
 local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
 
@@ -358,8 +423,7 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
     lastNoteChecked = mathMax(note.hitBeat, lastNoteChecked)
 
     -- check if the cursor position is within the note
-    startAngle, endAngle = note:getNoteAngles()
-    if not ((cursorPos > startAngle and cursorPos < endAngle) or (cursorPos+360 > startAngle and cursorPos+360 < endAngle) or (cursorPos-360 > startAngle and cursorPos-360 < endAngle)) then
+    if not settings.noCrankMode and not isCursorWithinNote(note:getNoteAngles()) then
         return false
     end
     -- check that the trigger is met
@@ -434,7 +498,7 @@ local function checkNoteHit(noteIndex, note, trigger, alwaysPerfect)
     -- create particles
     if settings.particles then
         p:moveTo(cursorX, cursorY)
-        p:setSpread(mathFloor(cursorPos-90), mathCeil(cursorPos+90))
+        p:setSpread(mathFloor(note.currentPos-90), mathCeil(note.currentPos+90))
         p:add(5)
     end
     
@@ -483,7 +547,6 @@ local function spawnNote(noteType, spawnBeat, hitBeat, speed, width, position, s
 end
 
 local function updateLongNote(note, noteIndex)
-    local noteStartAngle, noteEndAngle = note:getNoteAngles()
     local endBeat = note.hitBeat + note.duration
     local workingBeat
     if isBeforeSong() then
@@ -491,9 +554,8 @@ local function updateLongNote(note, noteIndex)
     else
         workingBeat = currentBeat
     end
-    local isCursorWithinNote = (cursorPos > noteStartAngle and cursorPos < noteEndAngle) or (cursorPos+360 > noteStartAngle and cursorPos+360 < noteEndAngle) or (cursorPos-360 > noteStartAngle and cursorPos-360 < noteEndAngle)
 
-    if isCursorWithinNote and buttonHeld then
+    if isCursorWithinNote(note:getNoteAngles()) and buttonHeld then
         -- continue hitting note
         if settings.particles then
             p:moveTo(cursorX, cursorY)
@@ -678,7 +740,7 @@ local function createNotes()
         end
     end
 end
-
+--#endregion
 
 local function updateEffects()
     -- update effects
@@ -887,51 +949,7 @@ local function updateEffects()
     end
 end
 
-
-local function drawHitText(x, y, bgCol)
-    local hitTextWidth, hitTextHeight = hitTextDisplay:getSize()
-    local totalHitWidth
-    -- local showScore = hitTextDisplay ~= hitText.perfect and hitTextDisplay ~= hitText.miss
-    if hitTextTimer > 0 then
-        local offsetY = 0
-        if hitTextTimer == hitTextTime then
-            offsetY = -2
-        end
-
-        if settings.centerHitText or tutorial then
-            local hitScoreWidth = gfx.getTextSize(hitScoreDisplay, fontFamilies.orbeatsSmall)
-            local hitPuncWidth
-            if showHitScore then
-                totalHitWidth = hitTextWidth+hitScoreWidth+1
-            else
-                hitPuncWidth = hitText.punc:getSize()
-                totalHitWidth = hitTextWidth+hitPuncWidth+1
-            end
-
-            gfx.setColor(bgCol)
-            gfx.fillRoundRect(x-totalHitWidth*0.5-1, y-hitTextHeight*0.5-1+offsetY, totalHitWidth+2, hitTextHeight+2, 2)
-
-            if showHitScore then
-                hitTextDisplay:drawCentered(x-(hitScoreWidth*0.5), y+offsetY)
-                drawTextCentered(hitScoreDisplay, x+(hitTextWidth*0.5)+1, y+offsetY, fontFamilies.orbeatsSmall)
-            else
-                hitTextDisplay:drawCentered(x-(hitPuncWidth*0.5), y+offsetY)
-                hitText.punc:drawCentered(x+(hitTextWidth*0.5)+1, y+offsetY)
-            end
-        else
-            if showHitScore then
-                hitTextDisplay:draw(x, y+offsetY)
-                gfx.drawText(hitScoreDisplay, x+hitTextWidth+1, y+offsetY, fontFamilies.orbeatsSmall)
-            else
-                hitTextDisplay:draw(x, y+offsetY)
-                hitText.punc:draw(x+hitTextWidth+1, y+offsetY)
-            end
-        end
-
-        hitTextTimer -= 1
-    end
-end
-
+--#region Menu items
 local function addToMenuMenuItem()
 	return menu:addMenuItem("Exit Song", function()
 		toMenu = true
@@ -949,8 +967,11 @@ local function addRestartMenuItem()
 		end
 	end)
 end
+--#endregion
 
--- global functions
+--#endregion
+
+--#region Global functions
 
 local timeSinceStart
 function updateSong()
@@ -1016,8 +1037,7 @@ function updateSong()
         end
 
         -- update cursor x and y based on cursor position
-        cursorX = orbitCenterX + orbitRadius * mathCos(mathRad(cursorPos-90))
-        cursorY = orbitCenterY + orbitRadius * mathSin(mathRad(cursorPos-90))
+        cursorX, cursorY = pointFromCirclePosition(orbitCenterX, orbitCenterY, orbitRadius, cursorPos-90)
     end
     
     -- flip player if up is hit
@@ -1159,17 +1179,10 @@ function drawSong()
         gfx.setColor(fgCol)
         gfx.setDitherPattern(0.5)
         -- draw a circle where you were flipped to
-        local trailX = orbitCenterX + orbitRadius * mathCos(mathRad(flipPos-270))
-        local trailY = orbitCenterY + orbitRadius * mathSin(mathRad(flipPos-270))
-        local trailRadius = (flipTrail/(orbitRadius*2))*cursorRadius
+        trailRadius = (flipTrail*invertedTrailLength)*cursorRadius
         gfx.fillCircleAtPoint(trailX, trailY, trailRadius)
         -- draw a triangle pointed where you flipped from
-        local tangentStartX = trailX + trailRadius * mathCos(mathRad(flipPos+180))
-        local tangentStartY = trailY + trailRadius * mathSin(mathRad(flipPos+180))
-        local tangentEndX = trailX + trailRadius * mathCos(mathRad(flipPos))
-        local tangentEndY = trailY + trailRadius * mathSin(mathRad(flipPos))
-        local pointX = trailX - flipTrail * mathCos(mathRad(flipPos+90))
-        local pointY = trailY - flipTrail * mathSin(mathRad(flipPos+90))
+        pointX, pointY = pointFromCirclePosition(trailX, trailY, -flipTrail, flipPos+90)
         gfx.fillTriangle(tangentStartX, tangentStartY, tangentEndX, tangentEndY, pointX, pointY)
 
         flipTrail = mathFloor(flipTrail/1.4)
@@ -1236,7 +1249,6 @@ function drawSong()
         gfx.fillRect(0, 0, screenWidth, screenHeight)
     end
 end
-
 
 function setUpSong(bpm, bpmChange, newBeatOffset, musicFilePath, tablePath)
     -- set song data vars
@@ -1311,3 +1323,5 @@ function setGameMenuItems(isTutorial)
     -- add restart item if not a tutorial
     if not (isTutorial ~= nil and isTutorial) then addRestartMenuItem() end
 end
+
+--#endregion
