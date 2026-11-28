@@ -12,8 +12,8 @@ local cos <const> = math.cos
 local rad <const> = math.rad
 
 local initialRadius <const> = 5
-local LODRadius <const> = 40
-local LODWidth <const> = 20
+local LODRadius <const> = 55
+local LODWidth <const> = 30
 local missedNoteRadius <const> = 140
 
 class('Note').extends(Object)
@@ -151,6 +151,9 @@ end
 local width
 local px, py
 local qx, qy
+local x1, y1
+local dx, dy
+local x2, y2
 function drawNoteArc(x, y, r, startAngle, endAngle, steps, ctheta, stheta, forceReturnStart, forceReturnEnd)
     width  = endAngle-startAngle
 
@@ -159,8 +162,21 @@ function drawNoteArc(x, y, r, startAngle, endAngle, steps, ctheta, stheta, force
 
         px, py, qx, qy = nil, nil, nil, nil
 
-        if forceReturnStart then px, py = pointFromCirclePosition(x, y, r, startAngle-90) end
-        if forceReturnEnd then qx, qy = pointFromCirclePosition(x, y, r, endAngle-90) end
+        if forceReturnStart or forceReturnEnd then
+            px, py = pointFromCirclePosition(x, y, r, startAngle-90)
+            
+            if forceReturnEnd then 
+                -- calculate endAngle position without using pointFromCirclePosition
+                dx, dy = px - x, py - y
+                for i=steps,1,-1 do
+                    x2 = ctheta*dx - stheta*dy
+                    y2 = stheta*dx + ctheta*dy
+                    dx = x2
+                    dy = y2
+                end
+                qx, qy = dx+x, dy+y
+            end
+        end
 
         return px, py, qx, qy
     end
@@ -175,9 +191,6 @@ function drawNoteArc(x, y, r, startAngle, endAngle, steps, ctheta, stheta, force
     -- return px, py
 end
 
-local x1, y1
-local dx, dy
-local x2, y2
 --- Used to quickly draw an approximation of an arc using lines.
 ---@param x number
 ---@param y number
